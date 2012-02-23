@@ -13,7 +13,7 @@
 #include <string>
 #include <string.h>
 
-#include "tools/singletons.h"
+#include "bsp_tools/singletons.h"
 
 #include "bsp_broadcast.h"
 #include "ParameterFile.h"
@@ -98,11 +98,11 @@ namespace bsp {
 
 #include "Superstep.h"
 #include "Avector.h"
-#include "tools/utilities.h"
-#include "tools/aligned_allocator.h"
-#include "tools/singletons.h"
-#include "tools/global_params.h"
 
+#include "bsp_tools/utilities.h"
+#include "bsp_tools/aligned_allocator.h"
+#include "bsp_tools/singletons.h"
+#include "bsp_tools/global_params.h"
 #include "bsp_commandline.h"
 
 #endif

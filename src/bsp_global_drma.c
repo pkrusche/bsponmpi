@@ -32,7 +32,7 @@
 #include "bsp_mesgqueue.h"
 #include "bsp_private.h"
 #include "bsp_global_drma.h"
-#include "tools/aligned_malloc.h"
+#include "bsp_tools/aligned_malloc.h"
 
 #ifndef ASSERT
 #ifdef _DEBUG

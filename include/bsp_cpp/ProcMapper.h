@@ -9,7 +9,7 @@
 #include <tbb/concurrent_vector.h>
 
 #include "bsp.h"
-#include "tools/utilities.h"
+#include "bsp_tools/utilities.h"
 
 namespace bsp {
 

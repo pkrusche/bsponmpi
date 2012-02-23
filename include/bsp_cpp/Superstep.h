@@ -19,7 +19,7 @@
 
 #include "bsp_global_drma.h"
 
-#include "tools/singletons.h"
+#include "bsp_tools/singletons.h"
 #include "ParameterFile.h"
 #include "ProcMapper.h"
 #include "Context.h"

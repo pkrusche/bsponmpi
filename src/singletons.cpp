@@ -6,7 +6,7 @@
 #include <string>
 #include <iostream>
 
-#include "tools/singletons.h"
+#include "bsp_tools/singletons.h"
 
 tbb::task_scheduler_init singletons::task_scheduler_init;
 tbb::mutex singletons::global_mutex;
