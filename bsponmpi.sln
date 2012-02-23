@@ -1,7 +1,7 @@
 ﻿
-Microsoft Visual Studio Solution File, Format Version 10.00
-# Visual Studio 2008
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bsponmpi_vs2008", "bsponmpi_vs2008.vcproj", "{BCE04070-B4F0-47A6-9840-325F544A275D}"
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "bsponmpi_vs2008", "bsponmpi_vs2008.vcxproj", "{BCE04070-B4F0-47A6-9840-325F544A275D}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
