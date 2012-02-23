@@ -1,0 +1,18 @@
+This is a list of features which will be implemented in succeeding releases.
+Feel free to send additions to me.
+  
+Performance:
+* Implement the memoryRegister_find such that it is O(1) in stead of O(n)
+  (e.g. hash on least significant bits) 
+
+Usability:
+* Make it ready for use on program development and education: Make a
+  compiler option or special shared library to detect programming errors in a
+  BSP program (in run time), e.g.:
+  - writing outside a registered memory area
+  - out of sync bsp_sync()'s
+  - registering more than one NULL pointer
+  - ...
+  - internal consistency checks. 
+  - etc...
+

@@ -1,0 +1,26 @@
+
+Import("root", "mpi", "sequential", "mode")
+
+suffix = ''
+
+if sequential:
+	suffix += 'sequential'
+
+if mode == 'debug':
+	suffix += '_debug'
+
+
+bsp = mpi.Clone()
+bsp.Append(LIBS= ['bsponmpi'+suffix])
+
+bsp.Program('bsp_test_delivtable', ['bsp_test_delivtable.c'] )
+#bsp.Program('bsp_test_exptable', ['bsp_test_exptable.c'])
+bsp.Program('bsp_test_fixtable', ['bsp_test_fixtable.c'])
+bsp.Program('bsp_test_memreg', ['bsp_test_memreg.c'])
+bsp.Program('bsp_test_reqtable', ['bsp_test_reqtable.c'])
+
+bsp.Program('bsp_test_get', ['bsp_test_get.c'])
+bsp.Program('bsp_test_put', ['bsp_test_put.c'])
+bsp.Program('bsp_test_send', ['bsp_test_send.c'])
+bsp.Program('bsp_test_global_drma', ['bsp_test_global_drma.c'])
+bsp.Program('simplebspcomputation', ['simplebspcomputation.cpp'])

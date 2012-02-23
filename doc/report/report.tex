@@ -1,0 +1,260 @@
+\documentclass[a4paper]{article}
+\usepackage{a4wide}
+\usepackage[english]{babel}
+\usepackage{subfigure}
+\usepackage{graphicx}
+
+\newcommand{\comparisonfigure}[2]{
+\begin{figure}
+\subfigure{\includegraphics[width=7.5cm]{#1/g#22.eps}} 
+\subfigure{\includegraphics[width=7.5cm]{#1/g#24.eps}}\\ 
+\subfigure{\includegraphics[width=7.5cm]{#1/g#216.eps}}
+\caption{Comparison of BSPonMPI and Oxford BSP Toolset using \emph{#2}
+operations on 2, 4 and 16 processors of the computer #1 (from left to right
+and top to bottom).} 
+\label{fig:#1#2}
+\end{figure}
+}
+
+\title{Implementing BSPonMPI 0.1 \\ Lessons Learned \& Results}
+\author{Wijnand Suijlen}
+
+\begin{document}
+\maketitle{}
+
+\abstract{BSPonMPI implements the BSPlib standard and runs on all machines
+which have MPI. During the development a few lessons were learned about
+writing fast C programs. Additionaly the library is benchmarked and results
+show that it can compete with Oxford BSP Toolset. Remarkable is the
+observation that the MPI implementation of the Oxford BSP Toolset scales better
+then the native implementation. }
+
+\section{Introduction}
+BSPonMPI is a platform independent software library for developing parallel
+programs. It implements the BSPlib standard \cite{bsplib}
+and runs on all machines which have MPI \cite{mpi}. This last property is the
+main feature of this library and with this feature it distinguishes itself
+from the two major BSP libraries: Oxford BSP Toolset \cite{oxtool} and PUB
+\cite{pub}.  Both are implemented for specific hardware platforms (e.g. Cray
+T3E or SGI Origin) and they have a platform independent version on top
+of MPI.  However the architecture of their software library is optimised for
+the use of hardware specific features. Building on top of MPI was never their
+primary objective. The mission of BSPonMPI is to be the fastest BSP library
+which uses MPI.
+
+During the implementation of this library and the quest for better performance
+I learned a few things. After finishing the implementation they seem obvious,
+but they were not that obvious beforehand.  This report is about the
+experience gained while writing this library and an evaluation of the
+performance.  Code documentation, design issues and library usage can be found
+on the project homepage
+\cite{homepage}. 
+
+Throughout this document I use some terminology which is common in the field
+of BSP programming. Here is short glossary
+\begin{description}
+\item[$g$] Throughput parameter. It stands for the costs of sending one extra
+data element (e.g. measured in seconds per byte ).
+\item[$l$] Latency parameter. It denotes the minimum costs of communication
+or, more specific, the cost of one \verb|bsp_sync()| in which $0$ bytes are
+communicated (e.g. measured in seconds).
+\item[$h$-relation] Communication pattern. $h$ stands for the amount
+of data sent by each processor. If this differs among processors, it denotes
+the maximum. An $h$-relation is full, if all processors send at least one data
+element. 
+\end{description}
+
+\section{Lessons learned}
+Before this project my only experience in High Performance Computing (HPC) was
+a computer exercise about computing the homogeneous Poisson equation on a
+rectangular grid using Fortran. In this exercise the data structure was
+obvious and very simple. Additionally Fortran does not allow many complex data
+structures, because it is not aware of pointers. In C anything is possible and
+therefore it may be tempting to use the full range of C's pointer abilities.
+
+In fact: I was tempted. Especially because I am used to an object oriented
+programming style. If I needed to store a set of variables of which I thought
+they belonged to each other, I defined a \verb|struct| for it and gave it an
+address: statically or dynamically.  So the first time implementing the
+communication buffer I constructed it as a linked list, where memory is
+allocated dynamically for each communication instruction object. This solution
+proved to be very slow for three different reasons:
+\begin{enumerate}
+\item In order to send the communication buffer using \verb|MPI_Alltoallv|, it
+still had to be copied to an array.
+\item The communication data could be scattered throughout the
+heap\footnote{In general a program has two memory regions in which it stores
+its data: the stack and the heap. The stack contains function parameters,
+return values, variables and arrays of fixed size. The heap contains all
+dynamically allocated data.} may result in a lot of cache misses. 
+\item calls to malloc and free are not very cheap.
+\end{enumerate}
+
+The greatest increase of performance was gained by doing the memory management
+myself: allocate an array at the start of the program and resize it if
+necessary. On Teras using 2 processors (see \ref{subsec:testenv}) the BSP
+throughput parameter $g$ was reduced by 50\% (see figure \ref{fig:step0-2}) as
+memory expansions now only happen a few times during the program instead of
+at every addition of a communication instruction. 
+
+\begin{figure}[htbp]
+\includegraphics[width=10cm]{teras/step0-2.eps}
+\caption{Compares Oxford BSP Toolset to three versions of BSPonMPI:
+\textbf{iteration 0} is an implementation having a linked list as communication
+buffer;
+\textbf{iteration 1} is the first implementation having arrays as communication
+buffer;
+\textbf{iteration 2} is the current version in which some other optimisations
+have been done
+}
+\label{fig:step0-2}
+\end{figure}
+
+Two lessons are learned here:
+\begin{enumerate}
+\item \emph{Keep it simple}: Implement your algorithms as you would do in a
+basic programming language like Fortran or Basic. In this case arrays and
+array operations are used instead of linked list  and complex pointer
+operations.
+\item \emph{Put all complex / slow code in exceptions which happen seldom}: 
+In this case only a few times memory was expanded instead of at each action.
+\end{enumerate}
+This does not only result in faster code, it also provides the compiler with
+more opportunity for optimisation and makes the code more readable.
+Applying these lessons on other parts of the code reduced $g$ again by 50 \%
+(see figure \ref{fig:step0-2}). 
+
+If you follow these rules, you almost automatically obey the standard
+optimisations rules:
+\begin{itemize}
+\item When optimising code, focus on the lines which are executed most
+frequently, e.g.: optimise the body of a loop. 
+\item Limit the use of branch statements, e.g. \verb|if| or \verb|switch|
+\item Limit calls to \verb|extern| functions 
+\item Access data using aligned addresses.
+\item Use simple language, i.e. use 
+\begin{verbatim}
+for (i = 0; i < 10; i ++)
+  sum += a[i];
+\end{verbatim}    
+in stead of
+\begin{verbatim}
+b = a + 9;
+while (b >= a) 
+  sum += *b;
+\end{verbatim}  
+\item Supply the compiler with hints, i.e. use \verb|const|, \verb|inline| and
+\verb|restrict|.
+\end{itemize}   
+
+\section{Results}
+\subsection{Test environment}
+\label{subsec:testenv}
+The performance of BSPonMPI 0.1 has been measured on two different machines:
+\begin{itemize}
+\item Teras, which is a SGI Origin 3800. On this machine a version of Oxford
+BSP Toolset v1.4 is installed which is specially built for this hardware
+platform.
+\item Aster, which is a SGI Altix 3700. This machine has a version
+of Oxford BSP Toolset v1.4 built on top of MPI.
+\end{itemize}
+The benchmark program used is a modified version of `bench' which is part of
+'BSPedupack' \cite{bspedupack}. The modified version can be found at the
+BSPonMPI homepage \cite{homepage}. Whereas the original version only
+measured the speed of a \emph{put} operations, the modified version can also
+measure using \emph{get} and \emph{send} operations. Output of `bench' is
+provided in figures \ref{fig:terasput}--\ref{fig:astersend} on the following
+pages.
+
+\comparisonfigure{teras}{put}
+\comparisonfigure{teras}{get}
+\comparisonfigure{teras}{send}
+
+\comparisonfigure{aster}{put}
+\comparisonfigure{aster}{get}
+\comparisonfigure{aster}{send}
+\newpage
+
+The purpose of BSPonMPI is to beat Oxford BSP Toolset on Aster as it was
+supposed to be suboptimal. BSPonMPI does not not succeed in that when
+considering \emph{put}s only, but astonishingly it beats Oxford on both
+machines when measuring using \emph{get}s and \emph{send}s. BSPonMPI was
+designed to process \emph{put}s, \emph{get}s and \emph{send}s in an equivalent
+manner. The benchmark results confirm this as experiments on equally sized
+$h$-relations show equal timings. Apparently Oxford BSP Toolset 
+processes them quite differently.
+
+You may also notice that performance differences becomes less apparent when
+the number of processors increases. From
+figures~\ref{fig:terasput}--\ref{fig:astersend} it can be seen that latency
+increases very fast, while the throughput parameter $g$ shows a more moderate
+increase. Obviously the latency becomes more and more dominant when the
+number of processors is scaled up. In figure~\ref{fig:latency} the latency is
+shown for a varying number of processors. It seems that BSPonMPI and its
+competitor perform equally on Teras, whereas BSPonMPI performs always worse on
+Aster. Again something very strange happened here. 
+
+\begin{figure}
+\subfigure{\includegraphics[width=7cm]{teras/latency.eps}}
+\subfigure{\includegraphics[width=7cm]{aster/latency.eps}}
+\caption{This figure shows the cost of a full $h$-relation while scaling up
+the number of processors. On the left results on Teras are shown, on the right
+Aster}
+\label{fig:latency}
+\end{figure}
+
+\section{Conclusion}
+The pros and cons of BSPonMPI are
+\begin{description}
+\item[-] \emph{put} operations are not yet very quick
+\item[-] high latency on non-full $h$-relations. 
+\item[-] it is not yet capable of detecting BSP programming errors. Up to now
+all effort has been directed in implementing a fast library; not a robust one
+\item[+] \emph{get} and \emph{send} operations are very fast.
+\item[+] The source code is platform independent.  
+\item[+] It transforms any BSP program into an MPI program. All MPI tools,
+such as profilers, will work with them.
+\end{description}
+
+Although this implementation is not yet fully optimised, we see that BSPonMPI
+can already compete with the native and MPI versions of Oxford BSP Toolset.
+Which library is best, depends on the application. Remarkable is the fact that
+BSPonMPI performs best when compared to the native version of Oxford BSP
+Toolset. As BSPonMPI is the constant factor in this comparison, one may wonder
+whether the MPI version of Oxford BSP Toolset performs better than the native
+version.
+
+I expect to gain more performance in a subsequent version of BSPonMPI,
+because: 
+\begin{description}
+\item[latency]  $l$ can be reduced by 25\%  merging two
+\verb|MPI_Alltoall()|'s which communicate buffer sizes. More may be
+gained by determining whether it is really necessary to communicate buffer
+sizes.  
+\item[throughput] $g$ can be reduced by 30\% by changing the communication
+buffer. 
+\end{description}
+This may yield a library which scales much better and beats the native and MPI
+versions of Oxford BSP Toolset.
+
+\begin{thebibliography}{1}
+\bibitem[1]{pub} Paderborn University BSP-library\\
+             \verb|http://wwwcs.uni-paderborn.de/~bsp|
+\bibitem[2]{mpi} MPI 1.1 Standard \\
+            \verb|http://www.mpi-forum.org/docs/docs.html|
+\bibitem[3]{bspedupack} Rob Bisseling. BSPedupack v1.0 \\
+        \verb|http://www.math.uu.nl/people/bisselin/software.html|
+\bibitem[4]{oxtool} Jonathan Hill. Oxford BSP Toolset v1.4 \\
+        \verb|http://www.bsp-worldwide.org/implmnts/oxtool|
+\bibitem[5]{bsplib} Jonathan Hill, Bill McColl, Dan Stefanescu, Mark Goudreau,
+Kevin Lang, Satish Rao, Torsten Suel, Thanasis, Tsantilas and Rob Bisseling.
+BSPlib: The BSP programming library. \textit{Parallel Computing,}
+24:1947--1980, 1998.
+\bibitem[6]{leslearned} Jonathan M. D. Hill, David B. Skillicorn.
+Lessons Learned from Implementing BSP. \textit{HPCN Europe 1997,} 762--771
+\bibitem[7]{homepage} Wijnand Suijlen. BSPonMPI homepage\\
+        \verb|http://bsponmpi.sourceforge.net|
+\end{thebibliography}
+
+\end{document}
+

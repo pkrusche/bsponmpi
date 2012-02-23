@@ -1,0 +1,11 @@
+BSPonMPI was written by
+  Wijnand J. Suijlen <wjsuijle@users.sourceforge.net>
+under the guidance of
+  Rob H. Bisseling http://www.math.uu.nl/people/bisseling
+
+BSPedupack which is used in the test suite is written by
+  Rob H. Bisseling http://www.math.uu.nl/people/bisseling
+
+Thread safety, Windows/MacOSX port, C++ additions, global 
+memory extensions by
+  Peter Krusche <pkrusche@gmail.com>

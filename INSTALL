@@ -1,0 +1,73 @@
+ ____ ____  ____             __  __ ____ ___ 
+| __ ) ___||  _ \ ___  _ __ |  \/  |  _ \_ _|
+|  _ \___ \| |_) / _ \| '_ \| |\/| | |_) | | 
+| |_) |__) |  __/ (_) | | | | |  | |  __/| | 
+|____/____/|_|   \___/|_| |_|_|  |_|_|  |___|
+==================================================
+version 0.3,
+Copyright (C) 2006  WJ Suijlen
+
+INSTALLATION INSTRUCTIONS
+*************************
+
+(May 2010, P Krusche)
+
+This version of BSPonMPI uses SCons (www.scons.org) to compile and 
+build. After downloading and installing SCons, you can compile the 
+library by running 
+
+ $ scons -Q mode=release
+ 
+in the BSPonMPI checkout directory.
+
+The libraries will be placed in the "lib" subdirectory of the checkout
+directory. You can either add this directory to the library path when
+compiling your code, or install the libraries publicly on Unix using 
+e.g.
+
+ # cp lib/* /usr/local/lib
+ # cp -R include/* /usr/local/include
+
+Most users don't have root privileges on compute clusters, so the 
+automatic install option has been removed. Furthermore, this version
+of BSPonMPI only supports static linking (there is not that much code,
+and messing with LD_LIBRARY_PATH through job submission systems can be 
+a bit of a pain...).
+
+On Windows, you can add the "lib" and "include" paths to the linker and
+compiler input paths in your MSVC project.
+
+The following options can be specified (either via command line, or 
+using the file "opts.py", which is read automatically each time SCons
+is run. 
+
+Variable			Description	                    Values        Default
+----------------------------------------------------------------------------
+mode                Build mode                        debug         *
+                                                      release
+profile             Enable profiling. Also enables     0            *
+                    debug information                  1
+debuginfo           Include debug information also     0
+                    in release version                 1            *
+sequential          Compile sequential library         0            *
+                    that does not use MPI              1
+                    (fixes bsp_nprocs() == 1)
+win32_ccpdir        Path to Microsoft Compute 
+                    Cluster Pack on Windows
+                    Default is: 
+                    'C:\\Program Files\\Microsoft Compute Cluster Pack'
+additional_lflags   Additional linker flags
+                    Use this to add linker flags if the code does not
+                    link on your system.
+additional_cflags   Additional compiler flags
+                    Use this to add compiler flags if the code does not
+                    compile on your system.
+MPICC               MPI c compiler wrapper (Unix only)            mpicc
+MPICXX              MPI c++ compiler wrapper (Unix only)          mpicxx
+MPILINK             MPI linker wrapper (Unix only)                mpicxx
+
+Any more intricate issues can probably be fixed by editing SConstruct.
+The original BSPonMPI tests will be compiled and placed in the "bin" 
+directory.
+
+Happy BSPing.

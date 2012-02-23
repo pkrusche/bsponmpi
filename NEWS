@@ -1,0 +1,51 @@
+BSPonMPI 0.3
+============
+The main new features are: 
+- Windows port. The library can now be compiled on Windows using any MPI 
+  implementation that is available on this platform (MPICH, Microsoft MPI, etc.)
+  The distribution includes solution and project files for MSVC.
+- Global DRMA support. This works just like normal DRMA, but allocates
+  memory which is distributed across all nodes:
+	
+	bsp_global_handle_t bsp_global_alloc(size_t array_size);
+	void bsp_global_free(bsp_global_handle_t ptr);
+
+  After allocating, you will need to call bsp_sync() to register 
+  the shared memory segments. 
+
+  (Hp)put and -get functions work in a similar fashion to normal bsp_put/bsp_get, 
+  but only get an offset into the global buffer (instead of specifying node
+  and offset). The node that holds the corresponding data is determined 
+  automatically according to the data distribution (block cyclic atm).
+  
+    void bsp_global_get(bsp_global_handle_t src, 
+		size_t offset, void * dest, size_t size);
+    void bsp_global_put(const void * src, 
+		bsp_global_handle_t dest, size_t offset, size_t size);
+    void bsp_global_hpget(bsp_global_handle_t src, 
+		size_t offset, void * dest, size_t size);
+    void bsp_global_hpput(const void * src, 
+		bsp_global_handle_t dest, size_t offset, size_t size);
+
+  All global memory functions are declared in bsp_global_drma.h.
+
+BSPonMPI 0.2
+============
+The main feature of this release is: More Speed. The main data structures were
+redesigned and rewritten which has resulted in more efficient code. 
+
+
+
+BSPonMPI 0.1
+============
+I am proud to present the first release of BSPonMPI. This software library
+implements the BSPlib standard on top of MPI. Main features are:
+- Platform independence: it is designed to be platform independent and it is
+  already tested and found to run on several different architectures including
+  the dutch national supercomputer and my laptop.
+- Speed: Benchmark results show that on DRMA 'puts' it is slightly slower than
+  the Oxford BSP Toolset, but it is much faster performing DRMA 'gets' or BSMP
+  'sends'.
+- Easy usage: To use this library just link your source code with the MPI and
+  BSPonMPI libraries and you get an MPI program. You do not need to recompile this
+  library ever. All your programs will run with equal efficiency.

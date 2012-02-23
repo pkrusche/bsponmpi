@@ -1,0 +1,391 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<VisualStudioProject
+	ProjectType="Visual C++"
+	Version="9.00"
+	Name="bsponmpi_vs2008"
+	ProjectGUID="{BCE04070-B4F0-47A6-9840-325F544A275D}"
+	RootNamespace="bsponmpi_vs2008"
+	Keyword="MakeFileProj"
+	TargetFrameworkVersion="0"
+	>
+	<Platforms>
+		<Platform
+			Name="Win32"
+		/>
+		<Platform
+			Name="x64"
+		/>
+	</Platforms>
+	<ToolFiles>
+	</ToolFiles>
+	<Configurations>
+		<Configuration
+			Name="Debug|Win32"
+			OutputDirectory="Debug"
+			IntermediateDirectory="Debug"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="scons -Q mode=debug"
+				ReBuildCommandLine="scons -Q mode=debug -c &amp;&amp; scons -Q mode=debug"
+				CleanCommandLine="scons -Q mode=debug -c"
+				Output="tests\bsp_test_exptable.exe"
+				PreprocessorDefinitions="WIN32;_DEBUG;"
+				IncludeSearchPath="src;include"
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug|x64"
+			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="scons -Q mode=debug"
+				ReBuildCommandLine="scons -Q mode=debug -c &amp;&amp; scons -Q mode=debug"
+				CleanCommandLine="scons -Q mode=debug -c"
+				Output="tests\bsp_test_exptable.exe"
+				PreprocessorDefinitions="WIN32;_DEBUG;"
+				IncludeSearchPath="src;&quot;C:\Boost\include\boost-1_41&quot;;&quot;C:\Users\peter\Documents\Code\loki-0.1.6\include&quot;;C:\Users\peter\workspace\bsp_cpp\include;C:\Users\peter\workspace\bsponmpi\include;&quot;C:\Program Files\Microsoft Compute Cluster Pack\Include&quot;"
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="Release"
+			IntermediateDirectory="Release"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="scons -Q mode=release"
+				ReBuildCommandLine="scons -Q mode=release -c &amp;&amp; scons -Q mode=release"
+				CleanCommandLine="scons -Q mode=release -c"
+				Output=""
+				PreprocessorDefinitions="WIN32;NDEBUG;"
+				IncludeSearchPath="src;include"
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release|x64"
+			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="scons -Q mode=release"
+				ReBuildCommandLine="scons -Q mode=release -c &amp;&amp; scons -Q mode=release"
+				CleanCommandLine="scons -Q mode=release -c"
+				Output=""
+				PreprocessorDefinitions="WIN32;NDEBUG;"
+				IncludeSearchPath="src;&quot;C:\Boost\include\boost-1_41&quot;;&quot;C:\Users\peter\Documents\Code\loki-0.1.6\include&quot;;C:\Users\peter\workspace\bsp_cpp\include;C:\Users\peter\workspace\bsponmpi\include;&quot;C:\Program Files\Microsoft Compute Cluster Pack\Include&quot;"
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug Seq|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="scons -Q mode=debug sequential=1"
+				ReBuildCommandLine="scons -Q mode=debug sequential=1 -c &amp;&amp; scons -Q sequential=1 mode=debug"
+				CleanCommandLine="scons -Q mode=debug sequential=1 -c"
+				Output="$(InputDir)\tests\bsp_test_exptable.exe"
+				PreprocessorDefinitions="WIN32;_DEBUG;_SEQUENTIAL"
+				IncludeSearchPath="src;include"
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Debug Seq|x64"
+			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="scons -Q mode=debug sequential=1"
+				ReBuildCommandLine="scons -Q mode=debug sequential=1 -c &amp;&amp; scons -Q sequential=1 mode=debug"
+				CleanCommandLine="scons -Q mode=debug sequential=1 -c"
+				Output="$(InputDir)\tests\bsp_test_exptable.exe"
+				PreprocessorDefinitions="WIN32;_DEBUG;_SEQUENTIAL"
+				IncludeSearchPath="src;&quot;C:\Boost\include\boost-1_41&quot;;&quot;C:\Users\peter\Documents\Code\loki-0.1.6\include&quot;;C:\Users\peter\workspace\bsp_cpp\include;C:\Users\peter\workspace\bsponmpi\include;&quot;C:\Program Files\Microsoft Compute Cluster Pack\Include&quot;"
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release Seq|Win32"
+			OutputDirectory="$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="scons -Q mode=release sequential=1"
+				ReBuildCommandLine="scons -Q mode=release sequential=1 -c &amp;&amp; scons -Q mode=release sequential=1"
+				CleanCommandLine="scons -Q mode=release sequential=1 -c"
+				Output=""
+				PreprocessorDefinitions="WIN32;NDEBUG;_SEQUENTIAL"
+				IncludeSearchPath="src;include"
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release Seq|x64"
+			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="0"
+			>
+			<Tool
+				Name="VCNMakeTool"
+				BuildCommandLine="scons -Q mode=release sequential=1"
+				ReBuildCommandLine="scons -Q mode=release sequential=1 -c &amp;&amp; scons -Q mode=release sequential=1"
+				CleanCommandLine="scons -Q mode=release sequential=1 -c"
+				Output=""
+				PreprocessorDefinitions="WIN32;NDEBUG;_SEQUENTIAL"
+				IncludeSearchPath="src;&quot;C:\Boost\include\boost-1_41&quot;;&quot;C:\Users\peter\Documents\Code\loki-0.1.6\include&quot;;C:\Users\peter\workspace\bsp_cpp\include;C:\Users\peter\workspace\bsponmpi\include;&quot;C:\Program Files\Microsoft Compute Cluster Pack\Include&quot;"
+				ForcedIncludes=""
+				AssemblySearchPath=""
+				ForcedUsingAssemblies=""
+				CompileAsManaged=""
+			/>
+		</Configuration>
+	</Configurations>
+	<References>
+	</References>
+	<Files>
+		<Filter
+			Name="Header Files"
+			Filter="h;hpp;hxx;hm;inl;inc;xsd"
+			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
+			>
+			<File
+				RelativePath=".\include\tools\aligned_malloc.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\bsp.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\bsp_abort.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\bsp_alloc.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\bsp_broadcast.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\bsp_delivtable.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\bsp_exptable.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\bsp_global_drma.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\bsp_memreg.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\bsp_mesgqueue.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\bsp_mpistub.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\bsp_private.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\bsp_reqtable.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\tools\mutex.h"
+				>
+			</File>
+			<File
+				RelativePath=".\include\tools\spawn.h"
+				>
+			</File>
+		</Filter>
+		<Filter
+			Name="Resource Files"
+			Filter="rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx"
+			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
+			>
+		</Filter>
+		<Filter
+			Name="Source Files"
+			Filter="cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx"
+			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
+			>
+			<File
+				RelativePath=".\src\bsp.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\bsp_abort.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\bsp_delivtable.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\bsp_exptable.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\bsp_global_drma.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\bsp_memreg.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\bsp_reqtable.c"
+				>
+			</File>
+			<File
+				RelativePath=".\tests\bsp_test_delivtable.c"
+				>
+			</File>
+			<File
+				RelativePath=".\tests\bsp_test_exptable.c"
+				>
+			</File>
+			<File
+				RelativePath=".\tests\bsp_test_fixtable.c"
+				>
+			</File>
+			<File
+				RelativePath=".\tests\bsp_test_get.c"
+				>
+			</File>
+			<File
+				RelativePath=".\tests\bsp_test_global_drma.c"
+				>
+			</File>
+			<File
+				RelativePath=".\tests\bsp_test_memreg.c"
+				>
+			</File>
+			<File
+				RelativePath=".\tests\bsp_test_put.c"
+				>
+			</File>
+			<File
+				RelativePath=".\tests\bsp_test_reqtable.c"
+				>
+			</File>
+			<File
+				RelativePath=".\tests\bsp_test_send.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\bsp_time.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\mutex.c"
+				>
+			</File>
+			<File
+				RelativePath=".\src\sequential.c"
+				>
+			</File>
+		</Filter>
+		<File
+			RelativePath=".\AUTHORS"
+			>
+		</File>
+		<File
+			RelativePath=".\debug\BuildLog.htm"
+			>
+		</File>
+		<File
+			RelativePath=".\COPYING.LIB"
+			>
+		</File>
+		<File
+			RelativePath=".\FILEHEADER"
+			>
+		</File>
+		<File
+			RelativePath=".\INSTALL"
+			>
+		</File>
+		<File
+			RelativePath=".\Makefile"
+			>
+		</File>
+		<File
+			RelativePath=".\NEWS"
+			>
+		</File>
+		<File
+			RelativePath=".\opts.py"
+			>
+		</File>
+		<File
+			RelativePath=".\src\SConscript"
+			>
+		</File>
+		<File
+			RelativePath=".\tests\SConscript"
+			>
+		</File>
+		<File
+			RelativePath=".\SConstruct"
+			>
+		</File>
+		<File
+			RelativePath=".\TODO"
+			>
+		</File>
+	</Files>
+	<Globals>
+	</Globals>
+</VisualStudioProject>

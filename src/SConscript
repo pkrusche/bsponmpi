@@ -1,0 +1,24 @@
+
+Import("root", "mpi", "mode", "sequential")
+
+suffix = ''
+
+if sequential:
+	suffix += 'sequential'
+
+if mode == 'debug':
+	suffix += '_debug'
+
+mpi.Library('#lib/bsponmpi'+suffix, [ 
+	'bsp.c', 
+	'bsp_abort.c', 
+	'bsp_delivtable.c', 
+	'bsp_exptable.c', 
+	'bsp_memreg.c', 
+	'bsp_reqtable.c',
+	'bsp_global_drma.c',
+	'bsp_time.c', 
+	'mutex.c',
+	'sequential.c',
+	])
+

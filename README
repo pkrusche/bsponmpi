@@ -1,0 +1,147 @@
+ ____ ____  ____             __  __ ____ ___ 
+| __ ) ___||  _ \ ___  _ __ |  \/  |  _ \_ _|
+|  _ \___ \| |_) / _ \| '_ \| |\/| | |_) | | 
+| |_) |__) |  __/ (_) | | | | |  | |  __/| | 
+|____/____/|_|   \___/|_| |_|_|  |_|_|  |___|
+==================================================
+BSPonMPI version 0.2,
+Copyright (C) 2006  WJ Suijlen
+The license of BSPonMPI can be found in the file COPYING.LIB
+
+Contents
+--------
+This README answers the following questions
+- What is BSPonMPI ?
+- Why should I use BSPonMPI?
+- Availability
+- Prerequisites
+- Usage: Compiling and Running
+- Documentation
+- Supported Platforms
+- Support & Feedback
+
+What is BPSonMPI?
+-----------------
+BSPonMPI is a platform independent software library for developing parallel
+programs. It implements the BSPlib standard for the most part and runs on all
+machines which have MPI. This last property is the main feature of this
+library and with this feature it distinguishes itself from other libraries
+such as the Oxford BSP Toolset and PUB.
+
+NOTE: 
+1) The BSPlib standard is implemented with ONE exception: A call to bsp_init()
+is mandatory.
+2) You can find the BSPlib standard at http://www.bsp-worldwide.org .
+
+
+Why should I use BSPonMPI?
+--------------------------
+Nowadays there are two major BSPlib implementations: Oxford BSP Toolset and
+PUB.  Both are implemented for specific hardware platforms (Cray T3E or
+SGI Origin, etc...) and they have a platform independent version on top of
+MPI.  However the architecture of their software library is optimised for the
+use of hardware specific features. Building on top of MPI was never their
+primary objective. So if your hardware/software is not supported by one of
+these two libraries, then you should use BSPonMPI in combination with an MPI
+library. 
+
+
+Availability
+------------
+Download the latest release from http://bsponmpi.sourceforge.net 
+
+
+Prerequisites
+-------------
+To compile this library you need a
++ Compiler, linker, archiver, etc... (e.g. GNU Development tools)
++ an MPI library (e.g. MPICH, LAM/MPI)
+
+
+Usage
+------
+Read the INSTALL file for installation instructions. 
+
+* Compiling
+BSPonMPI transforms a BSP program into an MPI program. Therefore you should
+use your standard MPI compiler and/or add an MPI library to your linker
+options. For example: when you have an MPI compiler 'mpicc' and you want to
+compile your program example.c, you should do
+$ mpicc -o example example.c -lbsponmpi
+If you have to link your MPI programs to e.g. to the library 'mpi', do
+$ cc -o example example.c -lmpi -lbsponmpi
+Sometimes it matters in which order you pass your libraries to the linker. So
+if it doesn't work, try reordering the linker/compiler arguments.
+
+* Running
+After compilation you program is an MPI program. Run it using the command you
+always use to run MPI programs (or consult your system administrator)
+e.g.
+$ mpirun -np 4 example
+Runs the 'example' program on 4 processors when you use the MPICH library.
+
+Documentation
+-------------
+Several documents are available on http://bsponmpi.sourceforge.net
+* Architecture description, Code documentation
+* A report on implementing the library:
+  - Pros and Cons of the library
+  - Methods used to speed up the library
+  - Comparison to the Oxford BSP Toolset using a benchmark
+
+
+Supported Platforms
+-------------------
+This library has been tested and found to work correctly on the following
+machines:
+ * AMD 64 Opteron
+      64 bit, 4 processors
+      Fedora Core 3, Linux 2.6
+      LAM/MPI
+ * Intel Pentium III (Coppermine)
+      32 bit, 2 processors
+      Fedora Core 2, Linux 2.6,
+      MPICH, MPICH2 (1.0.3)
+ * mobile AMD Athlon XP 1800+
+      32 bit, 1 processor
+      Suse 9.2, Linux 2.6
+      MPICH
+ * COMPAQ AlphaServer DS20E 666 Mhz
+      Alpha EV67, 2 processors
+      Debian 3.0,  Linux 2.2
+      MPICH, LAM/MPI (7.1.2)
+ * Sparc - R220
+      2 processors
+      Sun Solaris 9
+      MPICH
+ * IBM Power 5
+      8 processors
+      Suse 9.2, Linux 2.4
+      MPICH2 (1.0.3)
+ * SGI Origin 3800  (teras.sara.nl)
+      MIPS R14000, 64 bit, 1024 processors (tested on up to 16 processors)
+      IRIX 6.5
+      SGI MPI
+ * SGI Altix 3700 (aster.sara.nl)
+      Intel Itanium 2, 64 bit, 416 processors (tested on up to 16 processors)
+      Redhat Linux
+      SGI MPI
+Note on testing: Testing is performed by doing a 'make check'. The test suite
+doesn't catch all errors. Therefore it is possible that there are still a few
+bugs in this library
+
+Support & Feedback
+------------------
+This library has been tested, but not extensively. It may still contain bugs. 
+If you have written a BSP program which doesn't work and you blame this
+library, please contact me. On the other hand if you have written a BSP
+program which works perfectly with BSPonMPI, let me know! I am curious.
+
+Summarising: If you have any question, please also write to the mailing list
+  bsponmpi-users@lists.sourceforge.net
+or to me
+  wjsuijle@users.sourceforge.net
+
+Feedback and participation are very welcome too. Please mail to the mail
+address above.  
+
