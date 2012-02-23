@@ -11,7 +11,7 @@
 #include <string>
 #include <string.h>
 
-#include <cstdint>
+#include <stdint.h>
 
 #include "bsp_tools/utilities.h"
 #include "bsp_cpp/ParameterFile.h"
