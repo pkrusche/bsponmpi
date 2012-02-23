@@ -8,7 +8,8 @@
 #include <tbb/task_scheduler_init.h>
 #include <tbb/mutex.h>
 #include <tbb/task.h>
-#include "bspcpp/ParameterFile.h"
+
+#include "bsp_cpp/ParameterFile.h"
 
 namespace singletons {
 	extern tbb::task_scheduler_init task_scheduler_init;

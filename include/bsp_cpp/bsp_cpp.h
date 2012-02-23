@@ -9,11 +9,11 @@
 #include "bsp.h"
 
 #include <tbb/task_scheduler_init.h>
-#include <util/TypeList.h>
+
 #include <string>
 #include <string.h>
 
-#include "bspcpp/tools/singletons.h"
+#include "tools/singletons.h"
 
 #include "bsp_broadcast.h"
 #include "ParameterFile.h"
@@ -97,11 +97,12 @@ namespace bsp {
 };
 
 #include "Superstep.h"
-#include "Computation.h"
 #include "Avector.h"
 #include "tools/utilities.h"
 #include "tools/aligned_allocator.h"
 #include "tools/singletons.h"
 #include "tools/global_params.h"
+
+#include "bsp_commandline.h"
 
 #endif

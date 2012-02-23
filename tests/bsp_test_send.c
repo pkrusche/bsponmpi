@@ -85,7 +85,7 @@ just_messages ()
     }
 }
 
-void bsp_test_send()
+void bsp_test_send(void)
 {
   bsp_begin(bsp_nprocs());
   a_simple_summation();

@@ -39,6 +39,8 @@ opts.AddVariables(
 	BoolVariable('profile', 'Enable profiling. Also enables debug information.', 0),
 	BoolVariable('debuginfo', 'Include debug information also in release version.', 1),
 	BoolVariable('sequential', 'Compile sequential library that does not use MPI (bsp_nprocs() == 1).', 0),
+    ('win32_boostdir', 'Path to Boost library in Win32', 'C:\\Boost\\include'),
+    ('win32_tbbdir', 'Path to tbb library in Win32', 'C:\\tbb'),
 	('win32_ccpdir', 'Path to Microsoft Compute Cluster Pack in Win32', 'C:\\Program Files\\Microsoft Compute Cluster Pack'),
 	('toolset', 'Specify compiler and linker tools: gcc|default', 'default'),
 	('additional_lflags', 'Additional linker flags', ''),
@@ -99,6 +101,9 @@ sequential = root['sequential']
 debuginfo = root['debuginfo']
 arch_id = str(Platform()) + '_' + toolset + '_' + mode
 
+win32_tbbdir = root['win32_tbbdir']
+win32_boostdir = root['win32_boostdir']
+
 cxx = str(root['CXX'])
 print "Compiling on platform "+ platform + " using mode " + mode + " and compiler " + cxx + "."
 
@@ -120,6 +125,49 @@ if platform == 'win32':
 			CCFLAGS = ' -D_SCL_SECURE_NO_WARNINGS',
 			CPPPATH = ['.', '#include'],
 		)
+    boost_include = ''
+    boost_lib = ''
+    # see if we can find boost
+    dirs = glob.glob(win32_boostdir+"\\*")
+    if len(dirs) > 0:
+    	dirs.sort()
+    	boost_include = dirs[len(dirs) - 1]
+    	boost_lib = win32_boostdir+"\\..\\lib"
+
+    # boost include path must go into CCFLAGS because the scons include dependency
+    # parser can die otherwise
+    if cxx != 'g++' and readopts['toolset'] != 'gcc':
+		root.Append(
+			CPPFLAGS = ' /D_SCL_SECURE_NO_WARNINGS /I'+boost_include ,
+			LIBPATH = [ boost_lib ],
+		)
+
+		if subarch == 'AMD64':
+			root.Append(
+				ARFLAGS = '/MACHINE:X64',
+				LINKFLAGS = '/MACHINE:X64 /LTCG /LARGEADDRESSAWARE:NO',
+			)
+		else:
+			root.Append(
+				ARFLAGS = '/MACHINE:X86',
+				LINKFLAGS = '/MACHINE:X86 /LARGEADDRESSAWARE:NO',
+			)
+
+    else:
+		root.Append(
+			CPPFLAGS = ' -I'+boost_include ,
+			LIBPATH = [ boost_lib ],
+		)
+
+
+    # see if we can find tbb
+    root.Append(
+        CPPPATH = [ win32_tbbdir+'\\include' ],
+        # we require that the right libraries are copied here, since it's a lot of
+        # work to guess the right system and folder.
+        LIBPATH = [ win32_tbbdir+'\\lib' ],
+    )
+
     
 else:
 		# Unix-like stuff

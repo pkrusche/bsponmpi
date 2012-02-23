@@ -3,8 +3,6 @@
  *   peter@dcs.warwick.ac.uk                                               *
  ***************************************************************************/
 
-#include "autoconfig.h"
-
 #include <string>
 #include <iostream>
 

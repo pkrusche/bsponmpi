@@ -10,7 +10,6 @@
 
 #include "bsp.h"
 #include "tools/utilities.h"
-#include "util/TypeList.h"
 
 namespace bsp {
 

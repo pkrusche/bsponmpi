@@ -17,14 +17,12 @@
 #include <tbb/atomic.h>
 #include <tbb/tbb_thread.h>
 
-#include "util/TypeList.h"
-
 #include "bsp_global_drma.h"
 
-#include "bspcpp/tools/singletons.h"
-#include "bspcpp/ParameterFile.h"
-#include "bspcpp/ProcMapper.h"
-#include "bspcpp/Context.h"
+#include "tools/singletons.h"
+#include "ParameterFile.h"
+#include "ProcMapper.h"
+#include "Context.h"
 
 namespace bsp {
 

@@ -3,7 +3,6 @@
  *   peter@dcs.warwick.ac.uk                                               *
  ***************************************************************************/
 
-#include "autoconfig.h"
 
 #include <iostream>
 #include <limits>
@@ -12,8 +11,10 @@
 #include <string>
 #include <string.h>
 
-#include "bspcpp/tools/utilities.h"
-#include "bspcpp/ParameterFile.h"
+#include <cstdint>
+
+#include "tools/utilities.h"
+#include "bsp_cpp/ParameterFile.h"
 
 using namespace std;
 
@@ -36,9 +37,9 @@ Parameter::Parameter() : type(EMPTY),
 	updated(false), len(0), last_update(utilities::time()) {}
 
 Parameter::Parameter(int value) : type(INT), 
-	data(new char[sizeof(UINT64)]), 
-	len(sizeof(UINT64)), last_update(utilities::time()) {
-	*((INT64*) data.get()) = value;
+	data(new char[sizeof(uint64_t)]), 
+	len(sizeof(uint64_t)), last_update(utilities::time()) {
+	*((int64_t*) data.get()) = value;
 	updated = true;
 }
 
@@ -128,9 +129,9 @@ void Parameter::read_ascii(std::istream & i) {
 	}
 	switch(type) {
 			case INT:
-				data = boost::shared_array<char>(new char[sizeof(UINT64)]);
-				len = sizeof(UINT64);
-				*((INT64*)data.get()) = atoi(str.c_str());
+				data = boost::shared_array<char>(new char[sizeof(uint64_t)]);
+				len = sizeof(uint64_t);
+				*((int64_t*)data.get()) = atoi(str.c_str());
 				break;
 			case FLOAT:
 				data = boost::shared_array<char>(new char[sizeof(double)]);
@@ -147,9 +148,9 @@ void Parameter::read_ascii(std::istream & i) {
 }
 
 void Parameter::read_binary(std::istream & i) {
-	UINT64 l, t;
-	i.read((char*)&l, sizeof(UINT64));
-	i.read((char*)&t, sizeof(UINT64));
+	uint64_t l, t;
+	i.read((char*)&l, sizeof(uint64_t));
+	i.read((char*)&t, sizeof(uint64_t));
 	i.read((char*)&last_update, sizeof(double));
 	last_update = utilities::time();
 	type = (ParameterType) t;
@@ -177,10 +178,10 @@ void Parameter::write_ascii(std::ostream & o) {
 }
 
 void Parameter::write_binary(std::ostream & o) {
-	UINT64 l = len;
-	o.write((const char*)&l, sizeof(UINT64));
+	uint64_t l = len;
+	o.write((const char*)&l, sizeof(uint64_t));
 	l = type;
-	o.write((const char*)&l, sizeof(UINT64));
+	o.write((const char*)&l, sizeof(uint64_t));
 	o.write((const char*)&last_update, sizeof(double));
 	o.write(data.get(), len);
 }
@@ -223,12 +224,12 @@ void ParameterFile::read(const char * filename, ParameterFile::storage_type stor
 				ifstream in(filename, ios::binary);
 				string temp, val;
 				char * pname;
-				UINT64 size = 0;
+				uint64_t size = 0;
 				size_t psize = 256;
 				pname = new char[256];
 
 				while (!in.eof() && !in.fail()) {
-					in.read((char*)&size, sizeof(UINT64));
+					in.read((char*)&size, sizeof(uint64_t));
 					if(in.eof() || in.fail())
 						break;
 					if(size+1 > psize) {
@@ -278,8 +279,8 @@ void ParameterFile::write(const char *filename, ParameterFile::storage_type stor
 			{
 				for(_iterator it = m_Params.begin(); it != m_Params.end(); ++it) {
 					if(!only_upd || it->second.updated) {
-						UINT64 size= it->first.length();
-						o.write((const char*)&size, sizeof(UINT64));
+						uint64_t size= it->first.length();
+						o.write((const char*)&size, sizeof(uint64_t));
 						o.write(it->first.c_str(), (std::streamsize)size);
 						it->second.write_binary(o);
 					}

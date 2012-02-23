@@ -9,7 +9,7 @@
 #include <string.h>
 #include <algorithm>
 
-#include "bspcpp/tools/aligned_allocator.h"
+#include "tools/aligned_allocator.h"
 
 namespace utilities {
 	/**

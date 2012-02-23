@@ -20,5 +20,8 @@ mpi.Library('#lib/bsponmpi'+suffix, [
 	'bsp_time.c', 
 	'mutex.c',
 	'sequential.c',
+	'singletons.cpp',
+	'timing.cpp',
+	'parameterfile.cpp',
 	])
 

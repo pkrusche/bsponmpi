@@ -3,7 +3,7 @@
  *   peter@dcs.warwick.ac.uk                                               *
  ***************************************************************************/
 
-#include "bspcpp/simplebsp.h"
+#include "bsp_cpp/simplebsp.h"
 
 #include <iostream>
 

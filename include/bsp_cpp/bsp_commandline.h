@@ -49,7 +49,7 @@ namespace bsp {
 	) {
 
 		if (p_from >= 0) {
-			int argc = args.size();
+			size_t argc = args.size();
 			bsp_broadcast(0, argc);
 
 			if (bsp_pid() != p_from) {
