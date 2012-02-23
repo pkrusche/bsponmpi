@@ -81,7 +81,9 @@ namespace bsp {
 	void runner(void) { 								\
 		using namespace bsp;							\
 		bsp_begin(-1); 									\
-		bspcpp_read_global_options();
+		bspcpp_read_global_options();					\
+
+#define BSP_COMMAND_LINE(args, vm) do { bsp::bsp_command_line(g_argc, g_argv, args, vm); } while(0)
 
 #define BSP_END()						\
 		bsp_end(); 						\
@@ -160,7 +162,7 @@ class CastingFactory :							\
 	}; 											\
 												\
 	update_mapper (mapper, &MyRC::run_as);		\
-	step.start(); step.join(); bsp_sync(); 		\
+	step.go(); bsp_sync(); 		\
 }
 
 #define BSP_ONLY(pid) if ( bsp_pid() == pid )
