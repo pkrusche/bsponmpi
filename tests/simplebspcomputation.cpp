@@ -44,7 +44,7 @@ BSP_CONTEXT_BEGIN (
 	using namespace std;
 
 	BSP_PARALLEL_BEGIN ( 
-		bsp_nprocs() * 3 // recursively increase number of processors
+		bsp_nprocs() * 4 // recursively increase number of processors
 	);
 
 	// this is done at node level 
@@ -54,7 +54,7 @@ BSP_CONTEXT_BEGIN (
 		counter = 1;
 		print_info(bsp_context(), counter);
 
-		BSP_PARALLEL_BEGIN ( 
+/*		BSP_PARALLEL_BEGIN ( 
 			bsp_nprocs() // recursively increase number of processors
 		);
 
@@ -69,7 +69,7 @@ BSP_CONTEXT_BEGIN (
 			print_info(bsp_context(), counter);
 		} BSP_SUPERSTEP_END();
 
-		BSP_PARALLEL_END ();
+		BSP_PARALLEL_END ();*/
 
 		counter++;
 

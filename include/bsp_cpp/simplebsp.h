@@ -38,7 +38,6 @@ namespace bsp {
 
 	typedef bsp::SimpleFactory < CustomRunnable > datafactory_t;
 	typedef bsp::ProcMapper< datafactory_t > procmapper_t;
-	typedef bsp::Superstep < procmapper_t > superstep_t;
 
 	class RunnableContext : public bsp::BSPContext< procmapper_t >,
 		public CustomRunnable {	
@@ -141,7 +140,6 @@ class CastingFactory :							\
 #define BSP_PARALLEL_BEGIN(_prs)	{			\
 	CastingFactory factory;						\
 	procmapper_t mapper(&factory, _prs);		\
-	superstep_t step (mapper);
 
 #define BSP_PARALLEL_END()	}
 
@@ -162,7 +160,7 @@ class CastingFactory :							\
 	}; 											\
 												\
 	update_mapper (mapper, &MyRC::run_as);		\
-	step.go(); bsp_sync(); 		\
+	run_superstep<procmapper_t> (mapper); bsp_sync(); 		\
 }
 
 #define BSP_ONLY(pid) if ( bsp_pid() == pid )
