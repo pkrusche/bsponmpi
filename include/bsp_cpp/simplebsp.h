@@ -10,13 +10,17 @@
 #include <vector>
 
 #include "bsp_cpp.h"
+#include <tbb/spin_rw_mutex.h>
 
 namespace bsp {
 	class RunnableContext;
+
 };
 
-static std::vector<bsp::RunnableContext*>			
-	g_bsp_call_hierarchy;							
+static std::vector<bsp::RunnableContext*>
+	g_bsp_call_hierarchy;
+tbb::spin_rw_mutex g_ch_mutex;
+
 
 static bsp::RunnableContext * bsp_parent() {	
 	return NULL;									
@@ -44,11 +48,13 @@ namespace bsp {
 	public:
 		RunnableContext ( procmapper_t & pm, int local_pid ) :
 			bsp::BSPContext< procmapper_t > (pm, local_pid) {
+			tbb::spin_rw_mutex::scoped_lock l(g_ch_mutex, false);
 			call_level = (int)g_bsp_call_hierarchy.size();
 		}
 
 		RunnableContext * bsp_parent() {
 			int lv = call_level - 1;
+			tbb::spin_rw_mutex::scoped_lock l(g_ch_mutex, false);
 			if (lv >= 0 && lv < g_bsp_call_hierarchy.size()) {
 				return g_bsp_call_hierarchy[lv]; 
 			}												
@@ -57,6 +63,7 @@ namespace bsp {
 
 		RunnableContext * bsp_context() {
 			int lv = call_level;
+			tbb::spin_rw_mutex::scoped_lock l(g_ch_mutex, false);
 			if (lv >= 0 && lv < g_bsp_call_hierarchy.size()) {
 				return g_bsp_call_hierarchy[lv]; 
 			}												
@@ -153,9 +160,13 @@ class CastingFactory :							\
 #define BSP_SUPERSTEP_END()						\
 		} 										\
 		static void run_as (CustomRunnable * ctx) { \
+			g_ch_mutex.lock();					\
 			g_bsp_call_hierarchy.push_back((RunnableContext*)ctx);	\
+			g_ch_mutex.unlock();				\
 			( (MyRC*)ctx )->runme();			\
+			g_ch_mutex.lock();					\
 			g_bsp_call_hierarchy.pop_back();	\
+			g_ch_mutex.unlock();				\
 		}										\
 	}; 											\
 												\
