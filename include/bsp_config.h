@@ -5,7 +5,6 @@
 #ifndef __BSPCONFIG_H__
 #define __BSPCONFIG_H__
 
-#define _X86_64 
 #define RESTRICT 
 #define BSP_CALLING 
 #define STDCALL 

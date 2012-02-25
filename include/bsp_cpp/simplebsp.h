@@ -130,7 +130,18 @@ class CastingFactory :							\
 	}; 											\
 												\
 	update_mapper (mapper, &MyRC::run_as);		\
-	run_superstep<procmapper_t> (mapper); bsp_sync(); 	\
+	run_superstep<procmapper_t> (mapper); 		\
+	bsp::RunnableContext * p = bsp_context();	\
+	if (p == NULL) {							\
+		bsp_sync(); 							\
+	}											\
+	while (p != NULL) {							\
+		if(p->bsp_pid() != 0) break; 				\
+		p = p->bsp_parent_context();			\
+		if (p == NULL) {						\
+			bsp_sync(); 						\
+		}										\
+	}											\
 }
 
 #define BSP_ONLY(pid) if ( bsp_pid() == pid )

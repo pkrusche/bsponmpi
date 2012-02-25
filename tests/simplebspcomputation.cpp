@@ -17,7 +17,12 @@ void print_info (bsp::RunnableContext * ctx, int counter) {
 	tbb::spin_mutex::scoped_lock l(output_mutex);
 
 	if (!ctx) {
-		bsp_abort("Can't print NULL context.");
+		cout << "Hi " << 
+			counter << 
+			"! I am node number " << 
+			bsp_pid() << " out of " << bsp_nprocs() 
+			<< endl;
+		return;
 	}
 
 	std::string prefix = "";
