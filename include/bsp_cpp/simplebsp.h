@@ -17,11 +17,6 @@ namespace bsp {
 
 };
 
-static std::vector<bsp::RunnableContext*>
-	g_bsp_call_hierarchy;
-tbb::spin_rw_mutex g_ch_mutex;
-
-
 static bsp::RunnableContext * bsp_parent() {	
 	return NULL;									
 }										
@@ -46,31 +41,19 @@ namespace bsp {
 	class RunnableContext : public bsp::BSPContext< procmapper_t >,
 		public CustomRunnable {	
 	public:
-		RunnableContext ( procmapper_t & pm, int local_pid ) :
-			bsp::BSPContext< procmapper_t > (pm, local_pid) {
-			tbb::spin_rw_mutex::scoped_lock l(g_ch_mutex, false);
-			call_level = (int)g_bsp_call_hierarchy.size();
+		RunnableContext ( procmapper_t & pm, int local_pid, RunnableContext * _parent = NULL ) :
+			bsp::BSPContext< procmapper_t > (pm, local_pid), parent (_parent) {
 		}
 
 		RunnableContext * bsp_parent() {
-			int lv = call_level - 1;
-			tbb::spin_rw_mutex::scoped_lock l(g_ch_mutex, false);
-			if (lv >= 0 && lv < g_bsp_call_hierarchy.size()) {
-				return g_bsp_call_hierarchy[lv]; 
-			}												
-			return NULL;
+			return parent;
 		}
 
 		RunnableContext * bsp_context() {
-			int lv = call_level;
-			tbb::spin_rw_mutex::scoped_lock l(g_ch_mutex, false);
-			if (lv >= 0 && lv < g_bsp_call_hierarchy.size()) {
-				return g_bsp_call_hierarchy[lv]; 
-			}												
-			return NULL;
+			return this;
 		}
 	private:
-		int call_level;
+		RunnableContext * parent;
 	}; 
 
 	void update_mapper ( procmapper_t & mapper, CustomRunnable::FUN fun ) {
@@ -110,7 +93,7 @@ int main(int argc, char ** argv) { 		\
 class ContextData : public RunnableContext {	\
 public:											\
 	ContextData (procmapper_t * pm, int local_pid) : \
-		RunnableContext (*pm, local_pid) {}		\
+		RunnableContext (*pm, local_pid, bsp_parent()) {}		\
 	__VA_ARGS__									\
 												\
 	ContextData * bsp_parent() {				\
@@ -160,13 +143,7 @@ class CastingFactory :							\
 #define BSP_SUPERSTEP_END()						\
 		} 										\
 		static void run_as (CustomRunnable * ctx) { \
-			g_ch_mutex.lock();					\
-			g_bsp_call_hierarchy.push_back((RunnableContext*)ctx);	\
-			g_ch_mutex.unlock();				\
 			( (MyRC*)ctx )->runme();			\
-			g_ch_mutex.lock();					\
-			g_bsp_call_hierarchy.pop_back();	\
-			g_ch_mutex.unlock();				\
 		}										\
 	}; 											\
 												\
