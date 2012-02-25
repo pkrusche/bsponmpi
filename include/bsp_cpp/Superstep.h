@@ -45,7 +45,7 @@ namespace bsp {
 				}
 				wait_for_all();
 			} else {
-				mapper.get_context(my_local_pid)->run();				
+				mapper.get_context(my_local_pid)->run();
 			}
 			return NULL;
 		}

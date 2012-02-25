@@ -30,7 +30,7 @@ static inline int bsp_call_level() {
 }
 
 namespace bsp {
-	typedef bsp::AbstractFactory < RunnableContext > datafactory_t;
+	typedef bsp::AbstractFactory < bsp::RunnableContext > datafactory_t;
 	typedef bsp::ProcMapper< datafactory_t > procmapper_t;
 
 	class RunnableContext : public bsp::BSPContext< procmapper_t > {	
@@ -136,7 +136,7 @@ class CastingFactory :							\
 		bsp_sync(); 							\
 	}											\
 	while (p != NULL) {							\
-		if(p->bsp_pid() != 0) break; 				\
+		if(p->bsp_pid() != 0) break; 			\
 		p = p->bsp_parent_context();			\
 		if (p == NULL) {						\
 			bsp_sync(); 						\
