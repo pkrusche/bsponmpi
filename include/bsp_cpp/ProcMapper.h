@@ -14,21 +14,19 @@
 namespace bsp {
 
 	/**
-	 * Simple new/delete factory for a single value
+	 * Simple new/delete factory for a context running on local_pid.
+	 * We will pass the pointer to the procmapper in param as 
+	 * a void pointer to avoid a class declaration cycle.
 	 */
 	template < typename _t >
-	class SimpleFactory {
+	class AbstractFactory {
 	public:
 
 		typedef _t context_t;
 
-		virtual _t * create ( int /* local_pid */, void * /* param */ ) {
-			return new _t;
-		}
+		virtual _t * create ( int local_pid , void * param ) = 0;
 
-		virtual void destroy ( _t * t) {
-			delete t;
-		}
+		virtual void destroy ( _t * t) = 0;
 	};
 
 	/**
@@ -39,8 +37,9 @@ namespace bsp {
 	public:
 		typedef typename _contextfactory::context_t context_t;
 
-		ProcMapper(_contextfactory * factory, int _processors, int _groups = 1) : 
-		  processors(_processors*_groups), groups(_groups) {
+		ProcMapper(_contextfactory * factory, 
+			int _processors, context_t * _parent_context = NULL) : 
+		  processors (_processors ){
 			using namespace std;
 			max_procs_per_node = ICD(processors, ::bsp_nprocs());
 			procs_per_group = _processors;
@@ -51,7 +50,13 @@ namespace bsp {
 				procs_on_this_node = max_procs_per_node;
 			}
 
-			node_context = factory->create( -1, this );
+			if (!_parent_context) {
+				destroy_parent_context = true;
+				parent_context = factory->create( -1, this );
+			} else {
+				destroy_parent_context = false;
+				parent_context = _parent_context;
+			}
 
 			context_store.resize(procs_on_this_node);
 			for (size_t j = 0; j < procs_on_this_node; ++j) {
@@ -64,15 +69,13 @@ namespace bsp {
 			for (size_t j = 0; j < procs_on_this_node; ++j) {
 				contextfactory->destroy ( context_store[j] );
 			}
-			contextfactory->destroy ( node_context );
+			if (destroy_parent_context) {
+				contextfactory->destroy ( parent_context );
+			}
 		}
 
 		int nprocs () const {
 			return processors;
-		}
-
-		int ngroups() const {
-			return groups;
 		}
 
 		int procs_per_node() const {
@@ -104,20 +107,20 @@ namespace bsp {
 			return context_store[local_pid];
 		}
 		
-		context_t * get_node_context() {
-			return node_context;
+		context_t * get_parent_context() {
+			return parent_context;
 		}
 
 	private:
 		int processors;
 		int procs_on_this_node;
 		int max_procs_per_node;
-		int groups;
 		int procs_per_group;
 		
 		_contextfactory * contextfactory;
 		tbb::concurrent_vector< context_t * > context_store;
-		context_t * node_context;
+		context_t * parent_context;
+		bool destroy_parent_context;
 	};
 };
 

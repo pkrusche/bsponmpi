@@ -17,48 +17,38 @@ namespace bsp {
 
 };
 
-static bsp::RunnableContext * bsp_parent() {	
+static inline bsp::RunnableContext * bsp_parent() {	
 	return NULL;									
 }										
 
-static bsp::RunnableContext * bsp_context() {		
+static inline bsp::RunnableContext * bsp_context() {		
 	return NULL;									
 }
 
+static inline int bsp_call_level() {
+	return 0;
+}
+
 namespace bsp {
-	class CustomRunnable {
+	typedef bsp::AbstractFactory < RunnableContext > datafactory_t;
+	typedef bsp::ProcMapper< datafactory_t > procmapper_t;
+
+	class RunnableContext : public bsp::BSPContext< procmapper_t > {	
 	public:
-		typedef void (*FUN)(CustomRunnable *);
+		RunnableContext ( procmapper_t & pm, int local_pid) :
+			bsp::BSPContext< procmapper_t > (pm, local_pid) {
+		}
+
+		typedef void (*FUN)(RunnableContext *);
 		void run() { 
 			__runfn (this);  
 		}
 		FUN __runfn;
-	};
-
-	typedef bsp::SimpleFactory < CustomRunnable > datafactory_t;
-	typedef bsp::ProcMapper< datafactory_t > procmapper_t;
-
-	class RunnableContext : public bsp::BSPContext< procmapper_t >,
-		public CustomRunnable {	
-	public:
-		RunnableContext ( procmapper_t & pm, int local_pid, RunnableContext * _parent = NULL ) :
-			bsp::BSPContext< procmapper_t > (pm, local_pid), parent (_parent) {
-		}
-
-		RunnableContext * bsp_parent() {
-			return parent;
-		}
-
-		RunnableContext * bsp_context() {
-			return this;
-		}
-	private:
-		RunnableContext * parent;
 	}; 
 
-	void update_mapper ( procmapper_t & mapper, CustomRunnable::FUN fun ) {
+	void update_mapper ( procmapper_t & mapper, RunnableContext::FUN fun ) {
 		for (int j = 0;	j < mapper.procs_this_node(); ++j ) {
-			CustomRunnable * c = mapper.get_context (j);
+			RunnableContext * c = mapper.get_context (j);
 			c->__runfn = fun;
 		}
 	}
@@ -93,27 +83,19 @@ int main(int argc, char ** argv) { 		\
 class ContextData : public RunnableContext {	\
 public:											\
 	ContextData (procmapper_t * pm, int local_pid) : \
-		RunnableContext (*pm, local_pid, bsp_parent()) {}		\
+		RunnableContext (*pm, local_pid) {}		\
 	__VA_ARGS__									\
 												\
-	ContextData * bsp_parent() {				\
-		return (ContextData * )					\
-			RunnableContext::bsp_parent();		\
-	}											\
-	ContextData * bsp_context() {				\
-		return (ContextData * )					\
-			RunnableContext::bsp_context();		\
-	}											\
 };												\
 												\
 class CastingFactory :							\
-	public bsp::SimpleFactory < CustomRunnable > {	\
-	CustomRunnable * create ( int local_pid,	\
+	public bsp::AbstractFactory < RunnableContext > {	\
+	RunnableContext * create ( int local_pid,	\
 		void * param ) {						\
 		return new ContextData (				\
 		(procmapper_t *) param, local_pid );	\
 	}											\
-	void destroy (CustomRunnable * v) {			\
+	void destroy (RunnableContext * v) {		\
 		delete (ContextData *) v;				\
 	}											\
 };
@@ -142,15 +124,18 @@ class CastingFactory :							\
 // end run, end class, and then run it
 #define BSP_SUPERSTEP_END()						\
 		} 										\
-		static void run_as (CustomRunnable * ctx) { \
+		static void run_as (RunnableContext * ctx) { \
 			( (MyRC*)ctx )->runme();			\
 		}										\
 	}; 											\
 												\
 	update_mapper (mapper, &MyRC::run_as);		\
-	run_superstep<procmapper_t> (mapper); bsp_sync(); 		\
+	run_superstep<procmapper_t> (mapper); bsp_sync(); 	\
 }
 
 #define BSP_ONLY(pid) if ( bsp_pid() == pid )
 
+
 #endif
+
+

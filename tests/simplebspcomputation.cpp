@@ -13,6 +13,7 @@ tbb::spin_mutex output_mutex;
 
 void print_info (bsp::RunnableContext * ctx, int counter) {
 	using namespace std;
+/*
 
 	tbb::spin_mutex::scoped_lock l(output_mutex);
 
@@ -20,21 +21,32 @@ void print_info (bsp::RunnableContext * ctx, int counter) {
 		bsp_abort("Can't print NULL context.");
 	}
 
+*/
+/*
+	std::string prefix = "";
+	for(int j = 0; j < ctx->bsp_call_level(); ++j) {
+		prefix+= "\t";
+	}
+
 	if (ctx->bsp_parent() != NULL) {
-		cout << "Hi " << 
+*/
+/*
+		cout << prefix << "Hi " << 
 				counter << 
 				"! I am sub-process number " << 
 				ctx->bsp_pid() << " out of " << ctx->bsp_nprocs() 
 				<< " I live on node " << bsp_pid()
+//				<< "; my parent is process number " << ctx->bsp_parent()->bsp_pid()
 				<< endl;
 	} else {
-		cout << "Hi " << 
+		cout << prefix << "Hi " << 
 			counter << 
 			"! I am process number " << 
 			ctx->bsp_pid() << " out of " << ctx->bsp_nprocs() 
 			<< " I live on node " << bsp_pid()
 			<< endl;
 	}
+*/
 }
 
 
@@ -58,7 +70,8 @@ BSP_CONTEXT_BEGIN (
 
 	BSP_SUPERSTEP_BEGIN() {
 		counter = 1;
-		print_info(bsp_context(), counter);
+		print_info((bsp::RunnableContext*)bsp_context(), counter);
+		cout << bsp_pid() << " " << this->bsp_call_level() << endl;
 
 		BSP_PARALLEL_BEGIN ( 
 			bsp_nprocs() // recursively increase number of processors
@@ -66,14 +79,32 @@ BSP_CONTEXT_BEGIN (
 
 		BSP_SUPERSTEP_BEGIN() {
 			counter = 1;
-			print_info(bsp_context(), counter);
+			cout << bsp_pid() << " " << this->bsp_call_level() << endl;
+			print_info((bsp::RunnableContext*)bsp_context(), counter);
 		}
 		BSP_SUPERSTEP_END();
 
 		BSP_SUPERSTEP_BEGIN() {
 			counter = 2;
-			print_info(bsp_context(), counter);
+			print_info((bsp::RunnableContext*)bsp_context(), counter);
 		} BSP_SUPERSTEP_END();
+		BSP_PARALLEL_BEGIN ( 
+			bsp_nprocs() // recursively increase number of processors
+			);
+
+		BSP_SUPERSTEP_BEGIN() {
+			counter = 1;
+			cout << bsp_pid() << " " << this->bsp_call_level() << endl;
+			print_info((bsp::RunnableContext*)bsp_context(), counter);
+		}
+		BSP_SUPERSTEP_END();
+
+		BSP_SUPERSTEP_BEGIN() {
+			counter = 2;
+			print_info((bsp::RunnableContext*)bsp_context(), counter);
+		} BSP_SUPERSTEP_END();
+
+		BSP_PARALLEL_END ();
 
 		BSP_PARALLEL_END ();
 
@@ -83,7 +114,7 @@ BSP_CONTEXT_BEGIN (
 
 	BSP_SUPERSTEP_BEGIN() {
 		counter++;
-		print_info(bsp_context(), counter);
+		print_info((bsp::RunnableContext*)bsp_context(), counter);
 	} BSP_SUPERSTEP_END();
 
 	

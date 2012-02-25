@@ -37,14 +37,6 @@ namespace bsp {
 			return local_pid;
 		}
 
-		typename procmapper_t::context_t & get_context() {
-			return *( get_procmapper().get_context(local_pid) );
-		}
-
-		typename procmapper_t::context_t & get_node_context() {
-			return * (get_procmapper().get_node_context() );
-		}
-
 		void bsp_global_get(bsp_global_handle_t src, size_t offset, 
 			void * dest, size_t size) {
 				tbb::mutex::scoped_lock l(singletons::global_mutex);
@@ -68,6 +60,23 @@ namespace bsp {
 				tbb::mutex::scoped_lock l(singletons::global_mutex);
 				::bsp_global_hpput(src, dest, offset, size);
 		}
+
+		typename procmapper_t::context_t * bsp_context () {
+			return procmapper.get_context(local_pid);
+		}
+
+		typename procmapper_t::context_t * bsp_parent_context () {
+			return procmapper.get_parent_context();
+		}
+
+		int bsp_call_level () {
+			if (local_pid >= 0) {
+				return procmapper.get_parent_context()->bsp_call_level() + 1;
+			} else {
+				return 0;
+			}
+		}
+
 	private:
 		procmapper_t & procmapper;  ///< The process mapper object
 		int pid; ///< The global pid of this computation
