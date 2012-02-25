@@ -7,11 +7,17 @@
 
 #include <iostream>
 
+#include <tbb/spin_mutex.h>
+
+tbb::spin_mutex output_mutex;
+
 void print_info (bsp::RunnableContext * ctx, int counter) {
 	using namespace std;
 
+	tbb::spin_mutex::scoped_lock l(output_mutex);
+
 	if (!ctx) {
-		bsp_abort("FUCK!");
+		bsp_abort("Can't print NULL context.");
 	}
 
 	if (ctx->bsp_parent() != NULL) {
