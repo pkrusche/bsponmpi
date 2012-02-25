@@ -22,6 +22,6 @@ mpi.Library('#lib/bsponmpi'+suffix, [
 	'sequential.c',
 	'singletons.cpp',
 	'timing.cpp',
-	'parameterfile.cpp',
+	'ParameterFile.cpp',
 	])
 
