@@ -111,7 +111,7 @@ class CastingFactory :							\
 
 #define BSP_PARALLEL_BEGIN(_prs)	{			\
 	CastingFactory factory;						\
-	procmapper_t mapper(&factory, _prs);		\
+	procmapper_t mapper(&factory, _prs, bsp_context());		\
 
 #define BSP_PARALLEL_END()	}
 

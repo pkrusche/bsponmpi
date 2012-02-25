@@ -13,7 +13,6 @@ tbb::spin_mutex output_mutex;
 
 void print_info (bsp::RunnableContext * ctx, int counter) {
 	using namespace std;
-/*
 
 	tbb::spin_mutex::scoped_lock l(output_mutex);
 
@@ -21,22 +20,18 @@ void print_info (bsp::RunnableContext * ctx, int counter) {
 		bsp_abort("Can't print NULL context.");
 	}
 
-*/
-/*
 	std::string prefix = "";
 	for(int j = 0; j < ctx->bsp_call_level(); ++j) {
 		prefix+= "\t";
 	}
 
-	if (ctx->bsp_parent() != NULL) {
-*/
-/*
+	if (ctx->bsp_parent_context() != NULL) {
 		cout << prefix << "Hi " << 
 				counter << 
 				"! I am sub-process number " << 
 				ctx->bsp_pid() << " out of " << ctx->bsp_nprocs() 
 				<< " I live on node " << bsp_pid()
-//				<< "; my parent is process number " << ctx->bsp_parent()->bsp_pid()
+				<< "; my parent is process number " << ctx->bsp_parent_context()->bsp_pid()
 				<< endl;
 	} else {
 		cout << prefix << "Hi " << 
@@ -46,7 +41,6 @@ void print_info (bsp::RunnableContext * ctx, int counter) {
 			<< " I live on node " << bsp_pid()
 			<< endl;
 	}
-*/
 }
 
 
@@ -67,11 +61,11 @@ BSP_CONTEXT_BEGIN (
 
 	// this is done at node level 
 	cout << "t:" << bsp_nthreads() << " p:" << bsp_nprocs() << endl;
+	print_info((bsp::RunnableContext*)bsp_context(), 0);
 
 	BSP_SUPERSTEP_BEGIN() {
 		counter = 1;
 		print_info((bsp::RunnableContext*)bsp_context(), counter);
-		cout << bsp_pid() << " " << this->bsp_call_level() << endl;
 
 		BSP_PARALLEL_BEGIN ( 
 			bsp_nprocs() // recursively increase number of processors
@@ -79,7 +73,6 @@ BSP_CONTEXT_BEGIN (
 
 		BSP_SUPERSTEP_BEGIN() {
 			counter = 1;
-			cout << bsp_pid() << " " << this->bsp_call_level() << endl;
 			print_info((bsp::RunnableContext*)bsp_context(), counter);
 		}
 		BSP_SUPERSTEP_END();
@@ -94,7 +87,6 @@ BSP_CONTEXT_BEGIN (
 
 		BSP_SUPERSTEP_BEGIN() {
 			counter = 1;
-			cout << bsp_pid() << " " << this->bsp_call_level() << endl;
 			print_info((bsp::RunnableContext*)bsp_context(), counter);
 		}
 		BSP_SUPERSTEP_END();
