@@ -5,9 +5,46 @@
 #ifndef __BSPCONFIG_H__
 #define __BSPCONFIG_H__
 
+
+#ifndef __cplusplus
+#define inline 
+#endif
+
+#ifndef _MSC_VER
+#define __cdecl
+#endif
+
+
+#ifndef _WIN32
+#include <stdint.h>
+
+typedef int32_t INT32;
+typedef uint32_t UINT32;
+typedef int64_t INT64;
+typedef uint64_t UINT64;
+
+typedef uint8_t BYTE;
+typedef uint32_t DWORD;
+typedef uint16_t WORD;
+
+#else
+#include <Windows.h>
+
+#endif
+
+#ifdef _DEBUG
+#include <assert.h>
+#define ASSERT assert
+#else
+
+#define ASSERT(x)
+
+#endif
+
 #define RESTRICT 
-#define BSP_CALLING 
-#define STDCALL 
+#define __func__ __FUNCTION__ 
+#define BSP_CALLING __cdecl 
+#define STDCALL __stdcall 
 
 	
 #ifdef UNITTESTING

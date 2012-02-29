@@ -118,9 +118,11 @@ namespace bsp {
 		int procs_per_group;
 		
 		_contextfactory * contextfactory;
-		tbb::concurrent_vector< context_t * > context_store;
 		context_t * parent_context;
 		bool destroy_parent_context;
+
+		tbb::concurrent_vector< context_t * > context_store;
+
 	};
 };
 
