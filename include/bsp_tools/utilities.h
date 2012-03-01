@@ -18,12 +18,11 @@
 #define SHL_BD(x,s) ((s) < 0 ? (x) >> (-(s)) : (x) << (s))
 #define SHR_BD(x,s) ((s) < 0 ? (x) << (-(s)) : (x) >> (s))
 
+#ifdef __cplusplus
+
 namespace utilities {
 
-	extern void warmup(double t = 2.0);
-	extern double time();
-
-	/** Don't use this if you want good random numbers.
+	/** Don't use this if you want actually good random numbers.
 	*/
 
 	inline double randnum(double l) {
@@ -57,22 +56,9 @@ namespace utilities {
 		}
 	}
 
-	/** Return factorial (n) 
-	@param n the number to compute n! of
-	@return n!
-
-	*/
-	template<typename _i>
-	_i factorial (_i n) {
-		_i v = 1;
-		for(_i j = 1; j <= n; ++j) {
-			v*= j;
-		}
-		return v;
-	}
-
-
 };
+
+#endif
 
 #endif
 

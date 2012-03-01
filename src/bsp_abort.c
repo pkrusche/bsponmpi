@@ -36,14 +36,7 @@ bsp_intern_abort (const int err_number, const char *func,
   const char *messages[] = ERR_MESSAGES;
   fprintf (stderr, "%s at %s:%d: %s\n", func, file, line, 
             messages[err_number - 1]);
-#ifndef _SEQUENTIAL
-  int flag;
-  MPI_Initialized (&flag);
-  if (flag)
-    MPI_Abort (MPI_COMM_WORLD, err_number);
-  else
-#endif
-	exit (err_number);
+  _BSP_ABORT (err_number);
 }
 
 

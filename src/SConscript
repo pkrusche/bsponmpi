@@ -1,16 +1,9 @@
 
-Import("root", "mpi", "mode", "sequential")
+Import("mpi", "sequential", "libsuffix")
 
-suffix = ''
-
-if sequential:
-	suffix += 'sequential'
-
-if mode == 'debug':
-	suffix += '_debug'
-
-mpi.Library('#lib/bsponmpi'+suffix, [ 
-	'bsp.c', 
+files = [ 
+	'bspx.c', 
+	'bsp_www.c', 
 	'bsp_abort.c', 
 	'bsp_delivtable.c', 
 	'bsp_exptable.c', 
@@ -18,10 +11,16 @@ mpi.Library('#lib/bsponmpi'+suffix, [
 	'bsp_reqtable.c',
 	'bsp_global_drma.c',
 	'bsp_time.c', 
-	'mutex.c',
-	'sequential.c',
-	'singletons.cpp',
-	'timing.cpp',
-	'ParameterFile.cpp',
-	])
+	'bsp_mutex.c',
+	# these are the files for the c++ part
+#	'bsp_context.cpp',
+#	'bsp_commandline.cpp',
+]
+
+if sequential:
+	files.append ('bsp_comm_seq.c')
+else:
+	files.append ('bsp_comm_mpi.c')
+
+mpi.Library('#lib/bsponmpi'+libsuffix, files)
 

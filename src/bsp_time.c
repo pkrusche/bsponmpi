@@ -26,7 +26,7 @@
     @author Peter Krusche
 */
 
-#include <bsp_private.h>
+#include "bsp_config.h"
 
 #include <stdlib.h>
 
@@ -39,10 +39,12 @@
 #include <sys/time.h>
 #endif
 
+double bsp_begintime = 0;
+
 /**
  * @brief return the time elapsed since computation has started in seconds.
  */
-double bsp_time() {
+double BSP_CALLING bsp_time() {
 #ifdef _USE_MPI_WTIME
 	return MPI_Wtime() - bsp.begintime;
 #else
@@ -51,11 +53,25 @@ double bsp_time() {
 	LARGE_INTEGER f;
 	QueryPerformanceCounter(&t);
 	QueryPerformanceFrequency(&f);
-	return (((double)t.QuadPart) / ((double)f.QuadPart)) - bsp.begintime;
+	return (((double)t.QuadPart) / ((double)f.QuadPart)) - bsp_begintime;
 #else
 	struct timeval tv;
 	gettimeofday(&tv, NULL);
-	return 1e-6*(((double)tv.tv_usec) + 1000000.0*((double)tv.tv_sec)) - bsp.begintime;
+	return 1e-6*(((double)tv.tv_usec) + 1000000.0*((double)tv.tv_sec)) - bsp_begintime;
 #endif
 #endif
+}
+
+/**
+ * @brief Waste some time. Useful for benchmarking on systems that clock
+ *        down when idle.
+ */
+
+void BSP_CALLING bsp_warmup(double t) {
+	double t0 = bsp_time();
+	srand(0);
+	while (bsp_time() - t0 < t) {
+		rand();
+	}
+	srand(0);
 }

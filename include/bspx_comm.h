@@ -20,59 +20,22 @@
     information.
 */
 
-#include <stdlib.h>
+/** @file bsp_comm.h
+ 
+	typedef of BSPX_CommFn, the core communication primitive used
 
-#ifdef _WIN32
+	@author Peter Krusche
+  */  
 
-#include <windows.h>
+#ifndef __bspx_comm_H__
+#define __bspx_comm_H__
 
-void * create_mutex() {
-    HANDLE * m = malloc(sizeof(HANDLE));
-	*m = CreateMutex(NULL, FALSE, NULL);
-    return m;
-}
+/** pointer to wrapper for MPI_Alltoall */
+typedef void (*BSPX_CommFn0) (void * , int, void * , int );
 
-void destroy_mutex ( void * m ) {
-    HANDLE * _m = ( HANDLE* ) m;
-    CloseHandle ( *_m );
-	free(_m);
-}
+/** This is a pointer to a wrapper for (something like) MPI_Alltoallv */
+typedef void (*BSPX_CommFn) (void * sendbuf, int * sendcounts, int * sendoffsets,
+	void * recvbuf, int * recvcounts, int * recvoffsets );
 
-void lock_mutex ( void * m ) {
-    HANDLE * _m = ( HANDLE* ) m;
-    WaitForSingleObject ( *_m, INFINITE );
-}
 
-void free_mutex ( void * m) {
-    HANDLE * _m = ( HANDLE* ) m;
-    ReleaseMutex ( *_m );
-}
-
-#else
-
-#include "pthread.h"
-
-void * create_mutex() {
-    pthread_mutex_t * m = malloc(sizeof(pthread_mutex_t));
-    pthread_mutex_init ( m, NULL );
-    return m;
-}
-
-void destroy_mutex ( void * m ) {
-    pthread_mutex_t * _m = ( pthread_mutex_t* ) m;
-    pthread_mutex_destroy ( _m );
-    free(m);
-}
-
-void lock_mutex ( void * m ) {
-    pthread_mutex_t * _m = ( pthread_mutex_t* ) m;
-    pthread_mutex_lock ( _m );
-}
-
-void free_mutex ( void *m ) {
-    pthread_mutex_t * _m = ( pthread_mutex_t* ) m;
-    pthread_mutex_unlock ( _m );
-}
-
-#endif
-
+#endif // __bspx_comm_H__

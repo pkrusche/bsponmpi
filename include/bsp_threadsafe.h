@@ -20,56 +20,35 @@
     information.
 */
 
-#ifndef __BSP_BROADCAST_H__
-#define __BSP_BROADCAST_H__
+/** @file bsp_threadsafe.h
+ 
+	Thread safety macros
 
-#include "bsp_config.h"
+	@author Peter Krusche
+  */  
 
-#ifndef _SEQUENTIAL
-#include "mpi.h"
+#ifndef __bsp_threadsafe_H__
+#define __bsp_threadsafe_H__
 
-static inline void bsp_broadcast(int source, void* source_data, size_t len) {
-	MPI_Bcast(source_data, (int)len, MPI_BYTE, source, MPI_COMM_WORLD);
-}
+#ifdef BSP_THREADSAFE
+
+extern void BSP_CALLING bsp_thread_locking_init ();
+extern void BSP_CALLING bsp_thread_locking_exit ();
+extern void BSP_CALLING bsp_thread_lock();
+extern void BSP_CALLING bsp_thread_unlock();
+
+#define BSP_TS_INIT() do { bsp_thread_locking_init(); } while (0)
+#define BSP_TS_EXIT() do { bsp_thread_locking_exit(); } while (0)
+#define BSP_TS_LOCK() do { bsp_thread_lock(); } while (0)
+#define BSP_TS_UNLOCK() do { bsp_thread_unlock(); } while (0)
+
 #else
-static inline void bsp_broadcast(int source, void* source_data, size_t len) {
-}
-#endif // _HAVE_MPI
 
-#ifdef __cplusplus
-
-namespace bsp {
-
-	/************************************************************************/
-	/* Various generic broadcast functions                                  */
-	/************************************************************************/
-
-	template <typename _t>
-	void bsp_broadcast(int source, _t & data) {
-		::bsp_broadcast(source, &data, sizeof(_t));
-	}
-
-	template <>
-	void bsp_broadcast(int source, std::string & data) {
-		size_t len;
-
-		len = data.size();
-		bsp_broadcast(source, len);
-
-		char * data_copy = new char[len];
-
-		if(bsp_pid() == source) {
-			data.resize(len);
-			memcpy(data_copy, data.c_str(), len);
-		}
-
-		::bsp_broadcast(source, data_copy, len);
-		data = std::string(data_copy,len);
-		delete [] data_copy;
-	}
-};
+#define BSP_TS_INIT() 
+#define BSP_TS_EXIT() 
+#define BSP_TS_LOCK() 
+#define BSP_TS_UNLOCK() 
 
 #endif
 
-#endif
-
+#endif // __bsp_threadsafe_H__

@@ -26,7 +26,6 @@
 
 #include "bsp.h"
 #include "bsp_alloc.h"
-#include "bsp_global_drma.h"
 
 void test_drma() {
     int val = 10*bsp_pid();
@@ -65,16 +64,12 @@ void test_drma() {
 }
 
 void bsp_test_get ( void ) {
-    bsp_begin ( bsp_nprocs() );
-
     test_drma();
-
-    bsp_end();
 }
 
-int
-main ( int argc, char *argv[] ) {
-    bsp_init ( bsp_test_get, argc, argv );
+int main ( int argc, char *argv[] ) {
+    bsp_init ( &argc, &argv );
     bsp_test_get ();
+	bsp_end();
     return 0;
 }

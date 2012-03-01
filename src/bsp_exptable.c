@@ -38,23 +38,21 @@
    @param communicator MPI Communicator group which exchange the tables.
  */  
 void 
-expandableTable_comm (const ExpandableTable * RESTRICT send, 
-                      ExpandableTable *RESTRICT  recv, MPI_Comm communicator)
+	expandableTable_comm (const ExpandableTable * RESTRICT send, 
+	ExpandableTable *RESTRICT  recv, BSPX_CommFn communicator)
 {
-  unsigned int i;
+	unsigned int i;
 
-/* initalize recv offsets */
-  for (i = 0; i < recv->nprocs; i++)
-    {
-      recv->offset[i] = i * recv->rows * recv->slot_size;
-      send->offset[i] = i * send->rows * send->slot_size;
-      send->bytes[i] = send->used_slot_count[i] * send->slot_size;
-      recv->bytes[i] = recv->used_slot_count[i] * recv->slot_size;
-    }
-  /* the next thing to do is to walk the send table and actually send the 
-   * data */
-  MPI_Alltoallv (send->data, send->bytes, send->offset, MPI_BYTE,
-      recv->data, recv->bytes, recv->offset, MPI_BYTE, communicator);
+	/* initalize recv offsets */
+	for (i = 0; i < recv->nprocs; i++)
+	{
+		recv->offset[i] = i * recv->rows * recv->slot_size;
+		send->offset[i] = i * send->rows * send->slot_size;
+		send->bytes[i] = send->used_slot_count[i] * send->slot_size;
+		recv->bytes[i] = recv->used_slot_count[i] * recv->slot_size;
+	}
+	/* the next thing to do is to walk the send table and actually send the 
+	* data */
+	communicator(send->data, send->bytes, send->offset,
+		         recv->data, recv->bytes, recv->offset );
 }
-
-

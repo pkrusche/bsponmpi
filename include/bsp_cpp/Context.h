@@ -8,11 +8,38 @@
 
 namespace bsp {
 
-	template <class procmapper_t>
-	class BSPContext {
+	class Context;
+
+	/**
+	 * Factory interface for creating BSP contexts.
+	 * 
+	 * Override this for your context class.
+	 * 
+	 */
+	class AbstractContextFactory {
+	public:
+		/**
+		 * create a context for a given bsp pid
+		 */
+		virtual Context * create ( int bsp_pid ) = 0;
+
+		/**
+		 * destroy a context
+		 */
+		virtual void destroy ( Context * t ) = 0;
+	};
+
+	class TaskMapper;
+
+	/**
+	 * BSP context. Subclass this to run parallel steps.
+	 * 
+	 * Implementation in bsp_context.cpp
+	 */
+	class Context {
 	public:
 
-		BSPContext (procmapper_t & pm, int _local_pid = 0) : procmapper(pm) {
+		Context (procmapper_t & pm, int _local_pid = 0) : procmapper(pm) {
 			local_pid = _local_pid;
 			pid = procmapper.local_to_global_pid(local_pid);
 		}
@@ -63,18 +90,6 @@ namespace bsp {
 
 		typename procmapper_t::context_t * bsp_context () {
 			return procmapper.get_context(local_pid);
-		}
-
-		typename procmapper_t::context_t * bsp_parent_context () {
-			return procmapper.get_parent_context();
-		}
-
-		int bsp_call_level () {
-			if (local_pid >= 0) {
-				return procmapper.get_parent_context()->bsp_call_level() + 1;
-			} else {
-				return 0;
-			}
 		}
 
 	private:

@@ -45,6 +45,8 @@
 
 #include "bsp_alloc.h"
 
+#include "bspx_comm.h"
+
 /** calculate how many slots are necessary to contain a number of bytes
  @param bytes Number of bytes
  @param slot_size Size of the slots in bytes
@@ -97,7 +99,6 @@ typedef struct
    * column. */
   unsigned int * RESTRICT data_sizes;
 } ReqInfo;
-
 
 /** @name RequestTable data structures */
 /*@{*/
@@ -232,7 +233,7 @@ typedef struct _ExpandableTable
 
 void 
 expandableTable_comm (const ExpandableTable * RESTRICT send, 
-                      ExpandableTable * RESTRICT recv, MPI_Comm communicator );
+                      ExpandableTable * RESTRICT recv, BSPX_CommFn communicator );
 
 /* intializes an ExpandableTable object
    @param table Reference to an ExpandableTable object

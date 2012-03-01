@@ -286,18 +286,15 @@ digraph G {
    bsp_pop_reg(&a);
    bsp_sync();
 
-   bsp_end();
  }
  
  int main(int argc, char *argv)
  {
-   bsp_init(&spmd_part, argc, argv);
-
-   printf("First perform some sequential code\n");
+   bsp_init( argc, argv );
 
    spmd_part();
 
-   printf("Finally perform some sequential code\n");
+   bsp_end();
    return 0;
  }
  \endcode
@@ -340,6 +337,8 @@ digraph G {
 #include <stdlib.h>
 
 #include "bsp.h"
+#include "bspx.h"
+
 #include "bsp_memreg.h"
 #include "bsp_mesgqueue.h"
 #include "bsp_delivtable.h"
@@ -347,6 +346,12 @@ digraph G {
 #include "bsp_private.h"
 #include "bsp_alloc.h"
 #include "bsp_abort.h"
+
+#include "bsp_threadsafe.h"
+
+/** Packed global variables for a single BSP object. 
+ ** To keep it private it is not included in bsp.h */
+static BSPObject bsp;
 
 #define DELIVTAB_SIZE 1
 #define REQTAB_SIZE   1
@@ -365,132 +370,45 @@ digraph G {
  * arguments are supplied, a call to this function at the start of the program
  * is mandatory
  *
+ * This also marks the start of the SPMD code. The code following the call to this
+ * function will be executed in parallel on all available processors.
+ * The SPMD code must end with a call to bsp_end()
+ * 
  * Example 
  * @code
 
     void do_something()
     {
-      bsp_begin(bsp_nprocs())
       ... a parallel program ...
-      bsp_end()
     }  
       
     int main(int argc, char *argv[])
     {
-      bsp_init( &do_something, argc, argv);
+      bsp_init( argc, argv);
       ... optional sequential code ...
       do_something();
       ... optional sequential code ...
+	  bsp_end()
     }  
    @endcode  
-   @param spmd_part reference to the SPMD function
    @param argc obtained from function main() 
    @param argv obtained from function main()
 
-   @see bsp_begin()
-   @see bsp_end()
-   @see bsp_nprocs()
+   * @see bsp_nprocs()		    
+   * @see bsp_end()
 */
 void BSP_CALLING
-bsp_init (void (*spmd_part) (void), int argc, char *argv[])
+	bsp_init (int * argc, char **argv[])
 {
-#ifndef _SEQUENTIAL
-  /* initialize MPI */
-  MPI_Init(&argc, &argv);
-  MPI_Comm_size( MPI_COMM_WORLD, &bsp.nprocs);
-  MPI_Comm_rank( MPI_COMM_WORLD, &bsp.rank);
-  
-  if (bsp.rank == 0) 
-    {
-     /* do nothing */
-    }
-  else
-    {
-     /* else just run the spmd part */
-      spmd_part();
-      exit(0);
-    }  
-#else
-	bsp.rank = 0;
-#endif // BSP_SEQUENTIAL
-}
+	// init communication
+	_BSP_INIT(argc, argv, &bsp);
 
-/** Marks the start of the SPMD code. The code following the call to this
-    function will be executed in parallel with at most maxprocs processors.
-    The SPMD code must end with a call to bsp_end()
-    @param maxprocs Denotes the requested number of processors. The actual
-                    allocated number of processors may be less.  Calling 
-		    @code bsp_begin(bsp_nprocs()) @endcode allocates the maximum number of
-		    processors.
-    @see bsp_nprocs()		    
-    @see bsp_end()
-*/
-void BSP_CALLING
-bsp_begin (int maxprocs)
-{
-#ifndef _SEQUENTIAL
-  int flag, i, *ranks;
-  MPI_Group group, newgroup;
-  /* initialize if necessary */
-  if (MPI_Initialized(&flag), !flag)
-    {
-      int argc = 0;
-      char **argv = NULL;
-      fprintf(stderr, "Warning! bsp_init() is not called. Initialization of MPI may fail\n");
-      MPI_Init (&argc, &argv);
-      MPI_Comm_size (MPI_COMM_WORLD, &bsp.nprocs);
-      MPI_Comm_rank (MPI_COMM_WORLD, &bsp.rank);
-    }
-  /* broadcast maxprocs to all other processors */  
-  MPI_Bcast(&maxprocs, 1, MPI_INT, 0, MPI_COMM_WORLD);
-  
-  /* allocate at most maxproc processors:
-     Form a new group of processors. Some processors will not be member of
-     this group and will therefore be deallocated */
-  if (maxprocs > 0) 
-    {
-      bsp.nprocs = MIN(maxprocs, bsp.nprocs);
-    } /* else request maximum number of processors*/
-  
-  MPI_Comm_group( MPI_COMM_WORLD, &group);
-  ranks = bsp_malloc( bsp.nprocs, sizeof(int));
-  for (i = 0; i < bsp.nprocs; i++)
-    ranks[i] = i;
+	// init thread safety
+	BSP_TS_INIT();
 
-  MPI_Group_incl(group, bsp.nprocs, ranks, &newgroup);
-  MPI_Comm_create(MPI_COMM_WORLD, newgroup, &bsp.communicator);
+	// initialize message buffers
+	bspx_init_bspobject(&bsp, bsp.nprocs, bsp.rank);
 
-  bsp_free(ranks);
-
-  if (bsp.rank >= bsp.nprocs)
-    { /* terminate all unnecessary processes */
-      MPI_Finalize();
-      exit(0);
-    }  
-#else
-  bsp.nprocs = 1;
-  bsp.rank = 0;
-#endif // _SEQUENTIAL
-  bsp.send_index = bsp_malloc(3 * bsp.nprocs, sizeof(unsigned int));
-  bsp.recv_index = bsp_malloc(3 * bsp.nprocs, sizeof(unsigned int));
-
-  /* initialize data structures */
-  memoryRegister_initialize(&bsp.memory_register, bsp.nprocs, MEMREG_SIZE,
-                            bsp.rank);
-  messageQueue_initialize (&bsp.message_queue);
-  deliveryTable_initialize(&bsp.delivery_table, bsp.nprocs, DELIVTAB_SIZE);
-  requestTable_initialize(&bsp.request_table, bsp.nprocs, REQTAB_SIZE);
-  deliveryTable_initialize(&bsp.delivery_received_table, bsp.nprocs, 
-                           DELIVTAB_SIZE);
-  requestTable_initialize(&bsp.request_received_table, bsp.nprocs,
-                           REQTAB_SIZE);
-
-  bsp.global_array_last = 0;
-  bsp.global_overflow = 0;
-  
-  /* save starting time */
-  bsp.begintime = 0; // bsp.begintime is used in bsp_time(), so must be initialized
-  bsp.begintime = bsp_time();
 }
 
 
@@ -501,20 +419,13 @@ bsp_begin (int maxprocs)
 void BSP_CALLING
 bsp_end ()
 {
-  /* clean up datastructures */
-  memoryRegister_destruct (&bsp.memory_register);
-  deliveryTable_destruct(&bsp.delivery_table);
-  requestTable_destruct(&bsp.request_table);
-  deliveryTable_destruct(&bsp.delivery_received_table);
-  requestTable_destruct(&bsp.request_received_table);
+	BSP_TS_LOCK();
+	BSP_TS_EXIT();
 
-#ifndef _SEQUENTIAL
-  bsp_free(bsp.recv_index);
-  bsp_free(bsp.send_index);
+	/* clean up datastructures */
+	bspx_destroy_bspobject(&bsp);
 
-  /* and finalize */
-  MPI_Finalize ();
-#endif
+	_BSP_EXIT();
 }
 /*@}*/
 
@@ -526,14 +437,14 @@ bsp_end ()
  @param format uses the same format as printf()
  */
 void BSP_CALLING
-bsp_abort (const char *format, ...)
+	bsp_abort (const char *format, ...)
 {
-  va_list ap;
-  va_start (ap, format);
-  vfprintf (stderr, format, ap);
-  va_end (ap);
+	va_list ap;
+	va_start (ap, format);
+	vfprintf (stderr, format, ap);
+	va_end (ap);
 
-  bsp_intern_abort (ERR_BSP_ABORT, "bsp_abort()", __FILE__, __LINE__);
+	bsp_intern_abort (ERR_BSP_ABORT, "bsp_abort()", __FILE__, __LINE__);
 }
 /*@}*/
 
@@ -548,24 +459,18 @@ bsp_abort (const char *format, ...)
 	   -  if bsp_init() and bsp_begin() are called: number of processors allocated
 */
 int BSP_CALLING
-bsp_nprocs ()
+	bsp_nprocs ()
 {
-#ifndef _SEQUENTIAL
-  int flag;
-  MPI_Initialized(&flag);
-  return flag?bsp.nprocs:-1;
-#else
-	return 1;
-#endif
+	return bsp.nprocs;
 }
 
 /** Returns the rank of the processor 
-  @return The rank of the processor
-  */
+@return The rank of the processor
+*/
 int BSP_CALLING
-bsp_pid ()
+	bsp_pid ()
 {
-  return bsp.rank;
+	return bsp.rank;
 }
 
 /*@}*/
@@ -575,81 +480,11 @@ bsp_pid ()
 
 /** Seperates two supersteps. */ 
 void BSP_CALLING
-bsp_sync ()
+	bsp_sync ()
 {
-  unsigned int maxreqrows = 0, maxdelrows = 0, p;
-  unsigned int any_gets = 0; /* any_gets is a boolean value, whether there are
-                               any gets to performed. If there are no gets,
-			       then one MPI_Alltoall doesn't have to be
-			       executed */
-  /* reset message buffer */
-  messageQueue_sync(&bsp.message_queue);
-  requestTable_reset(&bsp.request_received_table);
-  deliveryTable_reset(&bsp.delivery_received_table);
- 
-  /* communicate information */
-  for (p = 0; p < (unsigned)bsp.nprocs; p++)
-    any_gets |= bsp.request_table.used_slot_count[p];
-
-  for (p = 0; p < (unsigned)bsp.nprocs; p++)
-    {
-      bsp.send_index[3*p    ] = bsp.request_table.used_slot_count[p];
-      bsp.send_index[3*p + 1] = bsp.delivery_table.used_slot_count[p];
-      bsp.send_index[3*p + 2] = any_gets;
-    }  
-
-  MPI_Alltoall( bsp.send_index, 3 , MPI_UNSIGNED, 
-                bsp.recv_index, 3 , MPI_UNSIGNED, bsp.communicator);
-
-  /* expand buffers if necessary */
-  maxreqrows = array_max(bsp.recv_index, 3*bsp.nprocs, 3);
-  for (p = 0; p < (unsigned)bsp.nprocs; p++)
-    maxdelrows = MAX( bsp.recv_index[1 + 3*p] + 
-                     bsp.request_table.info.req.data_sizes[p], maxdelrows);
-
-  if ( bsp.request_received_table.rows < maxreqrows )
-    {
-      maxreqrows = MAX(bsp.request_received_table.rows, maxreqrows);
-      requestTable_expand(&bsp.request_received_table, maxreqrows);
-    }  
-  
-  if (bsp.delivery_received_table.rows < maxdelrows )
-    {
-      maxdelrows = MAX(bsp.delivery_received_table.rows, maxdelrows);
-      deliveryTable_expand(&bsp.delivery_received_table, maxdelrows );
-    }  
-
-  /* copy necessary indices to received_tables */
-  for (p = 0; p < (unsigned)bsp.nprocs; p++) 
-    {
-      bsp.request_received_table.used_slot_count[p] = bsp.recv_index[3*p];
-      bsp.delivery_received_table.used_slot_count[p] =
-        bsp.recv_index[1 + 3*p] + bsp.request_table.info.req.data_sizes[p] ;
-    }	
-  
-  /* Now we may conclude something about the communcation pattern */
-  any_gets = 0;
-  for (p = 0; p < (unsigned)bsp.nprocs; p++)   
-    any_gets |= bsp.recv_index[3*p + 2];
-
-  /* communicate & execute */
-  if (any_gets) 
-    {
-      expandableTable_comm(&bsp.request_table, &bsp.request_received_table,
-                    bsp.communicator);
-      requestTable_execute(&bsp.request_received_table, &bsp.delivery_table);
-    }
-
-  expandableTable_comm(&bsp.delivery_table, &bsp.delivery_received_table,
-                     bsp.communicator);
-  deliveryTable_execute(&bsp.delivery_received_table, 
-		        &bsp.memory_register, &bsp.message_queue, bsp.rank);
-  /* clear the buffers */			
-  requestTable_reset(&bsp.request_table);
-  deliveryTable_reset(&bsp.delivery_table);
- 
-  /* pack the memoryRegister */
-  memoryRegister_pack(&bsp.memory_register);
+	BSP_TS_LOCK();
+	bspx_sync(&bsp, _BSP_COMM0, _BSP_COMM1);
+	BSP_TS_UNLOCK();
 }
 /*@}*/
 
@@ -663,14 +498,11 @@ bsp_sync ()
  * @see bsp_pop_reg()
  */
 void BSP_CALLING
-bsp_push_reg (const void *ident, size_t size)
+	bsp_push_reg (const void *ident, size_t size)
 {
-  int i;
-  DelivElement element;
-  element.size = 0;
-  element.info.push.address = ident;
-  for (i=0 ; i < bsp.nprocs; i++)
-    deliveryTable_push(&bsp.delivery_table, i, &element, it_pushreg);
+	BSP_TS_LOCK();
+	bspx_push_reg(&bsp, ident, size);
+	BSP_TS_UNLOCK();
 }
 
 /** Deregisters the memory location 
@@ -678,12 +510,11 @@ bsp_push_reg (const void *ident, size_t size)
   @see bsp_push_reg()
   */
 void BSP_CALLING
-bsp_pop_reg (const void *ident)
+	bsp_pop_reg (const void *ident)
 {
-  DelivElement element;
-  element.size = 0;
-  element.info.pop.address = ident;
-  deliveryTable_push(&bsp.delivery_table, bsp.rank, &element, it_popreg);
+	BSP_TS_LOCK();
+	bspx_pop_reg(&bsp, ident);
+	BSP_TS_UNLOCK();
 }  
 
 /** Puts a block of data in the memory of some other processor at the next
@@ -698,16 +529,11 @@ bsp_pop_reg (const void *ident)
    @see bsp_push_reg()
 */
 void BSP_CALLING
-bsp_put (int pid, const void *src, void *dst, long int offset, size_t nbytes)
+	bsp_put (int pid, const void *src, void *dst, long int offset, size_t nbytes)
 {
-  /* place put command in buffer */
-  char * RESTRICT pointer;
-  DelivElement element;
-  element.size = (unsigned int) nbytes;
-  element.info.put.dst = 
-    memoryRegister_memoized_find(&bsp.memory_register, pid, dst) + offset;
-  pointer = deliveryTable_push(&bsp.delivery_table, pid, &element, it_put);
-  memcpy(pointer, src, nbytes);
+	BSP_TS_LOCK();
+	bspx_put(&bsp, pid, src, dst, offset, nbytes);
+	BSP_TS_UNLOCK();
 }
 
 
@@ -725,17 +551,11 @@ bsp_put (int pid, const void *src, void *dst, long int offset, size_t nbytes)
  * @see bsp_push_reg()
 */
 void BSP_CALLING
-bsp_get (int pid, const void *src, long int offset, void *dst, size_t nbytes)
+	bsp_get (int pid, const void *src, long int offset, void *dst, size_t nbytes)
 {
-  ReqElement elem;
-  elem.size = (unsigned int )nbytes;
-  elem.src = 
-     memoryRegister_memoized_find(&bsp.memory_register, pid, src);
-  elem.dst = dst;
-  elem.offset = offset;
-  
-  /* place get command in buffer */
-  requestTable_push(&bsp.request_table, pid, &elem);
+	BSP_TS_LOCK();
+	bspx_get(&bsp, pid, src, offset, dst, nbytes);
+	BSP_TS_UNLOCK();
 }
 /*@}*/
 
@@ -751,15 +571,11 @@ bsp_get (int pid, const void *src, long int offset, void *dst, size_t nbytes)
  @param payload_nbytes size of the payload
  */
 void BSP_CALLING
-bsp_send (int pid, const void *tag, const void *payload, size_t payload_nbytes)
+	bsp_send (int pid, const void *tag, const void *payload, size_t payload_nbytes)
 {
-  DelivElement element;
-  char * RESTRICT pointer;
-  element.size = (unsigned int )payload_nbytes + bsp.message_queue.send_tag_size;
-  element.info.send.payload_size = (unsigned int )payload_nbytes;
-  pointer = deliveryTable_push(&bsp.delivery_table, pid, &element, it_send);
-  memcpy( pointer, tag, bsp.message_queue.send_tag_size);
-  memcpy( pointer + bsp.message_queue.send_tag_size, payload, payload_nbytes);
+	BSP_TS_LOCK();
+	bspx_send(&bsp, pid, tag, payload, payload_nbytes);
+	BSP_TS_UNLOCK();
 }
 
 /** Gives the number of messages and the sum of the payload sizes in queue.
@@ -769,10 +585,11 @@ bsp_send (int pid, const void *tag, const void *payload, size_t payload_nbytes)
   to the sum of payload sizes in all messages. 
 */
 void BSP_CALLING
-bsp_qsize (int * RESTRICT nmessages, size_t * RESTRICT accum_nbytes)
+	bsp_qsize (int * RESTRICT nmessages, size_t * RESTRICT accum_nbytes)
 {
-  *nmessages = bsp.message_queue.n_mesg;
-  *accum_nbytes = bsp.message_queue.accum_size;
+	BSP_TS_LOCK();
+	bspx_qsize(&bsp, nmessages, accum_nbytes);
+	BSP_TS_UNLOCK();
 }
 
 /** Retrieves the tag and payload size of the current message in
@@ -785,17 +602,9 @@ bsp_qsize (int * RESTRICT nmessages, size_t * RESTRICT accum_nbytes)
 void BSP_CALLING
 bsp_get_tag (int * RESTRICT status , void * RESTRICT tag)
 {
-  if (bsp.message_queue.n_mesg == 0)
-    *status = -1;
-  else
-    {
-      ALIGNED_TYPE * RESTRICT current_tag = 
-        bsp.message_queue.head + 
-	 no_slots( sizeof(DelivElement), sizeof(ALIGNED_TYPE));
-      DelivElement * RESTRICT message = (DelivElement *) bsp.message_queue.head;	
-      *status = message->size;
-      memcpy(tag, current_tag, bsp.message_queue.recv_tag_size ); 
-    }
+	BSP_TS_LOCK();
+	bspx_get_tag(&bsp, status, tag);
+	BSP_TS_UNLOCK();
 }
 
 /** Dequeue the current message.
@@ -804,20 +613,11 @@ bsp_get_tag (int * RESTRICT status , void * RESTRICT tag)
   @param reception_nbytes The maximum number of bytes to copy
 */  
 void BSP_CALLING
-bsp_move (void *payload, size_t reception_nbytes)
+	bsp_move (void *payload, size_t reception_nbytes)
 {
-  DelivElement * RESTRICT message = (DelivElement *) bsp.message_queue.head;	
-  int copy_bytes = MIN((unsigned)reception_nbytes, message->size);
-  char * RESTRICT current_payload =
-    (char *) bsp.message_queue.head + 
-      sizeof(ALIGNED_TYPE) * 
-      no_slots( sizeof(DelivElement), sizeof(ALIGNED_TYPE)) +
-    bsp.message_queue.recv_tag_size;
-  memcpy(payload, current_payload, copy_bytes);
-  
-  bsp.message_queue.head += message->next;
-  bsp.message_queue.n_mesg --;
-  bsp.message_queue.accum_size -= message->size;
+	BSP_TS_LOCK();
+	bspx_move(&bsp, payload, reception_nbytes);
+	BSP_TS_UNLOCK();
 }
 
 /** Sets the tag size at the next superstep.
@@ -825,51 +625,114 @@ bsp_move (void *payload, size_t reception_nbytes)
   in bytes. It becomes current tag size.
  */ 
 void BSP_CALLING
-bsp_set_tagsize (size_t *tag_nbytes)
+	bsp_set_tagsize (size_t *tag_nbytes)
 {
-  DelivElement element;
-  element.info.settag.tag_size = (unsigned int )*tag_nbytes;
-  element.size = 0;
- 
-  deliveryTable_push(&bsp.delivery_table, bsp.rank, &element, it_settag);
-  *tag_nbytes = bsp.message_queue.send_tag_size;
+	BSP_TS_LOCK();
+	bspx_set_tagsize(&bsp, tag_nbytes);
+	BSP_TS_UNLOCK();
 }
 
 /*@}*/
 
 
-/** @name High Performace */
+/** @name High Performance */
 /*@{*/
 
 /** Dequeue the current message in an unbuffered way. 
   @param tag_ptr a pointer to reference of memory location which will contain
                 the tag 
   @param payload_ptr a pointer to a reference of a memory location which will
-                contain the pyload
+                contain the payload
   @return the payload size of the dequeued message
 */  
 int BSP_CALLING
-bsp_hpmove (void **tag_ptr, void **payload_ptr)
+	bsp_hpmove (void **tag_ptr, void **payload_ptr)
 {
-  if (bsp.message_queue.n_mesg == 0)
-    return -1;
-  else
-    {
-       ALIGNED_TYPE * RESTRICT current_tag =
-         (ALIGNED_TYPE *) bsp.message_queue.head + 
-	   no_slots(sizeof(DelivElement), sizeof(ALIGNED_TYPE));
-       char * RESTRICT current_payload =
-         (char *) current_tag + bsp.message_queue.recv_tag_size;
-       DelivElement * RESTRICT message =
-         (DelivElement *) bsp.message_queue.head;
-       int size = message->info.send.payload_size;	 
-       *tag_ptr     = current_tag;
-       *payload_ptr = current_payload;
-       bsp.message_queue.head += message->next;
-       bsp.message_queue.n_mesg--;
-       bsp.message_queue.accum_size -= size;
-       return size;
-    }
+	int rv;
+	BSP_TS_LOCK();
+	rv = bspx_hpmove(&bsp, tag_ptr, payload_ptr);
+	BSP_TS_UNLOCK();
+	return rv;
+}
+
+/** Puts a block of data in the memory of some other processor at the next
+ * superstep. This function is buffered, i.e.: the contents of \a src
+ * is transmitted at the next bsp_sync(). Copying might start instantly.
+ * @param pid rank of destination (remote) processor
+ * @param src pointer to source location on source (local) processor
+ * @param dst pointer to destination location on source processor. Translation
+              of addresses is performed with help of earlier calls to bsp_push_reg()
+   @param offset offset from \a dst in bytes (comes in handy when working with arrays)
+   @param nbytes number of bytes to be copied
+   @see bsp_push_reg()
+*/
+void BSP_CALLING bsp_hpput (int pid, const void * src, void * dst, long int offset, size_t nbytes) {
+	BSP_TS_LOCK();
+	bspx_hpput(&bsp, pid, src, dst, offset, nbytes);
+	BSP_TS_UNLOCK();
+}
+
+/** Gets a block of data from the memory of some other processor at the next
+ * superstep. This function is unbuffered, i.e.: The data is retrieved from the
+ * destination processor at any point from the call. Translation of
+ * the \a src pointer is performed with help of earlier calls to
+ * bsp_push_reg()
+ * @param pid Ranks of the source (remote) processor 
+ * @param src Pointer to source location using a pointer to a local memory
+ *            region 
+ * @param offset offset from \a src in bytes
+ * @param dst Pointer to destination location 
+ * @param nbytes Number of bytes to be received
+ * @see bsp_push_reg()
+*/
+void BSP_CALLING bsp_hpget (int pid, const void * src, long int offset, void * dst, size_t nbytes) {
+	BSP_TS_LOCK();
+	bspx_hpget(&bsp, pid, src, offset, dst, nbytes);
+	BSP_TS_UNLOCK();
 }
 
 /*@}*/
+
+/** @section Global (BSPRAM) DRMA */
+/*@{*/
+
+bsp_global_handle_t BSP_CALLING bsp_global_alloc(size_t array_size) {
+	bsp_global_handle_t v;
+	BSP_TS_LOCK();
+	v = bspx_global_alloc(&bsp, array_size);
+	BSP_TS_UNLOCK();	
+	return v;
+}
+
+void BSP_CALLING bsp_global_free(bsp_global_handle_t ptr) {
+	BSP_TS_LOCK();
+	bspx_global_free(&bsp, ptr);
+	BSP_TS_UNLOCK();	
+}
+
+void BSP_CALLING bsp_global_get(bsp_global_handle_t src, size_t offset, void * dest, size_t size) {
+	BSP_TS_LOCK();
+	bspx_global_get(&bsp, src, offset, dest, size);
+	BSP_TS_UNLOCK();	
+}
+
+void BSP_CALLING bsp_global_put(const void * src, bsp_global_handle_t dest, size_t offset, size_t size) {
+	BSP_TS_LOCK();
+	bspx_global_put(&bsp, src, dest, offset, size);
+	BSP_TS_UNLOCK();	
+}
+
+void BSP_CALLING bsp_global_hpget(bsp_global_handle_t src, size_t offset, void * dest, size_t size) {
+	BSP_TS_LOCK();
+	bspx_global_hpget(&bsp, src, offset, dest, size);
+	BSP_TS_UNLOCK();	
+}
+
+void BSP_CALLING bsp_global_hpput(const void * src, bsp_global_handle_t dest, size_t offset, size_t size) {
+	BSP_TS_LOCK();
+	bspx_global_hpput(&bsp, src, dest, offset, size);
+	BSP_TS_UNLOCK();	
+}
+
+/*@}*/
+

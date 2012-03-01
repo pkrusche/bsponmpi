@@ -20,26 +20,30 @@
     information.
 */
 
-#ifndef bsp_global_drma_h__
-#define bsp_global_drma_h__
+/** @file bsp_comm_mpi.h
+ 
+	Declaration of communication routines on top of MPI.
 
-#include "bsp_config.h"
+	@author Peter Krusche
+  */  
 
-#ifdef __cplusplus
-extern "C" {
-#endif // __cplusplus
+#ifndef __bsp_mpi_comm_H__
+#define __bsp_mpi_comm_H__
 
-typedef int bsp_global_handle_t;
+#include <mpi.h>
 
-bsp_global_handle_t BSP_CALLING bsp_global_alloc(size_t array_size);
-void BSP_CALLING bsp_global_free(bsp_global_handle_t ptr);
-void BSP_CALLING bsp_global_get(bsp_global_handle_t src, size_t offset, void * dest, size_t size);
-void BSP_CALLING bsp_global_put(const void * src, bsp_global_handle_t dest, size_t offset, size_t size);
-void BSP_CALLING bsp_global_hpget(bsp_global_handle_t src, size_t offset, void * dest, size_t size);
-void BSP_CALLING bsp_global_hpput(const void * src, bsp_global_handle_t dest, size_t offset, size_t size);
+void BSP_INIT_MPI (int * pargc, char *** pargv, void * o);
+void BSP_EXIT_MPI ();
+void BSP_ABORT_MPI (int );
 
-#ifdef __cplusplus
-};
-#endif // __cplusplus
+/** this communicator will be used by all communication routines */
+extern MPI_Comm bsp_communicator;
 
-#endif // bsp_global_drma_h__
+/** MPI_Alltoall wrapper */
+void BSP_MPI_ALLTOALL_COMM (void * sendbuf, int  sendcount, void * recvbuf, int  recvcount);
+
+/** MPI_Alltoallv wrapper */
+void BSP_MPI_ALLTOALLV_COMM (void * sendbuf, int * sendcounts, int * sendoffsets,
+	void * recvbuf, int * recvcounts, int * recvoffsets );
+
+#endif // __bsp_mpi_comm_H__

@@ -24,50 +24,45 @@
     Implements MPI_Alltoall[v] on one processor if no MPI library is used.
     @author Peter Krusche */
 
-#ifdef _SEQUENTIAL
 
 #include "bsp_config.h"
-#include "bsp_mpistub.h"
+
 #include <stdlib.h>
 #include <string.h>
 
-int ompi_mpi_comm_world = 0;
-int ompi_mpi_byte = 0;
+#include "bsp_private.h"
+#include "bspx_comm_seq.h"
 
-int 
-MPI_Comm_rank(MPI_Comm c, int * r) {
-	*r = 0;
-	return 0;
+
+extern double bsp_begintime;
+extern double BSP_CALLING bsp_time();
+
+void BSP_INIT_SEQ (int * pargc, char *** pargv, void * o) {
+	BSPObject * bsp = (BSPObject*)o;
+
+	bsp->nprocs = 1;
+	bsp->rank = 0;
+	bsp_begintime = bsp_time();
 }
 
-int 
-MPI_Alltoall(void * in, int nin, int sz_in, void *out, int nout, int sz_out,
-			 int bla) 
-{
-	memcpy(out, in, nout*sz_out);
-	assert(sz_in == sz_out);
-	assert(nin == nout);
-	return 0;
+void BSP_EXIT_SEQ () {}
+
+/** MPI_Alltoall wrapper */
+void BSP_SEQ_ALLTOALL_COMM (void * sendbuf, int  sendcount, void * recvbuf, int  recvcount) {
+	ASSERT(sendcount == recvcount);
+	memcpy(recvbuf, sendbuf, recvcount);
 }
 
-int 
-MPI_Alltoallv(void * in, int* bytes_in, int* offset_in , int sz_in,
-			  void *out, int* bytes_out, int* offset_out, int sz_out,
-			  int bla) 
-{
-	int copy_size = bytes_in[0] > bytes_out[0] ? bytes_out[0] : bytes_in[0];
-	assert(sz_in == sz_out);
-	memcpy( ((char *) out) + offset_out[0], 
-		    ((char *) in) + offset_in[0], copy_size * sz_out);
-    
-	return 0;  
+/** MPI_Alltoallv wrapper */
+void BSP_SEQ_ALLTOALLV_COMM (void * sendbuf, int * sendcounts, int * sendoffsets,
+	void * recvbuf, int * recvcounts, int * recvoffsets ) {
+	int copy_size = sendcounts[0] > recvcounts[0] ? recvcounts[0] : sendcounts[0];
+	memcpy( ((char *) recvbuf) + recvoffsets[0], 
+		((char *) sendbuf) + sendoffsets[0], copy_size );
+
 }
 
-int MPI_Initialized(int *flag) { *flag = 0; return 0;}
-int MPI_Abort(int comm, int errc)
-{
-	exit(errc);
-	return 0;
-}  
-
-#endif // _SEQUENTIAL
+/** abort wrapper */
+void BSP_ABORT_SEQ (int err) {
+	exit (err);
+}

@@ -37,8 +37,10 @@ opts.AddVariables(
                     allowed_values = ('debug', 'release'),
                     ignorecase = 1),
 	BoolVariable('profile', 'Enable profiling. Also enables debug information.', 0),
+	BoolVariable('runtests', 'Run tests.', 0),
 	BoolVariable('debuginfo', 'Include debug information also in release version.', 1),
 	BoolVariable('sequential', 'Compile sequential library that does not use MPI (bsp_nprocs() == 1).', 0),
+	BoolVariable('threadsafe', 'Make bspwww library thread safe.', 1),
     ('win32_boostdir', 'Path to Boost library in Win32', 'C:\\Boost\\include'),
     ('win32_tbbdir', 'Path to tbb library in Win32', 'C:\\tbb'),
 	('win32_ccpdir', 'Path to Microsoft Compute Cluster Pack in Win32', 'C:\\Program Files\\Microsoft Compute Cluster Pack'),
@@ -48,6 +50,8 @@ opts.AddVariables(
 	('MPICC', 'MPI c compiler wrapper (Unix only)', 'mpicc'),
 	('MPICXX', 'MPI c++ compiler wrapper (Unix only)', 'mpicxx'),
 	('MPILINK', 'MPI linker wrapper (Unix only)', 'mpicxx'),
+	('mpiexec', 'MPI exec command for testing', 'mpiexec'),
+	('mpiexec_params', 'MPI exec parameters for testing', '-n 3'),
 	)
 
 SCons.Defaults.DefaultEnvironment(tools = [])
@@ -98,8 +102,9 @@ mode = root['mode']
 toolset = root['toolset']
 profile = root['profile']
 sequential = root['sequential']
+threadsafe = root['threadsafe']
 debuginfo = root['debuginfo']
-arch_id = str(Platform()) + '_' + toolset + '_' + mode
+runtests = root['runtests']
 
 win32_tbbdir = root['win32_tbbdir']
 win32_boostdir = root['win32_boostdir']
@@ -296,8 +301,6 @@ typedef uint16_t WORD;
 #endif
 
 """)
-#	autohdr.write("#define RESTRICT __restrict \n")
-#	autohdr.write('#pragma optimize("g", off) // disable global optimization\n')
 	autohdr.write("#define RESTRICT \n")
 	autohdr.write("#define __func__ __FUNCTION__ \n")
 	autohdr.write("#define BSP_CALLING __cdecl \n") 
@@ -312,11 +315,30 @@ autohdr.write("""
 #ifdef UNITTESTING
 #include "../tests/bsp_test.h"
 #else  
-#ifndef _SEQUENTIAL
+
+#ifdef _HAVE_MPI
 #include <mpi.h>
+
+#include "bspx_comm_mpi.h"
+
+#define _BSP_INIT BSP_INIT_MPI
+#define _BSP_EXIT BSP_EXIT_MPI
+#define _BSP_ABORT BSP_ABORT_MPI
+#define _BSP_COMM0 BSP_MPI_ALLTOALL_COMM
+#define _BSP_COMM1 BSP_MPI_ALLTOALLV_COMM
+
 #else 
-#include "bsp_mpistub.h"
-#endif // _SEQUENTIAL
+
+#include "bspx_comm_seq.h"
+
+#define _BSP_INIT BSP_INIT_SEQ
+#define _BSP_EXIT BSP_EXIT_SEQ
+#define _BSP_ABORT BSP_ABORT_SEQ
+#define _BSP_COMM0 BSP_SEQ_ALLTOALL_COMM
+#define _BSP_COMM1 BSP_SEQ_ALLTOALLV_COMM
+
+#endif 
+
 #endif  
 
 """)
@@ -333,6 +355,13 @@ if mode=='debug':
 	root.Append(LIBS = ['tbb_debug'])
 else:
 	root.Append(LIBS = ['tbb'])
+
+###############################################################################
+# Set up thread safe version of BSP
+###############################################################################
+
+if threadsafe:
+	root.Append (CPPDEFINES = ["BSP_THREADSAFE"])
 
 ###############################################################################
 # Setup MPI capable environment
@@ -358,17 +387,64 @@ if not sequential:
 		)
 	mpi.Append (CPPDEFINES = "_HAVE_MPI")
 else:
-	mpi.Append (CPPDEFINES = "_SEQUENTIAL")
+	mpi.Append (CPPDEFINES = "_NO_MPI")
+
+###############################################################################
+# Set up unit testing
+###############################################################################
+
+def builder_unit_test(target, source, env):	
+	app = str(source[0].abspath)
+	if os.spawnl(os.P_WAIT, app, app) == 0:
+		open(str(target[0]),'w').write("PASSED\n")
+	else:
+		return 1
+
+
+def builder_unit_test_mpi(target, source, env):
+	# for MPI tests, we run with these processor counts
+	
+	mpiexec = env["mpiexec"]
+	mpiexec_params = env["mpiexec_params"]
+
+	app = str(source[0].abspath)
+	if os.spawnl(os.P_WAIT, mpiexec, mpiexec, mpiexec_params, app) == 0:
+		open(str(target[0]),'w').write("PASSED\n")
+	else:
+		return 1
+
+# Create a builder for tests
+if sequential:
+	bld = Builder(action = builder_unit_test)
+	mpi.Append(BUILDERS = {'Test' :  bld})
+else:
+	bld = Builder(action = builder_unit_test_mpi)
+	mpi.Append(BUILDERS = {'Test' :  bld})
+
 
 ###############################################################################
 # Export our build environments for the SConscripts
 ###############################################################################
 
-Export(['root', 'mpi', 'mode', 'arch_id', 'sequential'])
+libsuffix = ''
+
+if sequential:
+	libsuffix += 'nompi'
+
+if mode == 'debug':
+	libsuffix += '_debug'
+
+if threadsafe:
+	libsuffix += '_mt'
+
+
+Export(['mpi', 'mode', 'sequential', 'threadsafe', 'libsuffix'])
 
 ###############################################################################
 # get SConscripts
 ###############################################################################
 
 SConscript('src/SConscript')
-SConscript('tests/SConscript')
+
+if runtests:
+	SConscript('tests/SConscript')

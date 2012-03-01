@@ -1,26 +1,22 @@
 
-Import("root", "mpi", "sequential", "mode")
+Import("mpi", "libsuffix")
 
-suffix = ''
-
-if sequential:
-	suffix += 'sequential'
-
-if mode == 'debug':
-	suffix += '_debug'
-
+def Test(env, target, source):
+	p = env.Program (target, source)
+	env.Test (target + ".passed", p)
 
 bsp = mpi.Clone()
-bsp.Append(LIBS= ['bsponmpi'+suffix])
+bsp.Append(LIBS= ['bsponmpi'+libsuffix])
 
-bsp.Program('bsp_test_delivtable', ['bsp_test_delivtable.c'] )
-#bsp.Program('bsp_test_exptable', ['bsp_test_exptable.c'])
-bsp.Program('bsp_test_fixtable', ['bsp_test_fixtable.c'])
-bsp.Program('bsp_test_memreg', ['bsp_test_memreg.c'])
-bsp.Program('bsp_test_reqtable', ['bsp_test_reqtable.c'])
+Test (bsp, 'bsp_test_delivtable', ['bsp_test_delivtable.c'] )
+#Test (bsp, 'bsp_test_exptable', ['bsp_test_exptable.c'])
+Test (bsp, 'bsp_test_fixtable', ['bsp_test_fixtable.c'])
+Test (bsp, 'bsp_test_memreg', ['bsp_test_memreg.c'])
+Test (bsp, 'bsp_test_reqtable', ['bsp_test_reqtable.c'])
+Test (bsp, 'bsp_test_get', ['bsp_test_get.c'])
+Test (bsp, 'bsp_test_put', ['bsp_test_put.c'])
+Test (bsp, 'bsp_test_send', ['bsp_test_send.c'])
+Test (bsp, 'bsp_test_global_drma', ['bsp_test_global_drma.c'])
 
-bsp.Program('bsp_test_get', ['bsp_test_get.c'])
-bsp.Program('bsp_test_put', ['bsp_test_put.c'])
-bsp.Program('bsp_test_send', ['bsp_test_send.c'])
-bsp.Program('bsp_test_global_drma', ['bsp_test_global_drma.c'])
-bsp.Program('simplebspcomputation', ['simplebspcomputation.cpp'])
+
+#bsp.Program('simplebspcomputation', ['simplebspcomputation.cpp'])

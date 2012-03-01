@@ -22,7 +22,7 @@
 #define P_WAIT 0
 extern char **environ;
 
-inline void _spawnvp(int, const char * file,  char * const* argv) {
+static inline void _spawnvp(int, const char * file,  char * const* argv) {
 	__pid_t temp;
 
 	if(0 != posix_spawnp(&temp, file, NULL, NULL, argv, environ)) {
@@ -33,7 +33,7 @@ inline void _spawnvp(int, const char * file,  char * const* argv) {
 }
 #else
 #define P_WAIT 0
-inline int _spawnvp(int, const char * file,  char * const* argv) {
+static inline int _spawnvp(int, const char * file,  char * const* argv) {
 	// use system() otherwise
 	std::string command;
 	while (*argv != NULL) {

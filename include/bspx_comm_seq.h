@@ -20,56 +20,27 @@
     information.
 */
 
-#ifndef __BSP_BROADCAST_H__
-#define __BSP_BROADCAST_H__
+/** @file bsp_comm_seq.h
+ 
+	Declaration of data exchange routines on a single SMP node.
 
-#include "bsp_config.h"
+	@author Peter Krusche
+  */  
 
-#ifndef _SEQUENTIAL
-#include "mpi.h"
 
-static inline void bsp_broadcast(int source, void* source_data, size_t len) {
-	MPI_Bcast(source_data, (int)len, MPI_BYTE, source, MPI_COMM_WORLD);
-}
-#else
-static inline void bsp_broadcast(int source, void* source_data, size_t len) {
-}
-#endif // _HAVE_MPI
+#ifndef __bspx_comm_seq_H__
+#define __bspx_comm_seq_H__
 
-#ifdef __cplusplus
+void BSP_INIT_SEQ (int * pargc, char *** pargv, void * o);
+void BSP_EXIT_SEQ ();
+void BSP_ABORT_SEQ (int );
 
-namespace bsp {
+/** MPI_Alltoall wrapper */
+void BSP_SEQ_ALLTOALL_COMM (void * sendbuf, int  sendcount, void * recvbuf, int  recvcount);
 
-	/************************************************************************/
-	/* Various generic broadcast functions                                  */
-	/************************************************************************/
+/** MPI_Alltoallv wrapper */
+void BSP_SEQ_ALLTOALLV_COMM (void * sendbuf, int * sendcounts, int * sendoffsets,
+	void * recvbuf, int * recvcounts, int * recvoffsets );
 
-	template <typename _t>
-	void bsp_broadcast(int source, _t & data) {
-		::bsp_broadcast(source, &data, sizeof(_t));
-	}
 
-	template <>
-	void bsp_broadcast(int source, std::string & data) {
-		size_t len;
-
-		len = data.size();
-		bsp_broadcast(source, len);
-
-		char * data_copy = new char[len];
-
-		if(bsp_pid() == source) {
-			data.resize(len);
-			memcpy(data_copy, data.c_str(), len);
-		}
-
-		::bsp_broadcast(source, data_copy, len);
-		data = std::string(data_copy,len);
-		delete [] data_copy;
-	}
-};
-
-#endif
-
-#endif
-
+#endif // __bspx_comm_seq_H__

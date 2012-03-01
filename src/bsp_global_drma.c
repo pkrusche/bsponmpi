@@ -20,18 +20,18 @@
     information.
 */
 
-/** @file bsp_global_drma.c
+/** @file bspx_global_drma.c
     Implementation of global array DRMA operations
     @author Peter Krusche */
 
 #include "bsp.h"
+#include "bspx.h"
 
 #include <stdlib.h>
 
 #include "bsp_exptable.h"
 #include "bsp_mesgqueue.h"
 #include "bsp_private.h"
-#include "bsp_global_drma.h"
 #include "bsp_tools/aligned_malloc.h"
 
 #ifndef ASSERT
@@ -46,33 +46,33 @@
     @param array_size size of block to allocate
     @return a handle to the block
   */  
-bsp_global_handle_t BSP_CALLING bsp_global_alloc ( size_t array_size ) {
-    int procs = bsp_nprocs();
+bsp_global_handle_t BSP_CALLING bspx_global_alloc (BSPObject * bsp, size_t array_size ) {
+    int procs = bsp->nprocs;
     bsp_global_handle_t handle;
     size_t alloc_size = ( array_size + procs - 1 ) / procs;
 
-    if ( bsp.global_overflow ) {
+    if ( bsp->global_overflow ) {
         int count = 0;
-        while ( bsp.global_arrays[bsp.global_array_last].local_slice != NULL ) {
-            ++bsp.global_array_last;
+        while ( bsp->global_arrays[bsp->global_array_last].local_slice != NULL ) {
+            ++bsp->global_array_last;
             if ( count++ > BSP_MAX_GLOBAL_ARRAYS ) {
-                bsp_abort ( "bsp_global_alloc: ran out of handles." );
+                bsp_abort ( "bspx_global_alloc: ran out of handles." );
             }
         }
     }
 
-    bsp.global_arrays[bsp.global_array_last].array_size = array_size;
-    bsp.global_arrays[bsp.global_array_last].local_slice = aligned_malloc ( alloc_size, 32 );
-    bsp.global_arrays[bsp.global_array_last].local_size = alloc_size;
+    bsp->global_arrays[bsp->global_array_last].array_size = array_size;
+    bsp->global_arrays[bsp->global_array_last].local_slice = aligned_malloc ( alloc_size, 32 );
+    bsp->global_arrays[bsp->global_array_last].local_size = alloc_size;
 
-    bsp_push_reg ( bsp.global_arrays[bsp.global_array_last].local_slice,
-                   bsp.global_arrays[bsp.global_array_last].local_size );
+    bspx_push_reg (bsp, bsp->global_arrays[bsp->global_array_last].local_slice,
+                   bsp->global_arrays[bsp->global_array_last].local_size );
 
-    handle = bsp.global_array_last;
-    bsp.global_array_last++;
-    bsp.global_array_last %= BSP_MAX_GLOBAL_ARRAYS;
-    if ( bsp.global_array_last == 0 ) {
-        bsp.global_overflow = 1;
+    handle = bsp->global_array_last;
+    bsp->global_array_last++;
+    bsp->global_array_last %= BSP_MAX_GLOBAL_ARRAYS;
+    if ( bsp->global_array_last == 0 ) {
+        bsp->global_overflow = 1;
     }
     return handle;
 }
@@ -81,10 +81,10 @@ bsp_global_handle_t BSP_CALLING bsp_global_alloc ( size_t array_size ) {
     @param ptr a handle to the block
   */  
 
-void BSP_CALLING bsp_global_free ( bsp_global_handle_t ptr ) {
-    bsp_pop_reg ( bsp.global_arrays[ptr].local_slice );
-    aligned_free ( bsp.global_arrays[ptr].local_slice );
-    bsp.global_arrays[ptr].local_slice = NULL;
+void BSP_CALLING bspx_global_free (BSPObject * bsp, bsp_global_handle_t ptr ) {
+    bspx_pop_reg (bsp, bsp->global_arrays[ptr].local_slice );
+    aligned_free ( bsp->global_arrays[ptr].local_slice );
+    bsp->global_arrays[ptr].local_slice = NULL;
 }
 
 /** Get data from global shared memory block
@@ -94,21 +94,21 @@ void BSP_CALLING bsp_global_free ( bsp_global_handle_t ptr ) {
     @param size the size
  */
 
-void BSP_CALLING bsp_global_get ( bsp_global_handle_t src, size_t offset, void * dest, size_t size ) {
-	size_t procs = bsp_nprocs();
-	size_t gsize = bsp.global_arrays[src].array_size;
+void BSP_CALLING bspx_global_get (BSPObject * bsp, bsp_global_handle_t src, size_t offset, void * dest, size_t size ) {
+	size_t procs = bsp->nprocs;
+	size_t gsize = bsp->global_arrays[src].array_size;
 
 	size_t offset_proc = offset * procs / gsize;
-	size_t offset_idx = offset - offset_proc*bsp.global_arrays[src].local_size;
+	size_t offset_idx = offset - offset_proc*bsp->global_arrays[src].local_size;
 
 	while ( size > 0 ) {
 
-		size_t size_todo = size > bsp.global_arrays[src].local_size - offset_idx ? 
-			bsp.global_arrays[src].local_size - offset_idx : size;
+		size_t size_todo = size > bsp->global_arrays[src].local_size - offset_idx ? 
+			bsp->global_arrays[src].local_size - offset_idx : size;
 		ASSERT(offset_proc < procs);
-		ASSERT(offset_idx < bsp.global_arrays[src].local_size);
-		ASSERT(offset_idx + size_todo <= bsp.global_arrays[src].local_size);
-		bsp_get ( (int)offset_proc, bsp.global_arrays[src].local_slice, (long int)offset_idx, dest, size_todo );
+		ASSERT(offset_idx < bsp->global_arrays[src].local_size);
+		ASSERT(offset_idx + size_todo <= bsp->global_arrays[src].local_size);
+		bspx_get (bsp, (int)offset_proc, bsp->global_arrays[src].local_slice, (long int)offset_idx, dest, size_todo );
 		size-= size_todo;
 		dest = ((char*) dest) + size_todo;
 		++offset_proc;
@@ -122,21 +122,21 @@ void BSP_CALLING bsp_global_get ( bsp_global_handle_t src, size_t offset, void *
 	@param offset the offset
     @param size the size
  */
-void BSP_CALLING bsp_global_put ( const void * src, bsp_global_handle_t dest, size_t offset, size_t size ) {
-	size_t procs = bsp_nprocs();
-	size_t gsize = bsp.global_arrays[dest].array_size;
+void BSP_CALLING bspx_global_put (BSPObject * bsp, const void * src, bsp_global_handle_t dest, size_t offset, size_t size ) {
+	size_t procs = bsp->nprocs;
+	size_t gsize = bsp->global_arrays[dest].array_size;
 
 	size_t offset_proc = offset * procs / gsize;
-	size_t offset_idx = offset - offset_proc*bsp.global_arrays[dest].local_size;
+	size_t offset_idx = offset - offset_proc*bsp->global_arrays[dest].local_size;
 
 	while ( size > 0 ) {
-		size_t size_todo = size > bsp.global_arrays[dest].local_size - offset_idx ? 
-			bsp.global_arrays[dest].local_size - offset_idx : size;
+		size_t size_todo = size > bsp->global_arrays[dest].local_size - offset_idx ? 
+			bsp->global_arrays[dest].local_size - offset_idx : size;
 		ASSERT(offset_proc < procs);
-		ASSERT(offset_idx < bsp.global_arrays[dest].local_size);
-		ASSERT(offset_idx + size_todo <= bsp.global_arrays[dest].local_size);
+		ASSERT(offset_idx < bsp->global_arrays[dest].local_size);
+		ASSERT(offset_idx + size_todo <= bsp->global_arrays[dest].local_size);
 
-		bsp_put ( (int)offset_proc, src, bsp.global_arrays[dest].local_slice, (long int)offset_idx, size_todo );
+		bspx_put (bsp, (int)offset_proc, src, bsp->global_arrays[dest].local_slice, (long int)offset_idx, size_todo );
 		src = ((char*) src) + size_todo;
 		size-= size_todo;
 		++offset_proc;
@@ -152,20 +152,20 @@ void BSP_CALLING bsp_global_put ( const void * src, bsp_global_handle_t dest, si
     @param size the size
  */
 
-void BSP_CALLING bsp_global_hpget ( bsp_global_handle_t src, size_t offset, void * dest, size_t size ) {
-	size_t procs = bsp_nprocs();
-	size_t gsize = bsp.global_arrays[src].array_size;
+void BSP_CALLING bspx_global_hpget (BSPObject * bsp, bsp_global_handle_t src, size_t offset, void * dest, size_t size ) {
+	size_t procs = bsp->nprocs;
+	size_t gsize = bsp->global_arrays[src].array_size;
 
 	size_t offset_proc = offset * procs / gsize;
-	size_t offset_idx = offset - offset_proc*bsp.global_arrays[src].local_size;
+	size_t offset_idx = offset - offset_proc*bsp->global_arrays[src].local_size;
 
 	while ( size > 0 ) {
-		size_t size_todo = size > bsp.global_arrays[src].local_size - offset_idx ? 
-			bsp.global_arrays[src].local_size - offset_idx : size;
+		size_t size_todo = size > bsp->global_arrays[src].local_size - offset_idx ? 
+			bsp->global_arrays[src].local_size - offset_idx : size;
 		ASSERT(offset_proc < procs);
-		ASSERT(offset_idx < bsp.global_arrays[src].local_size);
-		ASSERT(offset_idx + size_todo <= bsp.global_arrays[src].local_size);
-		bsp_hpget ( (int)offset_proc, bsp.global_arrays[src].local_slice, (long int)offset_idx, dest, size_todo );
+		ASSERT(offset_idx < bsp->global_arrays[src].local_size);
+		ASSERT(offset_idx + size_todo <= bsp->global_arrays[src].local_size);
+		bspx_hpget (bsp, (int)offset_proc, bsp->global_arrays[src].local_slice, (long int)offset_idx, dest, size_todo );
 		dest = ((char*) dest) + size_todo;
 		size-= size_todo;
 		++offset_proc;
@@ -180,20 +180,20 @@ void BSP_CALLING bsp_global_hpget ( bsp_global_handle_t src, size_t offset, void
     @param size the size
  */
 
-void BSP_CALLING bsp_global_hpput ( const void * src, bsp_global_handle_t dest, size_t offset, size_t size ) {
-	size_t procs = bsp_nprocs();
-	size_t gsize = bsp.global_arrays[dest].array_size;
+void BSP_CALLING bspx_global_hpput (BSPObject * bsp, const void * src, bsp_global_handle_t dest, size_t offset, size_t size ) {
+	size_t procs = bsp->nprocs;
+	size_t gsize = bsp->global_arrays[dest].array_size;
 
 	size_t offset_proc = offset * procs / gsize;
-	size_t offset_idx = offset - offset_proc*bsp.global_arrays[dest].local_size;
+	size_t offset_idx = offset - offset_proc*bsp->global_arrays[dest].local_size;
 
 	while ( size > 0 ) {
-		size_t size_todo = size > bsp.global_arrays[dest].local_size - offset_idx ? 
-			bsp.global_arrays[dest].local_size - offset_idx : size;
+		size_t size_todo = size > bsp->global_arrays[dest].local_size - offset_idx ? 
+			bsp->global_arrays[dest].local_size - offset_idx : size;
 		ASSERT(offset_proc < procs);
-		ASSERT(offset_idx < bsp.global_arrays[dest].local_size);
-		ASSERT(offset_idx + size_todo <= bsp.global_arrays[dest].local_size);
-		bsp_hpput ( (int)offset_proc, src, bsp.global_arrays[dest].local_slice, (long int)offset_idx, size_todo );
+		ASSERT(offset_idx < bsp->global_arrays[dest].local_size);
+		ASSERT(offset_idx + size_todo <= bsp->global_arrays[dest].local_size);
+		bspx_hpput (bsp, (int)offset_proc, src, bsp->global_arrays[dest].local_slice, (long int)offset_idx, size_todo );
 		src = ((char*) src) + size_todo;
 		size-= size_todo;
 		++offset_proc;
