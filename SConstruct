@@ -295,9 +295,7 @@ typedef uint16_t WORD;
 #include <assert.h>
 #define ASSERT assert
 #else
-
 #define ASSERT(x)
-
 #endif
 
 """)
