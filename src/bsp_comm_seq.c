@@ -25,11 +25,11 @@
     @author Peter Krusche */
 
 
-#include "bsp_config.h"
 
 #include <stdlib.h>
 #include <string.h>
 
+#include "bsp_config.h"
 #include "bsp_private.h"
 #include "bspx_comm_seq.h"
 

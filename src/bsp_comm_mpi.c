@@ -27,10 +27,9 @@
 	@author Peter Krusche
   */  
 
-#include "bsp_config.h"
-
 #include <stdio.h>
 
+#include "bsp_config.h"
 #include "bsp_private.h"
 #include "bsp_alloc.h"
 #include "bspx_comm_mpi.h"
