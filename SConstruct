@@ -408,7 +408,11 @@ def builder_unit_test_mpi(target, source, env):
 	mpiexec_params = env["mpiexec_params"]
 
 	app = str(source[0].abspath)
-	if os.spawnl(os.P_WAIT, mpiexec, mpiexec, mpiexec_params, app) == 0:
+	runme = mpiexec + " " + mpiexec_params + ' "' + app + '"'
+
+	print "Test: running " + runme
+
+	if os.system(runme) == 0:
 		open(str(target[0]),'w').write("PASSED\n")
 	else:
 		return 1
@@ -420,7 +424,6 @@ if sequential:
 else:
 	bld = Builder(action = builder_unit_test_mpi)
 	mpi.Append(BUILDERS = {'Test' :  bld})
-
 
 ###############################################################################
 # Export our build environments for the SConscripts
