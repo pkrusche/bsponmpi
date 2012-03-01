@@ -49,7 +49,7 @@ void BSP_EXIT_SEQ () {}
 
 /** MPI_Alltoall wrapper */
 void BSP_SEQ_ALLTOALL_COMM (void * sendbuf, int  sendcount, void * recvbuf, int  recvcount) {
-	ASSERT(sendcount == recvcount);
+//	ASSERT(sendcount == recvcount);
 	memcpy(recvbuf, sendbuf, recvcount);
 }
 
