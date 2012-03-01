@@ -350,7 +350,10 @@ autohdr.close()
 ###############################################################################
 
 if mode=='debug':
-	root.Append(LIBS = ['tbb_debug'])
+	if platform == 'win32':
+		root.Append(LIBS = ['tbb_debug'])
+	else:
+		root.Append(LIBS = ['tbb'])
 else:
 	root.Append(LIBS = ['tbb'])
 
