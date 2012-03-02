@@ -22,5 +22,6 @@
 #include "TaskMapper.h"
 #include "Context.h"
 #include "Runner.h"
+#include "Superstep.h"
 
 #endif

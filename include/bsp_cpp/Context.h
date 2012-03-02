@@ -53,6 +53,13 @@ namespace bsp {
 			return local_pid;
 		}
 
+		/** bsp_sync() will throw an error, we need to use BSP_SYNC 
+		 *  to split tasks up.
+		 */
+		void bsp_sync() const {
+			throw std::runtime_error("When syncing in a Context, BSP_SYNC needs to be used rather than bsp_sync()");
+		}
+
 		/** We store the parent context, and add this function
 		 * to retrieve it later. Can return NULL for top-level contexts.
 		 */
