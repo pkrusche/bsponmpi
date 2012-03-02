@@ -9,18 +9,42 @@
 
 #include <tbb/spin_mutex.h>
 
+/** this is a helper to make sure output doesn't get garbled */
 tbb::spin_mutex output_mutex;
-bsp_global_handle_t h;
+
+/** When declaring BSP computations, we first declare a 
+ *  Context. A context holds all variables which persist 
+ *  over multiple supersteps.
+ *  
+ *  Inside a Context we have access to bspwww primitives, except
+ *  for bsp_sync. The reason is that bsp_sync needs to be called
+ *  at node level, and our virtual processors are implemented as
+ *  TBB tasks. To do this, we split the code into chunks which
+ *  are run through the scheduler. This splitting is done using 
+ *  the BSP_BEGIN(), BSP_SYNC() and BSP_END() mechanism shown 
+ *  in the run() method.
+ *  
+ */
 
 class MyContext : public bsp::Context {
 public:
-	int counter;
-
-	MyContext() : counter (0) {}
+	MyContext() : counter (0), h(NULL) { }
 
 	void init() {
 		counter = ((MyContext*)get_parent_context())->counter;
 	}
+
+	/**
+	 * We can make functions which are called from within the 
+	 * supersteps, but they need to be class member to get access
+	 * to the correct bsp_... functions.
+	 */
+	void print_info () {
+		using namespace std;
+		tbb::spin_mutex::scoped_lock l (output_mutex);
+		cout << "Hi, I am processor " << bsp_pid()+1 << " of " << bsp_nprocs() << endl;
+	}
+
 
 	/**
 	 * Run function to start execution
@@ -43,17 +67,22 @@ public:
 		bsp::ContextFactory<MyContext> factory;
 		bsp::TaskMapper tm (processors, &factory, this);
 
-		BSP_BEGIN(MyContext, tm);
+		/** we can still do stuff on node level here. like allocate 
+		 *  global memory. Note that bsp_pushreg doesn't fall into 
+		 *  this category, this, we want to do after BSP_BEGIN (if
+		 *  the memory should be local to tasks rather than nodes, 
+		 *  that is).
+		 */
+		h = bsp_global_alloc(processors * sizeof(int));
+		::bsp_sync();
 
+		BSP_BEGIN(MyContext, tm);
 		// Things from here on are task-level SPMD. 
 		// You'll have as many processes as allocated in the task mapper
 		// also, we inject all members of MyContext into the current
 		// scope
-		{
-			tbb::spin_mutex::scoped_lock l (output_mutex);
-			cout << "Hi, I am processor " << bsp_pid()+1 << " of " << bsp_nprocs() << endl;
-		}
-		counter = bsp_pid();
+		// 
+		print_info();
 
 		bsp_global_put(&counter, h, sizeof(int) * (bsp_nprocs()-1-bsp_pid()), sizeof(int));
 
@@ -70,7 +99,16 @@ public:
 		}
 
 		BSP_END();
+
+		bsp_global_free(h);
 	}
+
+
+protected:
+	/** Members must be public or protected, since BSP_BEGIN et al. 
+	 *  rely on them being accessible to subclasses */
+	int counter;
+	bsp_global_handle_t h;
 };
 
 
@@ -106,9 +144,6 @@ int main (int argc, char** argv) {
 		s+= "\n";
 		bsp_abort(s.c_str());
 	}
-	h = bsp_global_alloc(recursive_processors*sizeof (int));
-	bsp_sync();
-
 	MyContext root;
 	root.run( recursive_processors );
 
