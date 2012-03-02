@@ -33,14 +33,25 @@ Implementation header for all
 
 #include "bspx.h"
 
+#include <tbb/spin_mutex.h>
+#include <map>
+
 namespace bsp {
 
 	class ContextImpl {
 	public:
-		ContextImpl();
+		ContextImpl(int nprocs, int rank);
 		~ContextImpl();
 
+		/** Synchronize hpget/hpput ops using MPI_Win_fence */
+		void bsp::ContextImpl::sync_hpops();
+
 		BSPObject bsp;
+
+		bool any_hp;
+		std::map<void*, MPI_Win> hp_map; 
+
+		static tbb::spin_mutex context_mutex;
 	};
 
 };

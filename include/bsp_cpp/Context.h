@@ -73,11 +73,16 @@ namespace bsp {
 		 */
 		inline void bsp_sync() const {
 			if (impl != NULL) {
+				// mainly, this serves as a detterrent so programmers don't 
+				// get confused between node and task-level syncs.
 				throw std::runtime_error("When syncing in a Context, BSP_SYNC needs to be used rather than bsp_sync()");
 			} else {
 				::bsp_sync();
 			}
 		}
+
+		/** This function is called by BSP_SYNC() */
+		static void sync_contexts (TaskMapper * tm);
 
 		/** @name DRMA */
 		/*@{*/
@@ -90,8 +95,8 @@ namespace bsp {
 		/** @name BSMP */
 		/*@{*/
 		void bsp_send (int, const void *, const void *, size_t);
-		void bsp_qsize (int * RESTRICT , size_t * RESTRICT );
-		void bsp_get_tag (int * RESTRICT , void * RESTRICT );
+		void bsp_qsize (int * , size_t * );
+		void bsp_get_tag (int * , void * );
 		void bsp_move (void *, size_t);
 		void bsp_set_tagsize (size_t *);
 		/*@}*/
@@ -140,6 +145,7 @@ namespace bsp {
 		TaskMapper * mapper;  ///< The process mapper object
 		int pid;		///< The global pid of this computation
 		int local_pid;	///< The local pid of this computation
+
 		void * impl;    ///< Implementation specific stuff
 	};
 

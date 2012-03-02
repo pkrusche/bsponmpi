@@ -30,10 +30,40 @@ information.
 
 #include "bsp_contextimpl_mpi.h"
 
-bsp::ContextImpl::ContextImpl() {
+#include "bspx.h"
 
+#ifdef _HAVE_MPI
+#include <mpi.h>
+#endif
+
+tbb::spin_mutex bsp::ContextImpl::context_mutex;
+
+bsp::ContextImpl::ContextImpl(int nprocs, int rank) {
+	bspx_init_bspobject(&bsp, nprocs, rank);
+	any_hp = false;
+}
+
+void bsp::ContextImpl::sync_hpops() {
+#ifdef _HAVE_MPI
+	// free all MPI windows.
+	for ( std::map<void*, MPI_Win>::iterator it = hp_map.begin(), it_end = hp_map.end();
+		it != it_end; ++it
+		) {
+			MPI_Win_fence(0, it->second);
+	}
+#endif
 }
 
 bsp::ContextImpl::~ContextImpl() {
-
+#ifdef _HAVE_MPI
+	// free all MPI windows.
+	for ( std::map<void*, MPI_Win>::iterator it = hp_map.begin(), it_end = hp_map.end();
+			it != it_end; ++it
+		) {
+		MPI_Win_fence(0, it->second);
+		MPI_Win_free (it->second);
+	}
+#endif
+	bspx_destroy_bspobject(&bsp);
 }
+

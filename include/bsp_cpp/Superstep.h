@@ -61,7 +61,7 @@ information.
 		};										\
 		bsp::run_context<MyRC> (&tm);			\
 	}											\
-	tm.do_bsp_sync();							\
+	Context::sync_contexts(&tm);				\
 	{											\
 		class MyRC : public ContextData {		\
 		public:									\
@@ -73,7 +73,7 @@ information.
 												\
 		bsp::run_context<MyRC> (&tm);			\
 	}											\
-	tm.do_bsp_sync();							\
+	Context::sync_contexts(&tm);				\
 }
 
 #endif
