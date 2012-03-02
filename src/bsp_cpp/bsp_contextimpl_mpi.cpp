@@ -30,4 +30,10 @@ information.
 
 #include "bsp_contextimpl_mpi.h"
 
+bsp::ContextImpl::ContextImpl() {
 
+}
+
+bsp::ContextImpl::~ContextImpl() {
+
+}

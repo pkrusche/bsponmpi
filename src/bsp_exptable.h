@@ -251,11 +251,11 @@ expandableTable_initialize (ExpandableTable * RESTRICT table,
   table->rows = rows;
   table->slot_size = elsize;
   table->info = info;
-  table->data = bsp_malloc (nprocs * rows, elsize);
+  table->data = (char*)bsp_malloc (nprocs * rows, elsize);
 
-  table->used_slot_count = bsp_calloc (nprocs, sizeof (unsigned int));
-  table->offset = bsp_calloc (nprocs, sizeof (unsigned int));
-  table->bytes = bsp_calloc (nprocs, sizeof (unsigned int));
+  table->used_slot_count = (unsigned int * ) bsp_calloc (nprocs, sizeof (unsigned int));
+  table->offset = (int * ) bsp_calloc (nprocs, sizeof (unsigned int));
+  table->bytes = (int * ) bsp_calloc (nprocs, sizeof (unsigned int));
 }
 
 /** clears contents of the table 
@@ -290,7 +290,7 @@ expandableTable_expand (ExpandableTable * RESTRICT table, const unsigned int row
                         const union SpecInfo * RESTRICT newinfo)
 {
   unsigned int newrows = rows + table->rows;
-  char *newdata = 
+  char *newdata = (char*)
     bsp_malloc( newrows * table->nprocs, table->slot_size);
   unsigned int i;
 

@@ -41,7 +41,7 @@ extern double BSP_CALLING bsp_time();
 
 void BSP_INIT_MPI (int * pargc, char *** pargv, void * o) {
 	BSPObject * bsp = (BSPObject *)o;
-	int flag, i, *ranks;
+	int i, *ranks;
 	MPI_Group group, newgroup;
 
 	MPI_Init(pargc, pargv);

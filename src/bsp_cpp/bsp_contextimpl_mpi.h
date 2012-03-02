@@ -38,6 +38,7 @@ namespace bsp {
 	class ContextImpl {
 	public:
 		ContextImpl();
+		~ContextImpl();
 
 		BSPObject bsp;
 	};
