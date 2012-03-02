@@ -60,6 +60,33 @@ public:
 	 *   Therefore, the scope after BSP_BEGIN is actually not the same
 	 *   scope as the one before. This is done as a workaround for until
 	 *   all C++ compilers support lambda functions/contexts.
+	 * - BSP_SYNC also creates a new scope, so you can't just do this
+	 *   within a BSP_BEGIN() block:
+	 *	 @code 
+	 *	 while ( j > 0 ) {
+	 *	    // do some BSP stuff
+	 *	    
+	 *	 	BSP_SYNC();
+	 *	 }
+	 *	 @endcode
+	 *	 
+	 *	 The right way to reproduce this behaviour is to end the block
+	 *	 first and do the loop at node level:
+	 *	 
+	 *	 @code 
+	 *	 BSP_END()
+	 *	 while ( j > 0 ) {
+	 *	    BSP_BEGIN(MyContext, tm)
+	 *	    // do some BSP stuff
+	 *	 
+	 *	 	BSP_SYNC();
+	 *	    BSP_END()
+	 *	 }
+	 *	 BSP_BEGIN(MyContext, tm)
+	 *	 @endcode
+	 *  
+	 *   Needless to say, to minimize overhead, try avoiding this, or if you
+	 *   do it, put the while loop as far out as possible.
 	 *  
 	 */
 	void run( int processors ) {
@@ -83,6 +110,7 @@ public:
 		// scope
 		// 
 		print_info();
+		counter = bsp_pid();
 
 		bsp_global_put(&counter, h, sizeof(int) * (bsp_nprocs()-1-bsp_pid()), sizeof(int));
 

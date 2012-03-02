@@ -29,6 +29,10 @@
 #include "bsp_abort.h"
 #include <stdlib.h>
 
+#include "bspx_comm_mpi.h"
+#include "bspx_comm_seq.h"
+
+
 void
 bsp_intern_abort (const int err_number, const char *func,
                   const char *file, int line)

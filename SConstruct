@@ -317,8 +317,6 @@ autohdr.write("""
 #ifdef _HAVE_MPI
 #include <mpi.h>
 
-#include "bspx_comm_mpi.h"
-
 #define _BSP_INIT BSP_INIT_MPI
 #define _BSP_EXIT BSP_EXIT_MPI
 #define _BSP_ABORT BSP_ABORT_MPI
@@ -326,8 +324,6 @@ autohdr.write("""
 #define _BSP_COMM1 BSP_MPI_ALLTOALLV_COMM
 
 #else 
-
-#include "bspx_comm_seq.h"
 
 #define _BSP_INIT BSP_INIT_SEQ
 #define _BSP_EXIT BSP_EXIT_SEQ

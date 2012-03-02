@@ -349,6 +349,9 @@ digraph G {
 
 #include "bsp_threadsafe.h"
 
+#include "bspx_comm_mpi.h"
+#include "bspx_comm_seq.h"
+
 /** Packed global variables for a single BSP object. 
  ** To keep it private it is not included in bsp.h */
 static BSPObject bsp;

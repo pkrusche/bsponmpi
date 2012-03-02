@@ -17,53 +17,96 @@ namespace bsp {
 	 */
 	class Context {
 	public:
+		Context () : impl (NULL) {}
+
 		/** 
 		 * This will be called by the factory after construction
 		 */ 
-		void initialize_context (TaskMapper * tm, int bsp_pid, Context * parent = NULL)  {
-			mapper = tm;
-			parentcontext = parent;
-			local_pid = tm->global_to_local_pid(bsp_pid);
-			pid = bsp_pid;
-			runme = NULL;	// this really needs to be initialized
-			init ();
-		}
+		void initialize_context (TaskMapper * tm, int bsp_pid, Context * parent = NULL);
+
+		/** 
+		 * This will be called by the factory when the context is destroyed
+		 */ 
+		void destroy_context ();
 
 		/**
 		 * This is called when the class is inialized by the factory after 
 		 * construction.
 		 */
-		virtual void init () {
-
-		}
+		inline virtual void init () { }
 
 		/**
 		 * BSPWWW interface embedded in context.
 		 */
 
-		int bsp_nprocs() const {
-			return mapper->nprocs();
+		inline int bsp_nprocs() const {
+			if (impl != NULL) { 
+				return mapper->nprocs();
+			} else {
+				return ::bsp_nprocs();
+			}
 		}
 
-		int bsp_pid() const {
-			return pid;
+		inline int bsp_pid() const {
+			if (impl != NULL) { 
+				return pid;
+			} else {
+				return ::bsp_pid();
+			}
 		}
 
-		int bsp_local_pid() const {
-			return local_pid;
+		inline int bsp_local_pid() const {
+			if (impl != NULL) { 
+				return local_pid;
+			} else {
+				throw std::runtime_error("You cannot call bsp_local_pid at node level.");
+			}
 		}
 
-		/** bsp_sync() will throw an error, we need to use BSP_SYNC 
+		/** 
+		 *  When this object was created through the context factory, 
+		 *  bsp_sync() will throw an error, we need to use BSP_SYNC 
 		 *  to split tasks up.
+		 *  
+		 *  Otherwise, we assume that we are at node level and call 
+		 *  ::bsp_sync()
 		 */
-		void bsp_sync() const {
-			throw std::runtime_error("When syncing in a Context, BSP_SYNC needs to be used rather than bsp_sync()");
+		inline void bsp_sync() const {
+			if (impl != NULL) {
+				throw std::runtime_error("When syncing in a Context, BSP_SYNC needs to be used rather than bsp_sync()");
+			} else {
+				::bsp_sync();
+			}
 		}
+
+		/** @name DRMA */
+		/*@{*/
+		void bsp_push_reg (const void *, size_t);
+		void bsp_pop_reg (const void *);
+		void bsp_put (int, const void *, void *, long int, size_t);
+		void bsp_get (int, const void *, long int, void *, size_t);
+		/*@}*/
+
+		/** @name BSMP */
+		/*@{*/
+		void bsp_send (int, const void *, const void *, size_t);
+		void bsp_qsize (int * RESTRICT , size_t * RESTRICT );
+		void bsp_get_tag (int * RESTRICT , void * RESTRICT );
+		void bsp_move (void *, size_t);
+		void bsp_set_tagsize (size_t *);
+		/*@}*/
+
+		/** @name High Performance */
+		/*@{*/
+		void bsp_hpput (int, const void *, void *, long int, size_t);
+		void bsp_hpget (int, const void *, long int, void *, size_t);
+		int bsp_hpmove (void **, void **);
+		/*@}*/
 
 		/** We store the parent context, and add this function
-		 * to retrieve it later. Can return NULL for top-level contexts.
+		 * to retrieve it later. May return NULL for top-level contexts.
 		 */
-		bsp::Context * get_parent_context() {
+		inline bsp::Context * get_parent_context() {
 			return parentcontext;
 		}
 
@@ -75,7 +118,7 @@ namespace bsp {
 		typedef void (*FUN)(Context *);
 
 		/** Execute will run the runme function with this as it's argument */
-		void execute () {
+		inline void execute () {
 			ASSERT(runme != NULL);
 			runme (this);
 		}
@@ -93,19 +136,24 @@ namespace bsp {
 									*/
 
 	private:
-		Context * parentcontext;	
+		Context * parentcontext;	///< this is the parent context 
 		TaskMapper * mapper;  ///< The process mapper object
 		int pid;		///< The global pid of this computation
 		int local_pid;	///< The local pid of this computation
+		void * impl;    ///< Implementation specific stuff
 	};
 
 
 	/**
+	 * 
+	 * Function to allow running different superstep's code on the 
+	 * same data.
+	 *
 	 * as_class must be subclassed from Context and 
 	 * have a member function run();
 	 */
 	template <class as> 
-	static void run_context_as (Context * thiz) {
+	static inline void run_context_as (Context * thiz) {
 		((as *) thiz)->run();
 	}
 
@@ -118,13 +166,14 @@ namespace bsp {
 	template <class runnablecontext> 
 	class ContextFactory : public AbstractContextFactory {
 	public:
-		Context * create ( TaskMapper * tm, int bsp_pid, Context * parent) {
+		inline Context * create ( TaskMapper * tm, int bsp_pid, Context * parent) {
 			Context * p = new runnablecontext();
 			p->initialize_context(tm, bsp_pid, parent);
 			return p;
 		}
 
-		void destroy ( Context * t ) {
+		inline void destroy ( Context * t ) {
+			t->destroy_context();
 			delete (runnablecontext * ) t;
 		}
 	};
