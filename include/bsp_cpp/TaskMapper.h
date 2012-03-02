@@ -2,21 +2,45 @@
  *   Copyright (C) 2009   Peter Krusche, The University of Warwick         *
  *   peter@dcs.warwick.ac.uk                                               *
  ***************************************************************************/
-#ifndef ProcMapper_h__
-#define ProcMapper_h__
+#ifndef TaskMapper_h__
+#define TaskMapper_h__
 
 #include <algorithm>
-
-#include <tbb/concurrent_vector.h>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
 
 #include "bsp.h"
 #include "bsp_tools/utilities.h"
 
-#include "Context.h"
-
 namespace bsp {
+
+	class TaskMapper;
+	class Context;
+
+	/**
+	 * Factory interface for creating BSP contexts.
+	 * 
+	 * Override this for your context class.
+	 * 
+	 * Subclassed objects need a default constructor, initialisation
+	 * can be performed by overriding init () and reading data
+	 * e.g. from the parent context.
+	 * 
+	 */
+	class AbstractContextFactory {
+	public:
+		/**
+		 * create a context for a given bsp pid
+		 */
+		virtual Context * create ( TaskMapper *, int bsp_pid, Context * ) = 0;
+
+		/**
+		 * destroy a context
+		 */
+		virtual void destroy ( Context * t ) = 0;
+	};
+
 
 
 	/**
@@ -28,8 +52,9 @@ namespace bsp {
 	class TaskMapper {
 	public:
 		TaskMapper (int _processors, 
-			AbstractContextFactory * factory
-		) : 
+			AbstractContextFactory * factory,
+			Context * parent = NULL
+		) : contextfactory(factory),
 			processors (_processors) {
 			max_procs_per_node = ICD(processors, ::bsp_nprocs());
 			if( max_procs_per_node * (::bsp_pid()+1) > processors ) {
@@ -38,13 +63,24 @@ namespace bsp {
 			} else {
 				procs_on_this_node = max_procs_per_node;
 			}
+
+			context_store.resize(procs_on_this_node);			
+			for (int i = 0, i_end = (int)context_store.size(); i < i_end; ++i ) {
+				context_store[i] = factory->create( this, local_to_global_pid(i), parent );
+			}
+		}
+
+		virtual ~TaskMapper () {
+			for (size_t i = 0, i_end = context_store.size(); i < i_end; ++i ) {
+				contextfactory->destroy(context_store[i]);
+			}
 		}
 
 		/**
 		 * Number of processors in this mapper
 		 */
 
-		int nprocs () const {
+		virtual int nprocs () const {
 			return processors;
 		}
 
@@ -52,7 +88,7 @@ namespace bsp {
 		 * Number of maximum processors per node
 		 */
 
-		int procs_per_node() const {
+		virtual int procs_per_node() const {
 			return max_procs_per_node;
 		}
 
@@ -60,7 +96,7 @@ namespace bsp {
 		 * Number of processors on this node
 		 */
 
-		int procs_this_node() const {
+		virtual int procs_this_node() const {
 			return procs_on_this_node;
 		}
 
@@ -68,7 +104,7 @@ namespace bsp {
 		 * Take a local processor id, translate to global id
 		 */
 
-		int local_to_global_pid(int local_pid) const {
+		virtual int local_to_global_pid(int local_pid) const {
 			return ::bsp_pid() * max_procs_per_node + local_pid;
 		}
 
@@ -79,7 +115,7 @@ namespace bsp {
 		 * node.
 		 */
 
-		int global_to_local_pid(int global_pid) const {
+		virtual int global_to_local_pid(int global_pid) const {
 			int p = global_pid - ::bsp_pid() * procs_per_node();
 			if (p < 0 || p >= procs_on_this_node)	{
 				return -1;
@@ -87,127 +123,30 @@ namespace bsp {
 				return p;
 			}
 		}
+		
+		/**
+		 * Get the context for a local process
+		 */
+		virtual Context & get_context(int local_pid) {
+			return *(context_store[local_pid]);
+		}
 
-
+		/** 
+		 * Synchronize data at superstep end.
+		 */
+		void do_bsp_sync() {
+			::bsp_sync();
+		}
 
 	private:
-		std::vector<context_t *> context_store;
+		std::vector<Context *> context_store;
 		AbstractContextFactory * contextfactory;
 
 		int processors;
 		int procs_on_this_node;
 		int max_procs_per_node;
 	};
-
-	/**
-	 * Processor mapper. The processor mapper manages superstep contexts using 
-	 * a task mapper which gives an assignment of tasks to processors.
-	 * 
-	 * The template parameter contextfactory must produce context objects
-	 * which 
-	 * 
-	 */
-	template <class _contextfactory, class _taskmapper = TaskMapper>
-	class ProcMapper {
-	public:
-		typedef ProcMapper<_contextfactory, _taskmapper> my_type;
-		typedef typename _contextfactory::context_t context_t;
-
-		ProcMapper() : 
-		  processors (_processors ) {
-			using namespace std;
-
-			context_store.resize(procs_on_this_node);
-			for (size_t j = 0; j < procs_on_this_node; ++j) {
-				context_store[j] = factory->create( (int)j, this );
-			}
-			contextfactory = factory;
-		}
-
-		virtual ~ProcMapper () {
-			for (size_t j = 0; j < context_store.size(); ++j) {
-				contextfactory->destroy ( context_store[j] );
-			}
-		}
-		
-		/**
-		 * Split 
-		 */
-		void split ( int parent, int _processors, _contextfactory * factory ) {
-			bsp_level l;
-			l.context_store.
-		}
-
-		/**
-		 * Combine processors from a previous split level, return 
-		 */
-		void combine () {
-
-		}
-
-		/**
-		 * Run a superstep at the current call level.
-		 */
-		void superstep() {
-			using namespace tbb;
-
-			if (task_hierarchy)
-
-			class ComputationTask : public tbb::task {
-			public:
-				ComputationTask( my_type & _mapper, int pid = -1 ) : 
-					mapper (_mapper), my_pid (_pid) {}
-
-				tbb::task * execute() {
-					if (my_local_pid < 0) {
-						set_ref_count(mapper.procs_this_node()+1);
-						for (int t = 0; t < mapper.procs_this_node(); ++t) {
-							ComputationTask<procmapper_t> & tsk = *new ( allocate_child() ) 
-								ComputationTask<procmapper_t>( mapper, t );
-							spawn(tsk);
-						}
-						wait_for_all();
-					} else {
-						mapper.get_context(my_local_pid)->run();
-					}
-					return NULL;
-				}
-			private:
-				my_type & mapper;
-				int my_pid;
-			};
-
-
-			// we create a root task which will create child tasks for
-			// all the other local processors
-
-			ComputationTask & root = *new( task::allocate_root() ) 
-				ComputationTask ( mapper );
-			
-			task::spawn_root_and_wait (root);
-			bsp_sync();
-		}
-
-
-	private:
-
-		struct bsp_level {
-			bsp_level (int processors, _contextfactory * factory) : 
-				mapper ( new _taskmapper (processors) ),
-				contextfactory (factory) {
-
-				context_store.resize(mapper->procs_this_node());
-				for (int j = 0, k = context_store.size(); j < k; ++j) {
-					context_store[j] = contextfactory->create (  );
-				}
-			}
-
-			boost::shared_ptr<_taskmapper> mapper;
-		};
-
-		std::stack<bsp_level> task_hierarchy;
-		
-	};
 };
 
-#endif // ProcMapper_h__
+#endif 
+

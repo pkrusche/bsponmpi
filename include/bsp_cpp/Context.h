@@ -6,30 +6,9 @@
 #ifndef __Context_H__
 #define __Context_H__
 
+#include "TaskMapper.h"
+
 namespace bsp {
-
-	class Context;
-
-	/**
-	 * Factory interface for creating BSP contexts.
-	 * 
-	 * Override this for your context class.
-	 * 
-	 */
-	class AbstractContextFactory {
-	public:
-		/**
-		 * create a context for a given bsp pid
-		 */
-		virtual Context * create ( int bsp_pid ) = 0;
-
-		/**
-		 * destroy a context
-		 */
-		virtual void destroy ( Context * t ) = 0;
-	};
-
-	class TaskMapper;
 
 	/**
 	 * BSP context. Subclass this to run parallel steps.
@@ -38,22 +17,32 @@ namespace bsp {
 	 */
 	class Context {
 	public:
-
-		Context (procmapper_t & pm, int _local_pid = 0) : procmapper(pm) {
-			local_pid = _local_pid;
-			pid = procmapper.local_to_global_pid(local_pid);
+		/** 
+		 * This will be called by the factory after construction
+		 */ 
+		void initialize_context (TaskMapper * tm, int bsp_pid, Context * parent = NULL)  {
+			mapper = tm;
+			parentcontext = parent;
+			local_pid = tm->global_to_local_pid(bsp_pid);
+			pid = bsp_pid;
+			runme = NULL;	// this really needs to be initialized
+			init ();
 		}
 
-		procmapper_t & get_procmapper() {
-			return procmapper;
+		/**
+		 * This is called when the class is inialized by the factory after 
+		 * construction.
+		 */
+		virtual void init () {
+
 		}
 
-		int procs_this_node () {
-			return procmapper.procs_this_node();
-		}
+		/**
+		 * BSPWWW interface embedded in context.
+		 */
 
 		int bsp_nprocs() const {
-			return procmapper.nprocs();
+			return mapper->nprocs();
 		}
 
 		int bsp_pid() const {
@@ -66,36 +55,91 @@ namespace bsp {
 
 		void bsp_global_get(bsp_global_handle_t src, size_t offset, 
 			void * dest, size_t size) {
-				tbb::mutex::scoped_lock l(singletons::global_mutex);
 				::bsp_global_get(src, offset, dest, size);
 		}
 
 		void bsp_global_put(const void * src, bsp_global_handle_t dest, 
 			size_t offset, size_t size) {
-				tbb::mutex::scoped_lock l(singletons::global_mutex);
-				::bsp_global_put(src, dest, offset, size);
+			::bsp_global_put(src, dest, offset, size);
 		}
 
 		void bsp_global_hpget(bsp_global_handle_t src, size_t offset, 
 			void * dest, size_t size) {
-				tbb::mutex::scoped_lock l(singletons::global_mutex);
-				::bsp_global_hpget(src, offset, dest, size);
+			::bsp_global_hpget(src, offset, dest, size);
 		}
 
 		void bsp_global_hpput(const void * src, bsp_global_handle_t dest, 
 			size_t offset, size_t size) {
-				tbb::mutex::scoped_lock l(singletons::global_mutex);
-				::bsp_global_hpput(src, dest, offset, size);
+			::bsp_global_hpput(src, dest, offset, size);
 		}
 
-		typename procmapper_t::context_t * bsp_context () {
-			return procmapper.get_context(local_pid);
+		/** We store the parent context, and add this function
+		 * to retrieve it later. Can return NULL for top-level contexts.
+		 */
+		bsp::Context * get_parent_context() {
+			return parentcontext;
 		}
+
+		/************************************************************************/
+		/* Helpers for context injection into a scope, and generic creation     */
+		/************************************************************************/
+
+		/** FUN is a function taking a Context* as its parameter */
+		typedef void (*FUN)(Context *);
+
+		/** Execute will run the runme function with this as it's argument */
+		void execute () {
+			ASSERT(runme != NULL);
+			runme (this);
+		}
+
+		FUN runme;				/** We replace this when we want to run a derived 
+								    class's run method on data stored in this context.
+									Remember, you can't add any new data members in 
+									such derived classes, the mechanism here only
+									allows to inject data and inherited things upwards.
+
+									See below for declaration of run_as, which 
+									can be used to initialize runme using subclassed
+									objects.
+
+									*/
 
 	private:
-		procmapper_t & procmapper;  ///< The process mapper object
-		int pid; ///< The global pid of this computation
-		int local_pid; ///< The local pid of this computation
+		Context * parentcontext;	
+		TaskMapper * mapper;  ///< The process mapper object
+		int pid;		///< The global pid of this computation
+		int local_pid;	///< The local pid of this computation
+	};
+
+
+	/**
+	 * as_class must be subclassed from Context and 
+	 * have a member function run();
+	 */
+	template <class as> 
+	static void run_context_as (Context * thiz) {
+		((as *) thiz)->run();
+	}
+
+	/**
+	 * Factory template which passes TaskMapper, pid and parent context 
+	 * to the constructor of a given type, and casts the created pointer
+	 * to Context *.
+	 */
+
+	template <class runnablecontext> 
+	class ContextFactory : public AbstractContextFactory {
+	public:
+		Context * create ( TaskMapper * tm, int bsp_pid, Context * parent) {
+			Context * p = new runnablecontext();
+			p->initialize_context(tm, bsp_pid, parent);
+			return p;
+		}
+
+		void destroy ( Context * t ) {
+			delete (runnablecontext * ) t;
+		}
 	};
 
 };

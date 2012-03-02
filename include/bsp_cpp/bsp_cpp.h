@@ -13,13 +13,14 @@
 #include <string>
 #include <string.h>
 
-#include "bsp_tools/singletons.h"
-
 #include "bsp_broadcast.h"
 
-#include "bsp_tools/utilities.h"
-#include "bsp_tools/aligned_allocator.h"
-#include "bsp_tools/global_params.h"
+#include "../bsp_tools/utilities.h"
+#include "../bsp_tools/aligned_allocator.h"
+
 #include "bsp_commandline.h"
+#include "TaskMapper.h"
+#include "Context.h"
+#include "Runner.h"
 
 #endif

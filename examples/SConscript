@@ -1,0 +1,7 @@
+
+Import("mpi", "libsuffix")
+
+bsp = mpi.Clone()
+bsp.Append(LIBS= ['bsponmpi'+libsuffix])
+
+bsp.Program('simplebspcomputation', ['simplebspcomputation.cpp'])

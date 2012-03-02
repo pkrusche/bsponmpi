@@ -452,3 +452,5 @@ SConscript('src/SConscript')
 
 if runtests:
 	SConscript('tests/SConscript')
+
+SConscript('examples/SConscript')

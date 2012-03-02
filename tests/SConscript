@@ -18,5 +18,5 @@ Test (bsp, 'bsp_test_put', ['bsp_test_put.c'])
 Test (bsp, 'bsp_test_send', ['bsp_test_send.c'])
 Test (bsp, 'bsp_test_global_drma', ['bsp_test_global_drma.c'])
 
+bsp.Program('simplebspcomputation', ['simplebspcomputation.cpp'])
 
-#bsp.Program('simplebspcomputation', ['simplebspcomputation.cpp'])

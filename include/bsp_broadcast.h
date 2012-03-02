@@ -45,12 +45,12 @@ namespace bsp {
 	/************************************************************************/
 
 	template <typename _t>
-	void bsp_broadcast(int source, _t & data) {
+	static inline void bsp_broadcast(int source, _t & data) {
 		::bsp_broadcast(source, &data, sizeof(_t));
 	}
 
 	template <>
-	void bsp_broadcast(int source, std::string & data) {
+	static inline void bsp_broadcast(int source, std::string & data) {
 		size_t len;
 
 		len = data.size();

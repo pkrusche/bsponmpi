@@ -13,8 +13,8 @@ files = [
 	'bsp_time.c', 
 	'bsp_mutex.c',
 	# these are the files for the c++ part
-#	'bsp_context.cpp',
-#	'bsp_commandline.cpp',
+	'bsp_commandline.cpp',
+	'bsp_tbb.cpp',
 ]
 
 if sequential:

@@ -63,7 +63,7 @@ namespace bsp {
 	 */
 
 	void bsp_command_line (
-		int argc, const char ** argv, 
+		int argc, char ** argv, 
 		boost::program_options::options_description & all_opts, 
 		boost::program_options::variables_map & vm);
 };

@@ -47,19 +47,8 @@ void BSP_INIT_MPI (int * pargc, char *** pargv, void * o) {
 	MPI_Init(pargc, pargv);
 	MPI_Comm_size( MPI_COMM_WORLD, &bsp->nprocs);
 	MPI_Comm_rank( MPI_COMM_WORLD, &bsp->rank);
-
-	/* initialize if necessary */
-	if (MPI_Initialized(&flag), !flag)
-	{
-		int argc = 0;
-		char **argv = NULL;
-		fprintf(stderr, "Warning! bsp_init() is not called. Initialization of MPI may fail\n");
-		MPI_Init (&argc, &argv);
-		MPI_Comm_size (MPI_COMM_WORLD, &bsp->nprocs);
-		MPI_Comm_rank (MPI_COMM_WORLD, &bsp->rank);
-	}
-
 	MPI_Comm_group( MPI_COMM_WORLD, &group);
+
 	ranks =(int*) bsp_malloc( bsp->nprocs, sizeof(int));
 	for (i = 0; i < bsp->nprocs; i++)
 		ranks[i] = i;
