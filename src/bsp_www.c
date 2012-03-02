@@ -698,16 +698,12 @@ void BSP_CALLING bsp_hpget (int pid, const void * src, long int offset, void * d
 
 bsp_global_handle_t BSP_CALLING bsp_global_alloc(size_t array_size) {
 	bsp_global_handle_t v;
-	BSP_TS_LOCK();
 	v = bspx_global_alloc(&bsp, array_size);
-	BSP_TS_UNLOCK();	
 	return v;
 }
 
 void BSP_CALLING bsp_global_free(bsp_global_handle_t ptr) {
-	BSP_TS_LOCK();
 	bspx_global_free(&bsp, ptr);
-	BSP_TS_UNLOCK();	
 }
 
 void BSP_CALLING bsp_global_get(bsp_global_handle_t src, size_t offset, void * dest, size_t size) {

@@ -53,26 +53,6 @@ namespace bsp {
 			return local_pid;
 		}
 
-		void bsp_global_get(bsp_global_handle_t src, size_t offset, 
-			void * dest, size_t size) {
-				::bsp_global_get(src, offset, dest, size);
-		}
-
-		void bsp_global_put(const void * src, bsp_global_handle_t dest, 
-			size_t offset, size_t size) {
-			::bsp_global_put(src, dest, offset, size);
-		}
-
-		void bsp_global_hpget(bsp_global_handle_t src, size_t offset, 
-			void * dest, size_t size) {
-			::bsp_global_hpget(src, offset, dest, size);
-		}
-
-		void bsp_global_hpput(const void * src, bsp_global_handle_t dest, 
-			size_t offset, size_t size) {
-			::bsp_global_hpput(src, dest, offset, size);
-		}
-
 		/** We store the parent context, and add this function
 		 * to retrieve it later. Can return NULL for top-level contexts.
 		 */

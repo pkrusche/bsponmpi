@@ -27,6 +27,7 @@ static inline bsp::Context * get_parent_context() {
  */
 
 #define bsp_begin(context, p) {					\
+	_bsp_sync();								\
 	typedef context ContextData;				\
 	bsp::ContextFactory<context> factory;		\
 	bsp::TaskMapper tm (p, &factory,			\

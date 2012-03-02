@@ -46,7 +46,7 @@ namespace bsp {
 		namespace po = boost::program_options;
 		po::store(po::command_line_parser(args).
 			options(all_opts).run(), vm);
-
+		vm.notify();
 	}
 
 	/**
@@ -80,9 +80,9 @@ namespace bsp {
 
 		std::vector<std::string> args;
 
-		if (bsp_pid == 0) {
-			for (int a = 0; a < argc; ++a) {
-				args.insert(args.end(), argv[a]);
+		if (bsp_pid() == 0) {
+			for (int a = 0; a < argc-1; ++a) {
+				args.insert(args.end(), argv[a+1]);
 			}
 		}
 		bsp_command_line(0, args, all_opts, vm);
