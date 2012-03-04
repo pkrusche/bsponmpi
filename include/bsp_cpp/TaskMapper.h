@@ -125,19 +125,6 @@ namespace bsp {
 		}
 
 		/**
-		 * Given a global pid, return the node and local pid where it
-		 * is running.
-		 * 
-		 */
-
-		virtual void where_is (int global_pid, int & proc, int & localpid) const {
-			proc = global_pid / processors;
-			localpid = global_pid - proc * procs_per_node();
-			ASSERT (localpid >= 0 && localpid < max_procs_per_node);
-		}
-
-
-		/**
 		 * Get the context for a local process
 		 */
 		virtual Context & get_context(int local_pid) {
