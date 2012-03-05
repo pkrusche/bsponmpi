@@ -64,7 +64,11 @@ namespace bsp {
 				procs_on_this_node = max_procs_per_node;
 			}
 
-			context_store.resize(procs_on_this_node);			
+			// we create at least one context. We might not use this context,
+			// but the context implementation must need to be called at least
+			// once on every node to create static stuff
+			using namespace std;
+			context_store.resize(max (1, procs_on_this_node));
 			for (int i = 0, i_end = (int)context_store.size(); i < i_end; ++i ) {
 				context_store[i] = factory->create( this, local_to_global_pid(i), parent );
 			}

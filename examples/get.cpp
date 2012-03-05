@@ -15,9 +15,13 @@ tbb::spin_mutex output_mutex;
 class MyContext : public bsp::Context {
 public:
 	void init() {
-		var1 = ((MyContext*)get_parent_context())->var1;
-		memset(var2, 0, sizeof(int)*5);
-		var3 = ((MyContext*)get_parent_context())->var3;
+		var1 = bsp_pid() + 1;;
+		memset (var2, -1, sizeof(int)*5);
+		var2[2] = bsp_nprocs() - bsp_pid();
+		var3 = bsp_pid() + 1;
+		myval1 = -1;
+		myval2 = -1;
+		myval3 = -1;
 	}
 
 	void run( int processors ) {
@@ -32,28 +36,24 @@ public:
 		bsp_push_reg(&var3, sizeof (int));
 
 		BSP_SYNC();
-
-		int myval1 = bsp_pid() + 1;
-		int myval2 = bsp_nprocs() - bsp_pid();
-		int myval3 = bsp_pid() + 1;
 		
 		{
 			tbb::spin_mutex::scoped_lock l (output_mutex);
-			cout << "Process " << bsp_pid() << " sends values [" 
-				 << myval1 << "," << myval2 << "," << myval3 << "]"
-				 << " to process " << bsp_nprocs() - 1 - bsp_pid() << endl;
+			cout << "Process " << bsp_pid() << " holds values [" 
+				 << var1 << "," << var2[2] << "," << var3 << "]. "
+				 << " Get data from " << bsp_nprocs() - 1 - bsp_pid() << endl;
 		}
 
-		bsp_put (bsp_nprocs() - 1 - bsp_pid(), &myval1, &var1, 0, sizeof(int));
-		bsp_put (bsp_nprocs() - 1 - bsp_pid(), &myval2, var2, 2*sizeof(int), sizeof(int));
-		bsp_put (bsp_nprocs() - 1 - bsp_pid(), &myval3, &var3, 0, sizeof(int));
+		bsp_get (bsp_nprocs() - 1 - bsp_pid(), &var1, 0, &myval1, sizeof(int));
+		bsp_get (bsp_nprocs() - 1 - bsp_pid(), var2, 2*sizeof(int), &myval2, sizeof(int));
+		bsp_get (bsp_nprocs() - 1 - bsp_pid(), &var3, 0, &myval3, sizeof(int));
 
 		BSP_SYNC();
 
 		{
 			tbb::spin_mutex::scoped_lock l (output_mutex);
 			cout << "Process " << bsp_pid() << " received values [" 
-				<< var1 << "," << var2[2] << "," << var3 << "]"
+				<< myval1 << "," << myval2 << "," << myval3 << "]"
 				<< endl;
 		}
 
@@ -70,6 +70,10 @@ protected:
 	int var1;
 	int var2[5];
 	int var3;
+
+	int myval1;
+	int myval2;
+	int myval3;
 };
 
 
@@ -107,12 +111,12 @@ int main (int argc, char** argv) {
 	}
 
 
+
 	try {
 		MyContext root;
 		root.run( recursive_processors );
 
 		bsp_end();
-
 
 	} catch (std::exception e) {
 		string s = string ("BSP Application runtime error: ") + e.what();

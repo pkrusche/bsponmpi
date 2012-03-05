@@ -123,7 +123,23 @@ static inline void
 		table->used_slot_count[p] = index_size;
 	}  
 
-}  
+}
+
+/** return true (1) if a given delivery table is empty
+ @param table Reference to a DeliveryTable
+ */
+static inline int deliveryTable_empty(ExpandableTable * RESTRICT table) {
+	const unsigned int index_size = 
+		no_slots(3 * 6 * sizeof(unsigned int), sizeof(ALIGNED_TYPE));
+	unsigned int p;
+	for (p = 0; p < table->nprocs; p++)
+	{
+		if ( table->used_slot_count[p] > index_size ) {
+			return 0;
+		}
+	}
+	return 1;
+}
 
 /** Frees memory allocated by a DeliveryTable 
 @param table Reference to a DeliveryTable */

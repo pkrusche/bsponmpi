@@ -6,3 +6,4 @@ bsp.Append(LIBS= ['bsponmpi'+libsuffix])
 
 bsp.Program('simplebspcomputation', ['simplebspcomputation.cpp'])
 bsp.Program('put', ['put.cpp'])
+bsp.Program('get', ['get.cpp'])
