@@ -29,6 +29,7 @@ information.
 #include "bsp_config.h"
 
 #include <algorithm>
+#include <stdexcept>
 
 #include "bsp_contextimpl.h"
 
@@ -188,7 +189,7 @@ void bsp::ContextImpl::bsp_sync(bsp::TaskMapper * mapper) {
 		if (h_recv[CM_NENTRIES * p + CM_FLAGS] & CM_FLAG_HP) {
 			any_hp = true;
 		}
-		reg_req_size = max ((unsigned)reg_req_size, h_recv[CM_NENTRIES * p + CM_FLAGS] >> 4);
+		reg_req_size = std::max ((unsigned)reg_req_size, h_recv[CM_NENTRIES * p + CM_FLAGS] >> 4);
 	}
 
 	/**

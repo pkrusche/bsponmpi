@@ -43,10 +43,9 @@ namespace bsp {
 	 * mapper.
 	 * 
 	 */
-	template <class ctx> 
-	void run_context ( TaskMapper * mapper ) {
+	inline void run_context ( TaskMapper * mapper, Context::FUN _runme ) {
 		for (int j = 0;	j < mapper->procs_this_node(); ++j ) {
-			mapper->get_context (j).runme = &run_context_as<ctx>;
+			mapper->get_context (j).runme = _runme;
 		}
 		ComputationTask & root = *new( tbb::task::allocate_root() ) 
 			ComputationTask ( mapper );

@@ -58,8 +58,11 @@ information.
  */
 #define BSP_SYNC()								\
 			} 									\
+			static void run_as(Context * thiz) {\
+				( (MyRC*)thiz )->run();			\
+			}									\
 		};										\
-		bsp::run_context<MyRC> (&tm);			\
+		bsp::run_context(&tm, &MyRC::run_as); 	\
 	}											\
 	Context::sync_contexts(&tm);				\
 	{											\
@@ -69,9 +72,12 @@ information.
 
 #define BSP_END()								\
 			} 									\
+			static void run_as(Context * thiz) {\
+				( (MyRC*)thiz )->run();			\
+			}									\
 		};										\
 												\
-		bsp::run_context<MyRC> (&tm);			\
+		bsp::run_context(&tm, &MyRC::run_as);	\
 	}											\
 	Context::sync_contexts(&tm);				\
 }

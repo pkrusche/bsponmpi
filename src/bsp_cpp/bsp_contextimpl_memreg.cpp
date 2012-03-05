@@ -28,9 +28,10 @@ Implementation of memory registers for Contexts
 @author Peter Krusche
 */
 
-#include "bsp_config.h"
+#include "bsp_config.h" 
 
 #include <algorithm>
+#include <stdexcept>
 
 #include "bsp_contextimpl.h"
 

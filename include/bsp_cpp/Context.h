@@ -124,7 +124,6 @@ namespace bsp {
 
 		/** Execute will run the runme function with this as it's argument */
 		inline void execute () {
-			ASSERT(runme != NULL);
 			runme (this);
 		}
 
@@ -151,20 +150,6 @@ namespace bsp {
 
 		void * impl;    ///< Implementation specific stuff
 	};
-
-
-	/**
-	 * 
-	 * Function to allow running different superstep's code on the 
-	 * same data.
-	 *
-	 * as_class must be subclassed from Context and 
-	 * have a member function run();
-	 */
-	template <class as> 
-	static inline void run_context_as (Context * thiz) {
-		((as *) thiz)->run();
-	}
 
 	/**
 	 * Factory template which passes TaskMapper, pid and parent context 

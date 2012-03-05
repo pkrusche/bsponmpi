@@ -56,6 +56,7 @@ namespace bsp {
 			Context * parent = NULL
 		) : contextfactory(factory),
 			processors (_processors) {
+			using namespace std;
 			max_procs_per_node = ICD(processors, ::bsp_nprocs());
 			if( max_procs_per_node * (::bsp_pid()+1) > processors ) {
 				procs_on_this_node =  

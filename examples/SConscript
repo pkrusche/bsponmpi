@@ -2,7 +2,7 @@
 Import("mpi", "libsuffix")
 
 bsp = mpi.Clone()
-bsp.Append(LIBS= ['bsponmpi'+libsuffix])
+bsp.Append(LIBS= ['bsponmpi'+libsuffix, 'boost_program_options'])
 
 bsp.Program('simplebspcomputation', ['simplebspcomputation.cpp'])
 bsp.Program('put', ['put.cpp'])

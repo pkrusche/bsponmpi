@@ -25,7 +25,7 @@
 
 #include "bsp_config.h"
 
-#ifndef _SEQUENTIAL
+#ifdef _HAVE_MPI
 #include "mpi.h"
 
 static inline void bsp_broadcast(int source, void* source_data, size_t len) {

@@ -291,13 +291,6 @@ typedef uint16_t WORD;
 
 #endif
 
-#ifdef _DEBUG
-#include <assert.h>
-#define ASSERT assert
-#else
-#define ASSERT(x)
-#endif
-
 """)
 	autohdr.write("#define RESTRICT \n")
 	autohdr.write("#define __func__ __FUNCTION__ \n")
@@ -334,6 +327,13 @@ autohdr.write("""
 #endif 
 
 #endif  
+
+#ifdef _DEBUG
+#include <assert.h>
+#define ASSERT assert
+#else
+#define ASSERT(x)
+#endif
 
 """)
 	
