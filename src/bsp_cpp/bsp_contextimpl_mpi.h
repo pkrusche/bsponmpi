@@ -33,25 +33,88 @@ Implementation header for all
 
 #include "bspx.h"
 
-#include <tbb/spin_mutex.h>
 #include <map>
+#include <queue>
+
+#include "bsp_cpp/TaskMapper.h"
+#include "bsp_tools/Avector.h"
 
 namespace bsp {
 
+	struct MemoryRegister {
+		const void **		pointers;
+		size_t				nbytes;
+		size_t				serial;
+	};
+
+	struct MemoryRegister_Reg {
+		const void * data;
+		size_t size;
+		size_t serial;
+		bool   push;
+	};
+
 	class ContextImpl {
 	public:
-		ContextImpl(int nprocs, int rank);
+
+		enum {
+			MAX_REGISTER_REQS = 0xfffffff,	///< maximum number of memory register (de-)registrations per superstep
+		};
+
+		ContextImpl(TaskMapper * tm, int local_pid);
 		~ContextImpl();
 
-		/** Synchronize hpget/hpput ops using MPI_Win_fence */
-		void bsp::ContextImpl::sync_hpops();
+		static void bsp_sync (bsp::TaskMapper * mapper);
 
-		BSPObject bsp;
+		void bsp_push_reg (const void *, size_t);
+		void bsp_pop_reg (const void *);
+		void bsp_put (int, const void *, void *, long int, size_t);
+		void bsp_get (int, const void *, long int, void *, size_t);
+
+		void bsp_send (int, const void *, const void *, size_t);
+		void bsp_qsize (int * , size_t * );
+		void bsp_get_tag (int * , void * );
+		void bsp_move (void *, size_t);
+		void bsp_set_tagsize (size_t *);
+
+		void bsp_hpput (int, const void *, void *, long int, size_t);
+		void bsp_hpget (int, const void *, long int, void *, size_t);
+		int bsp_hpmove (void **, void **);
+
+	private:
+
+		/************************************************************************/
+		/* Synchronization steps                                                */
+		/************************************************************************/
+
+		/** process memory register registrations 
+		 *
+		 * @param reg_req_size : number of push and pop requests.
+		 */
+
+		static void process_memoryreg_ops(bsp::TaskMapper * mapper, int reg_req_size);
+
+		/** process get requests */
+		static void process_get_requests();
+
+		int local_pid; ///< local pid 
+
+		/** remember the task mapper */
+		TaskMapper * mapper;
+
+		/** We reimplement BSPonMPI's registration mechanism here
+		 *  using C++ maps. 
+		 */
 
 		bool any_hp;
-		std::map<void*, MPI_Win> hp_map; 
 
-		static tbb::spin_mutex context_mutex;
+		std::map<const void*, MemoryRegister> memory_register_map; /**< all valid memory registers, indexed by ptr 
+															     in this context */
+
+		std::queue< MemoryRegister_Reg > reg_requests;	/**< new registrations are buffered here */
+
+		static utilities::AVector <unsigned int> h_send;	/**< superstep input element counts */
+		static utilities::AVector <unsigned int> h_recv;	/**< superstep output element counts */
 	};
 
 };

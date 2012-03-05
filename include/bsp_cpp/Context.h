@@ -140,6 +140,9 @@ namespace bsp {
 
 									*/
 
+		/** impl helper */
+		inline void * get_impl() { return impl; }
+
 	private:
 		Context * parentcontext;	///< this is the parent context 
 		TaskMapper * mapper;  ///< The process mapper object

@@ -108,6 +108,15 @@ namespace bsp {
 			return ::bsp_pid() * max_procs_per_node + local_pid;
 		}
 
+
+		/**
+		 * Take a local processor id and node id, translate to global id
+		 */
+
+		virtual int local_to_global_pid(int node, int local_pid) const {
+			return node * max_procs_per_node + local_pid;
+		}
+
 		/**
 		 * Take a global processor, translate to local
 		 * 
@@ -129,6 +138,14 @@ namespace bsp {
 		 */
 		virtual Context & get_context(int local_pid) {
 			return *(context_store[local_pid]);
+		}
+
+		/** 
+		 * Find out where a given global processor context is held. 
+		 */
+		virtual void where_is (int global_pid, int & node, int & local_pid) {
+			node = global_pid / max_procs_per_node;
+			local_pid = global_pid - node * max_procs_per_node;
 		}
 
 	private:

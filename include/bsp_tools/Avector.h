@@ -12,9 +12,14 @@
 #include "aligned_allocator.h"
 
 namespace utilities {
+
 	/**
-	* @brief an AVector is an implementation of a vector (resizable array)
-	* with a public data pointer
+	* An AVector is an implementation of a vector (resizable array)
+	* with a public data pointer that is cache aligned. 
+	* 
+	* We don't implement the whole interface of std::vector, this 
+	* is just a helper class to manage storage.
+	* 
 	*/
 	template <class _t>
 	class AVector {
@@ -54,17 +59,17 @@ namespace utilities {
 			}
 		}
 
-		_t & operator[](int index) {
+		inline _t & operator[](int index) {
 			ASSERT(offset + index >= 0 && offset + index < size);
 			return data[offset + index];
 		}
 
-		const _t & operator[](int index) const {
+		inline const _t & operator[](int index) const {
 			ASSERT(offset + index >= 0 && offset + index < size);
 			return data[offset + index];
 		}
 
-		void resize(size_t _size, size_t _grow= 1) {
+		inline void resize(size_t _size, size_t _grow= 1) {
 			using namespace std;
 			ASSERT(_size >= 0);
 			grow= _grow;
@@ -109,23 +114,28 @@ namespace utilities {
 			}
 		}
 
-		_t * aligned_data(int index) const {
+		/** Get the address of the aligned block which contains the item at index */
+		inline _t * aligned_data(int index) const {
 			return (_t*)((uint64_t)(data + index + offset) & (allocator::ALIGN_MASK));
 		}
 
-		size_t alignment_penalty(int index) const {
+		/** How much is an item shifted because of alignment in units of sizeof (_t) */
+		inline size_t alignment_penalty(int index) const {
 			return ( ( ((index + offset)*sizeof(_t)) & allocator::ALIGN_MASK ) + sizeof(_t) - 1) / sizeof(_t);
 		}
 
-		size_t aligned_size() const {
+		/** Data size including the alignment penalty */
+		inline size_t aligned_size() const {
 			return size + alignment_penalty(0);
 		}
 
-		_t * exact_data(int index) const {
+		/** Exact location of data item at index */
+		inline _t * exact_data(int index) const {
 			return data + offset + index;
 		}
 
-		size_t exact_size() const {
+		/** Exact number of items in this vector  */
+		inline size_t exact_size() const {
 			return size;
 		}
 

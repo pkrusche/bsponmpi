@@ -40,13 +40,15 @@ which can use tbb mutexes rather than OS standard ones.
 #include <stdlib.h>
 
 #include "bsp_config.h"
-#include "bsp_private.h"
 
 #include "bsp.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus
+
+#include "bsp_private.h"
+
 	/** @name Initialisation */
 	/*@{*/
 	void bspx_init_bspobject (BSPObject *, int, int );
