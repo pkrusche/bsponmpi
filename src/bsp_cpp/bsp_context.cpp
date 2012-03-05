@@ -32,7 +32,7 @@ information.
 
 #include <tbb/spin_mutex.h>
 
-#include "bsp_contextimpl_mpi.h"
+#include "bsp_contextimpl.h"
 
 
 /** Mutex to make access to message buffers thread safe */

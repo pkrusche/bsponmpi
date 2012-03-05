@@ -21,9 +21,9 @@ information.
 */
 
 
-/** @file bsp_contextimpl_mpi.h
+/** @file bsp_contextimpl.h
 
-Implementation header for all 
+Implementation header for ContextImpl implementation
 
 @author Peter Krusche
 */

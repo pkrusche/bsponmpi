@@ -16,7 +16,8 @@ files = [
 	'bsp_cpp/bsp_commandline.cpp',
 	'bsp_cpp/bsp_tbb.cpp',
 	'bsp_cpp/bsp_context.cpp',
-	'bsp_cpp/bsp_contextimpl_mpi.cpp',
+	'bsp_cpp/bsp_contextimpl.cpp',
+	'bsp_cpp/bsp_contextimpl_memreg.cpp',
 ]
 
 if sequential:
