@@ -110,12 +110,6 @@ bsp::ContextImpl::~ContextImpl() {
 	if (g_bsp_refcount <= 0) {
 		bspx_destroy_bspobject(&g_bsp);
 	}
-
-	/** clean up memory registers */
-	// for (std::map<const void*,MemoryRegister>::iterator it = memory_register_map.begin();
-	// 	it != memory_register_map.end(); ++it) {
-	// 	delete [] (it->second.pointers);
-	// }
 }
 
 /**

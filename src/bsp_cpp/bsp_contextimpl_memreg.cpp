@@ -152,7 +152,6 @@ void bsp::ContextImpl::process_memoryreg_ops(bsp::TaskMapper * mapper, int reg_r
 				if (it == cimpl->memory_register_map.end()) {
 					throw std::runtime_error("bsp_sync(): mismatched popreg.");
 				}
-				// delete [] it->second.pointers;
 				cimpl->memory_register_map.erase(it);
 			}
 		}

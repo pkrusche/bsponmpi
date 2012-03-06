@@ -15,7 +15,6 @@ files = [
 	'bsp_comm_seq.c',
 	# these are the files for the c++ part
 	'bsp_cpp/bsp_commandline.cpp',
-	'bsp_cpp/bsp_tbb.cpp',
 	'bsp_cpp/bsp_context.cpp',
 	'bsp_cpp/bsp_contextimpl.cpp',
 	'bsp_cpp/bsp_contextimpl_memreg.cpp',
