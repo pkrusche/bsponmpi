@@ -243,3 +243,4 @@ if runtests:
 	SConscript('tests/SConscript')
 
 SConscript('examples/SConscript')
+SConscript('examples/bspedupack/SConscript')

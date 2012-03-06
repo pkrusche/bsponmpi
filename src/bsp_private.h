@@ -60,7 +60,7 @@ typedef struct _BSPObject
 	/** Memory register. Tracks registered variables and memory locations to be
 	* used in DRMA operations, i.e.: bsp_get() and bsp_put() */
 	ExpandableTable memory_register;
-	/** Mesage queue. Points to all received data initiated by a bsp_send() on
+	/** Message queue. Points to all received data initiated by a bsp_send() on
 	* some processor. */
 	MessageQueue message_queue;
 

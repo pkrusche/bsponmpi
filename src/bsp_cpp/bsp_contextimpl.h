@@ -86,7 +86,7 @@ namespace bsp {
 	private:
 
 		/************************************************************************/
-		/* Synchronization steps                                                */
+		/* Synchronization helpers                                              */
 		/************************************************************************/
 
 		/** process memory register registrations 
@@ -114,6 +114,7 @@ namespace bsp {
 
 		static utilities::AVector <unsigned int> h_send;	/**< superstep input element counts */
 		static utilities::AVector <unsigned int> h_recv;	/**< superstep output element counts */
+
 	};
 
 };
