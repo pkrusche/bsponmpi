@@ -124,8 +124,7 @@ void bspx_sync (BSPObject * bsp, BSPX_CommFn0 infocomm, BSPX_CommFn communicator
 		maxdelrows = MAX( bsp->recv_index[1 + 3*p] + 
 		bsp->request_table.info.req.data_sizes[p], maxdelrows);
 
-	if ( bsp->request_received_table.rows < maxreqrows )
-	{
+	if ( bsp->request_received_table.rows < maxreqrows ) {
 		maxreqrows = MAX(bsp->request_received_table.rows, maxreqrows);
 		requestTable_expand(&bsp->request_received_table, maxreqrows);
 	}  

@@ -30,6 +30,7 @@ information.
 
 #include <algorithm>
 #include <stdexcept>
+#include <sstream>
 
 #include "bsp_contextimpl.h"
 
@@ -64,13 +65,12 @@ static int g_bsp_refcount = 0; ///< node level BSP object reference count
 
 #define CM_NENTRIES		3
 
-#define	CM_MESSAGE_COUNT	0
-#define	CM_REQUEST_COUNT	1
+#define	CM_REQUEST_COUNT	0
+#define	CM_MESSAGE_COUNT	1
 #define CM_FLAGS			2
 
 #define CM_FLAG_GETS			1
-#define CM_FLAG_HP				2
-#define CM_FLAG_MESSAGES		4
+#define CM_FLAG_MESSAGES		2
 
 utilities::AVector <unsigned int> bsp::ContextImpl::h_send;
 utilities::AVector <unsigned int> bsp::ContextImpl::h_recv;
@@ -154,10 +154,7 @@ void bsp::ContextImpl::bsp_sync(bsp::TaskMapper * mapper) {
 		if ( any_messages ) {
 			h_send[CM_NENTRIES * p + CM_FLAGS] |= CM_FLAG_MESSAGES;
 		}
-		if ( any_hp ) {
-			h_send[CM_NENTRIES * p + CM_FLAGS] |= CM_FLAG_HP;
-		}
-
+		
 		h_send[CM_NENTRIES * p + CM_FLAGS] |= reg_req_size; 
 	}
 	
@@ -172,6 +169,7 @@ void bsp::ContextImpl::bsp_sync(bsp::TaskMapper * mapper) {
 
 	any_messages = false;
 	bool any_gets = false;
+	bool local_messages = false;
 	for (int p = 0; p < g_bsp.nprocs; ++p) {
 		// local operations are exempt
 		if ( p == g_bsp.rank ) {
@@ -186,9 +184,6 @@ void bsp::ContextImpl::bsp_sync(bsp::TaskMapper * mapper) {
 			any_gets = true;
 		}
 
-		if (h_recv[CM_NENTRIES * p + CM_FLAGS] & CM_FLAG_HP) {
-			any_hp = true;
-		}
 		reg_req_size = std::max ((unsigned)reg_req_size, h_recv[CM_NENTRIES * p + CM_FLAGS] >> 4);
 	}
 
@@ -208,73 +203,90 @@ void bsp::ContextImpl::bsp_sync(bsp::TaskMapper * mapper) {
 	requestTable_reset(&g_bsp.request_received_table);
 	deliveryTable_reset(&g_bsp.delivery_received_table);
 
-	/** if any gets were performed we need to 
-  	 *  exchange them and convert them to put requests
-	 */
-	if (any_gets) {
-		process_get_requests();
-	}
-
 	/** 
 	 * put requests and messages are sent/received here. 
 	 */
-	if ( any_messages ) {
-		using namespace std;
-
-		unsigned int maxdelrows = 0;
-
-		/** determine the required size for the table */
-		for (int p = 0; p < g_bsp.nprocs; p++) {
-			maxdelrows = max( h_recv[ CM_MESSAGE_COUNT + CM_NENTRIES * p ] 
-							+ g_bsp.delivery_received_table.used_slot_count[p], 
-						maxdelrows);
+	if ( any_messages || any_gets ) {
+		int maxdelrows = 0;
+		
+		/* expand buffers if necessary */
+		for (unsigned int p = 0; p < (unsigned)g_bsp.nprocs; p++) {
+			maxdelrows = MAX( h_recv[CM_MESSAGE_COUNT + CM_NENTRIES*p] + 
+				g_bsp.request_table.info.req.data_sizes[p], maxdelrows);
 		}
-
-		/** make delivery reception table big enough */
+		
 		if (g_bsp.delivery_received_table.rows < maxdelrows ) {
-			deliveryTable_expand(&g_bsp.delivery_received_table, 
-				maxdelrows - g_bsp.delivery_received_table.rows );
+			maxdelrows = std::max (g_bsp.delivery_received_table.rows, (unsigned)maxdelrows);
+			deliveryTable_expand (&g_bsp.delivery_received_table, maxdelrows );
 		}  
 
 		/* copy necessary indices to received_tables */
-		for (int p = 0; p < g_bsp.nprocs; p++)  {
-			// we run a modified version of expandableTable_comm here which
-			// preserves stuff in delivery_received_table which might already
-			// be there through node-local delivery
+		for (unsigned int p = 0; p < (unsigned)g_bsp.nprocs; p++) {
+			g_bsp.delivery_received_table.used_slot_count[p] =
+				g_bsp.recv_index[ CM_MESSAGE_COUNT + CM_NENTRIES * p ] + 
+				g_bsp.request_table.info.req.data_sizes[p] ;
+		}	
 
-			// this one points to the position in the table where we can receive from 
-			// processor p (this will be zero except for p == bsp_pid() 
-			g_bsp.delivery_received_table.offset[p] = 
-				p * g_bsp.delivery_received_table.rows * g_bsp.delivery_received_table.slot_size ;
-			
-			// this one points to the first element sent to processor p
-			g_bsp.delivery_table.offset[p] = p * g_bsp.delivery_table.rows * g_bsp.delivery_table.slot_size;
+		/** if any gets were performed we need to 
+	  	 *  exchange them and convert them to put requests
+		 */
+		if (any_gets) {
+			unsigned int maxreqrows = array_max(h_recv.data 
+				+ CM_REQUEST_COUNT, CM_NENTRIES*g_bsp.nprocs, CM_NENTRIES);
 
-			// this one says how many bytes we send to processor p
-			g_bsp.delivery_table.bytes[p] = g_bsp.delivery_table.used_slot_count[p] * g_bsp.delivery_table.slot_size;
-			
-			// this one says how many bytes we receive from processor p
-			g_bsp.delivery_received_table.bytes[p] = 
-				h_recv[ CM_NENTRIES * p + CM_MESSAGE_COUNT ] * g_bsp.delivery_received_table.slot_size;
+			if ( maxreqrows > 0 ) {
+				requestTable_expand(&g_bsp.request_received_table, maxreqrows);
+			}
 
+			// tell expandableTable_comm how much data to expect
+			for (int p = 0; p < g_bsp.nprocs; p++)  {
+				g_bsp.request_received_table.used_slot_count[p] 
+					= h_recv[CM_NENTRIES * p + CM_REQUEST_COUNT];
+			}
+
+			expandableTable_comm(&g_bsp.request_table, &g_bsp.request_received_table,
+				_BSP_COMM1);
+
+			requestTable_execute(&g_bsp.request_received_table, &g_bsp.delivery_table);
 		}
+		
+		std::ostringstream s;
+		static int step = 0;
+		s << "s "<< step << "proc " << g_bsp.rank << " receives [";
+		for (int p = 0; p < g_bsp.nprocs; p++)  {
+			s << g_bsp.delivery_received_table.used_slot_count[p] << ",";
+		}
+		s << "]" << std::endl;
+		s << "s "<< step++ << "proc " << g_bsp.rank << " sends [";
+		for (int p = 0; p < g_bsp.nprocs; p++)  {
+			s << g_bsp.delivery_table.used_slot_count[p] << ",";
+		}
+		s << "]" << std::endl;
+		std::cerr << s.str() << std::endl;
+		
+		expandableTable_comm(&g_bsp.delivery_table, &g_bsp.delivery_received_table,
+			_BSP_COMM1);
 
-		/* the next thing to do is to walk the send table and actually send the 
-		* data */
-		_BSP_COMM1(g_bsp.delivery_table.data, g_bsp.delivery_table.bytes, g_bsp.delivery_table.offset,
-				   g_bsp.delivery_received_table.data, g_bsp.delivery_received_table.bytes, 
-				   g_bsp.delivery_received_table.offset );
-
-		/* clear the buffers */			
-		deliveryTable_reset(&g_bsp.delivery_table);
-
-		/* pack the memoryRegister */
-		memoryRegister_pack(&g_bsp.memory_register);
+		/** execute put operations */
+		deliveryTable_execute(&g_bsp.delivery_received_table, 
+			&g_bsp.memory_register, &g_bsp.message_queue, g_bsp.rank);
+			
+	// check if we want to do a local delivery round
+	} else if ( 
+		h_recv[CM_NENTRIES * g_bsp.rank + CM_FLAGS] &  ( CM_FLAG_MESSAGES |  CM_FLAG_GETS )
+	) {
+		requestTable_execute(&g_bsp.request_table, &g_bsp.delivery_table);		
+		/** execute put operations locally */
+		deliveryTable_execute(&g_bsp.delivery_table, 
+			&g_bsp.memory_register, &g_bsp.message_queue, g_bsp.rank);		
 	}
 
-	/** execute put operations */
-	deliveryTable_execute(&g_bsp.delivery_received_table, 
-		&g_bsp.memory_register, &g_bsp.message_queue, g_bsp.rank);
+	/* clear the buffers */			
+	deliveryTable_reset(&g_bsp.delivery_table);
+	requestTable_reset(&g_bsp.request_table);
+
+	/* pack the memoryRegister */
+	memoryRegister_pack(&g_bsp.memory_register);
 }
 
 /** Push register implementation which distinguishes between local and 
@@ -348,31 +360,6 @@ void bsp::ContextImpl::bsp_hpput (int, const void *, void *, long int, size_t) {
 
 void bsp::ContextImpl::bsp_hpget (int, const void *, long int, void *, size_t) {
 
-}
-
-/** Process all get requests, i.e. translate them into put requests */
-void bsp::ContextImpl::process_get_requests() {
-	unsigned int maxreqrows = array_max(h_recv.data 
-		+ CM_REQUEST_COUNT, CM_NENTRIES*g_bsp.nprocs, CM_NENTRIES);
-
-	if ( maxreqrows > 0 ) {
-		requestTable_expand(&g_bsp.request_received_table, maxreqrows);
-	}
-
-	// tell expandableTable_comm how much data to expect
-	for (int p = 0; p < g_bsp.nprocs; p++)  {
-		g_bsp.request_received_table.used_slot_count[p] 
-		= h_recv[CM_NENTRIES * p + CM_REQUEST_COUNT];
-	}
-
-	expandableTable_comm(&g_bsp.request_table, &g_bsp.request_received_table,
-		_BSP_COMM1);
-
-	requestTable_execute(&g_bsp.request_received_table, &g_bsp.delivery_table);
-
-	// clear buffers
-	requestTable_reset(&g_bsp.request_table);
-	requestTable_reset(&g_bsp.request_received_table);
 }
 
 void bsp::ContextImpl::bsp_send (int, const void *, const void *, size_t) {

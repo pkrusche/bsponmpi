@@ -94,9 +94,6 @@ namespace bsp {
 
 		static void process_memoryreg_ops(bsp::TaskMapper * mapper, int reg_req_size);
 
-		/** process get requests */
-		static void process_get_requests();
-
 		int local_pid; ///< local pid 
 
 		/** remember the task mapper */

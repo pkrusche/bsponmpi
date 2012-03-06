@@ -1,6 +1,6 @@
 
 MODE=release
-SEQUENTIAL=1
+SEQUENTIAL=0
 
 all: 
 	scons -Q mode=${MODE} sequential=${SEQUENTIAL} configure=1
