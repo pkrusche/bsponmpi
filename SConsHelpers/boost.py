@@ -74,4 +74,5 @@ def MakeEnv ( env ):
 		env.Append(
 			CPPFLAGS = ' -I'+boost_include ,
 			LIBPATH = [ boost_lib ],
+			LIBS = 'boost_program_options',
 		)
