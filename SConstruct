@@ -159,7 +159,7 @@ def ConfRunner(conf, autohdr):
 			Exit (1)
 
 	if not conf.CheckBoost('1.40'):
-		print "I could not find Boost >= 1.48. Have a look at SConsHelpers/boost.py"
+		print "I could not find Boost >= 1.40. Have a look at SConsHelpers/boost.py"
 		Exit (1)
 
 	if not conf.CheckTBB(3):
