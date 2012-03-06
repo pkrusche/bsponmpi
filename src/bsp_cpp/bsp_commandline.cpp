@@ -38,7 +38,7 @@ namespace bsp {
 				args.resize(argc);
 			}
 
-			for (int a = 0; a < argc; ++a) {
+			for (size_t a = 0; a < argc; ++a) {
 				bsp_broadcast(0, args[a]);
 			}
 		}

@@ -12,38 +12,44 @@ import platform
 #
 
 def PrepareEnv (root):
-	mode      = root['mode']
-	debuginfo = root['debuginfo']
-	profile   = root['profile']
-	subarch   = platform.uname()[4]
+    mode      = root['mode']
+    debuginfo = root['debuginfo']
+    profile   = root['profile']
+    subarch   = platform.uname()[4]
 
-	if mode == 'debug' or profile:
-		debuginfo = True
+    if mode == 'debug' or profile:
+        debuginfo = True
 
-	root.Append(
-		CCFLAGS= "/EHsc /nologo /W3 /wd4099 /D_CRT_SECURE_NO_DEPRECATE /WL /Zi",
-		LINKFLAGS = "/LARGEADDRESSAWARE:NO",
-	)
+    root.Append(
+	    CCFLAGS= "/EHsc /nologo /W3 /wd4099 /D_CRT_SECURE_NO_DEPRECATE /WL /Zi",
+	    LINKFLAGS = "/LARGEADDRESSAWARE:NO",
+    )
 
-	if debuginfo:
-		root.Append(
-			CCFLAGS = '/MDd /Od /RTC1 /RTCu /RTCs',
-			LINKFLAGS = '/DEBUG',
-		)
-	if mode == 'release':
-		root.Append( 
-			CCFLAGS='/MD /O2',
-		)
+    if debuginfo:
+        root.Append(
+		    CCFLAGS = '',
+		    LINKFLAGS = '/DEBUG',
+	    )
 
-	if subarch == 'AMD64':
-		root.Append(
-			ARFLAGS = '/MACHINE:X64',
-			LINKFLAGS = '/MACHINE:X64',
-		)
-	else:
-		root.Append(
-			ARFLAGS = '/MACHINE:X86',
-			LINKFLAGS = '/MACHINE:X86',
-		)
+    if mode == 'debug':
+        root.Append(
+		    CCFLAGS = '/MDd /RTC1 /RTCu /RTCs /Od',
+	    )
+
+    if mode == 'release':
+        root.Append( 
+		    CCFLAGS='/MD /O2',
+	    )
+
+#    if subarch == 'AMD64':
+#        root.Append(
+#		    ARFLAGS = '/MACHINE:X64',
+#		    LINKFLAGS = '/MACHINE:X64',
+#	    )
+#    else:
+#       root.Append(
+#	    ARFLAGS = '/MACHINE:X86',
+#	    LINKFLAGS = '/MACHINE:X86',
+#	    )
 
 Export( [ 'PrepareEnv'] )

@@ -156,15 +156,12 @@ def ConfRunner(conf, autohdr):
 	if not root['sequential']:
 		if not conf.CheckMPI(2):
 			print "You have enabled MPI, but I could not find an installation. Have a look at SConsHelpers/mpi.py"
-			Exit (1)
 
 	if not conf.CheckBoost('1.40'):
 		print "I could not find Boost >= 1.40. Have a look at SConsHelpers/boost.py"
-		Exit (1)
 
 	if not conf.CheckTBB(3):
 		print "I could not find Intel TBB version >= 3.0. Have a look at SConsHelpers/tbb.py"
-		Exit (1)
 
 SConsHelpers.autoconfig.AutoConfig ( root, ConfRunner, { 
 	'CheckBoost' : SConsHelpers.boost.Check,

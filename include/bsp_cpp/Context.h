@@ -19,6 +19,8 @@ namespace bsp {
 	public:
 		Context () : impl (NULL) {}
 
+		virtual ~Context() {}
+
 		/** 
 		 * This will be called by the factory after construction
 		 */ 

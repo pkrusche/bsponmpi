@@ -10,14 +10,6 @@
 
 namespace bsp {
 
-	/** synchronization task at the end of superstep. */
-	class SuperstepEnd : public tbb::task {
-	public:
-		tbb::task * execute() {
-			return NULL;
-		}		
-	};
-
 	/** TBB Task to run a context in a mapper */
 	class ComputationTask : public tbb::task {
 	public:
@@ -27,14 +19,14 @@ namespace bsp {
 		  tbb::task * execute() {
 			  if (my_pid < 0) {
 				tbb::task_list tl;
-					SuperstepEnd & c = *new ( allocate_continuation() ) SuperstepEnd();
-					for (int t = 0, e=mapper->procs_this_node(); t < e; ++t) {
-						ComputationTask & tsk = *new ( c.allocate_child() ) 
-						 	ComputationTask ( mapper, t );
-						tl.push_back(tsk);
-					}
-					c.set_ref_count( mapper->procs_this_node() );
-					spawn (tl);
+
+				for (int t = 0, e=mapper->procs_this_node(); t < e; ++t) {
+					ComputationTask & tsk = *new ( allocate_child() ) 
+						ComputationTask ( mapper, t );
+					tl.push_back(tsk);
+				}
+				set_ref_count( mapper->procs_this_node() + 1 );
+				spawn_and_wait_for_all(tl);
 			  } else {
 				  mapper->get_context(my_pid).execute();
 			  }

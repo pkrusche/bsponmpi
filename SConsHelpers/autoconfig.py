@@ -30,8 +30,10 @@ def AutoConfig (root, crunner,customtests = {}):
 #define __BSPCONFIG_H__
 
 /** No MSVC => no __cdecl */
+#ifndef _MSC_VER
 #ifndef __cdecl
 #define __cdecl
+#endif 
 #endif 
 
 #ifdef _MSC_VER
