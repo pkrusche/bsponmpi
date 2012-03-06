@@ -355,7 +355,7 @@ inline void bspx_set_tagsize (BSPObject * bsp, size_t *tag_nbytes)
 /*@}*/
 
 
-/** @name High Performace */
+/** @name High Performance */
 /*@{*/
 
 /** Dequeue the current message in an unbuffered way. 
