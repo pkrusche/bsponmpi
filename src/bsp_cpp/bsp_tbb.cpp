@@ -30,6 +30,7 @@ Declaration of global objects used in conjunction with TBB.
 
 #include "bsp_config.h"
 
+#include <iostream>
 #include <tbb/task_scheduler_init.h>
 
 namespace bsp {

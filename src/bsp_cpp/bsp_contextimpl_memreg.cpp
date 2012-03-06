@@ -94,7 +94,7 @@ void bsp::ContextImpl::process_memoryreg_ops(bsp::TaskMapper * mapper, int reg_r
 
 			MemoryRegister reg;
 
-			reg.pointers = new const void * [mapper->nprocs()];
+			reg.pointers = boost::shared_array<const void*>(new const void * [mapper->nprocs()]);
 
 			MemoryRegister_Reg & my_r (vr[ g_bsp.rank*reg_req_size*ppn + my_local_pid*reg_req_size + req ]);
 
@@ -152,7 +152,7 @@ void bsp::ContextImpl::process_memoryreg_ops(bsp::TaskMapper * mapper, int reg_r
 				if (it == cimpl->memory_register_map.end()) {
 					throw std::runtime_error("bsp_sync(): mismatched popreg.");
 				}
-				delete [] it->second.pointers;
+				// delete [] it->second.pointers;
 				cimpl->memory_register_map.erase(it);
 			}
 		}

@@ -36,13 +36,15 @@ Implementation header for ContextImpl implementation
 #include <map>
 #include <queue>
 
+#include <boost/shared_array.hpp>
+
 #include "bsp_cpp/TaskMapper.h"
 #include "bsp_tools/Avector.h"
 
 namespace bsp {
 
 	struct MemoryRegister {
-		const void **		pointers;
+		boost::shared_array<const void*>	pointers;
 		size_t				nbytes;
 		size_t				serial;
 	};

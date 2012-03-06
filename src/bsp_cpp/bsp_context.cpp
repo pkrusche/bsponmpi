@@ -28,12 +28,11 @@ information.
 
 #include "bsp_config.h"
 
+#include "bsp_contextimpl.h"
+
 #include "bsp_cpp/bsp_cpp.h"
 
 #include <tbb/spin_mutex.h>
-
-#include "bsp_contextimpl.h"
-
 
 /** Mutex to make access to message buffers thread safe */
 
