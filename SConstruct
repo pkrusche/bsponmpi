@@ -181,11 +181,6 @@ else:
 			CPPPATH = ['.', '#include'],
 		)
 
-root.Append(
-	CCFLAGS = root['additional_cflags'],
-	LINKFLAGS = root['additional_lflags'],
-	)
-
 ###############################################################################
 # Setup debug / release mode flags
 ###############################################################################
@@ -234,6 +229,13 @@ else:
 					LIBLINKPREFIX="/DEBUG "
 				)							
 		print "using MSVC"
+
+
+root.Append(
+	CCFLAGS = root['additional_cflags'],
+	LINKFLAGS = root['additional_lflags'],
+	)
+
 
 ###############################################################################
 # Automatic configuration code
@@ -437,8 +439,15 @@ if mode == 'debug':
 if threadsafe:
 	libsuffix += '_mt'
 
+bsp = mpi.Clone()
 
-Export(['mpi', 'mode', 'sequential', 'threadsafe', 'libsuffix'])
+bsp.Append(LIBS = ['bsponmpi'+libsuffix ,])
+
+## static boost linking
+if platform != 'win32':
+	bsp.Append(LIBS = ['boost_program_options',])
+
+Export(['mpi', 'bsp', 'mode', 'sequential', 'threadsafe', 'libsuffix'])
 
 ###############################################################################
 # get SConscripts

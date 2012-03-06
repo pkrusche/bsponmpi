@@ -28,7 +28,7 @@ tbb::spin_mutex output_mutex;
 
 class MyContext : public bsp::Context {
 public:
-	MyContext() : counter (0), h(NULL) { }
+	MyContext() : counter (0) { }
 
 	void init() {
 		counter = ((MyContext*)get_parent_context())->counter;
