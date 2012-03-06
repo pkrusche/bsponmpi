@@ -250,7 +250,8 @@ void bsp::ContextImpl::bsp_sync(bsp::TaskMapper * mapper) {
 
 			requestTable_execute(&g_bsp.request_received_table, &g_bsp.delivery_table);
 		}
-		
+
+#ifdef _DEBUG_SUPERSTEPS
 		std::ostringstream s;
 		static int step = 0;
 		s << "s"<< step << " proc " << g_bsp.rank << " receives [";
@@ -264,7 +265,7 @@ void bsp::ContextImpl::bsp_sync(bsp::TaskMapper * mapper) {
 		}
 		s << "]" << std::endl;
 		std::cerr << s.str() << std::endl;
-		
+#endif
 		expandableTable_comm(&g_bsp.delivery_table, &g_bsp.delivery_received_table,
 			_BSP_COMM1);
 
