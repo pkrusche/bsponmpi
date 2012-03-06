@@ -163,16 +163,6 @@ if platform == 'win32':
 			CPPFLAGS = ' -I'+boost_include ,
 			LIBPATH = [ boost_lib ],
 		)
-
-
-    # see if we can find tbb
-    root.Append(
-        CPPPATH = [ win32_tbbdir+'\\include' ],
-        # we require that the right libraries are copied here, since it's a lot of
-        # work to guess the right system and folder.
-        LIBPATH = [ win32_tbbdir+'\\lib' ],
-    )
-
     
 else:
 		# Unix-like stuff
@@ -275,24 +265,6 @@ if platform == 'win32':
 #define __cdecl
 #endif
 
-
-#ifndef _WIN32
-#include <stdint.h>
-
-typedef int32_t INT32;
-typedef uint32_t UINT32;
-typedef int64_t INT64;
-typedef uint64_t UINT64;
-
-typedef uint8_t BYTE;
-typedef uint32_t DWORD;
-typedef uint16_t WORD;
-
-#else
-#include <Windows.h>
-
-#endif
-
 """)
 	autohdr.write("#define RESTRICT \n")
 	autohdr.write("#define __func__ __FUNCTION__ \n")
@@ -347,13 +319,16 @@ autohdr.close()
 # Setup TBB library linking
 ###############################################################################
 
-if mode=='debug':
-	if platform == 'win32':
-		root.Append(LIBS = ['tbb_debug'])
+print root['MSVS_VERSION']
+
+if platform == 'win32':
+	root.Append( CPPPATH = [ win32_tbbdir+'\\include' ] )
+	if mode=='debug':
+		root.Append( LIBPATH = win32_tbbdir + "\\lib\\debug" )
 	else:
-		root.Append(LIBS = ['tbb'])
-else:
-	root.Append(LIBS = ['tbb'])
+		root.Append( LIBPATH = win32_tbbdir + "\\lib" )
+
+root.Append(LIBS = ['tbb'])
 
 ###############################################################################
 # Set up thread safe version of BSP

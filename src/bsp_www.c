@@ -354,6 +354,8 @@ digraph G {
 #endif
 #include "bspx_comm_seq.h"
 
+#include "bsp_cpp/bsp_tbb.h"
+
 /** Packed global variables for a single BSP object. 
  ** To keep it private it is not included in bsp.h */
 static BSPObject bsp;
@@ -414,6 +416,7 @@ void BSP_CALLING
 	// initialize message buffers
 	bspx_init_bspobject(&bsp, bsp.nprocs, bsp.rank);
 
+	bsp_init_tbb( -1 );
 }
 
 
@@ -426,6 +429,8 @@ bsp_end ()
 {
 	BSP_TS_LOCK();
 	BSP_TS_EXIT();
+
+	bsp_exit_tbb();
 
 	/* clean up datastructures */
 	bspx_destroy_bspobject(&bsp);

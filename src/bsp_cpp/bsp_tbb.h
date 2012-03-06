@@ -21,37 +21,23 @@ information.
 */
 
 
-/** @file bsp_tbb.cpp
-
-Declaration of global objects used in conjunction with TBB.
+/** @file bsp_tbb.h
 
 @author Peter Krusche
 */
 
-#include "bsp_config.h"
+#ifndef __bsp_tbb_H__
+#define __bsp_tbb_H__
 
-#include <tbb/task_scheduler_init.h>
-
-namespace bsp {
-	tbb::task_scheduler_init * g_task_scheduler_init = NULL;
-
-};
-
+#ifdef __cplusplus
 extern "C" {
+#endif
 
-	/** Create task scheduler with a specified number of threads */
-	void bsp_init_tbb (int nthreads) {
-		if (nthreads <= 0) {
-			bsp::g_task_scheduler_init = new tbb::task_scheduler_init();
-		} else {
-			bsp::g_task_scheduler_init = new tbb::task_scheduler_init(nthreads);
-		}
-	}
+void bsp_init_tbb (int );
+void bsp_exit_tbb ();
 
-	/** exit TBB */
-	void bsp_exit_tbb () {
-		delete bsp::g_task_scheduler_init;
-	}
-
+#ifdef __cplusplus
 };
+#endif
 
+#endif // __bsp_tbb_H__
