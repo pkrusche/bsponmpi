@@ -1,5 +1,5 @@
 
-Import("mpi", "sequential", "libsuffix")
+Import("root", "sequential", "libsuffix")
 
 files = [ 
 	'bspx.c', 
@@ -25,5 +25,5 @@ if sequential:
 else:
 	files.append ('bsp_comm_mpi.c')
 
-mpi.Library('#lib/bsponmpi'+libsuffix, files)
+root.Library('#lib/bsponmpi'+libsuffix, files)
 
