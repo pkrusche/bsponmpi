@@ -183,8 +183,8 @@ void bsp::ContextImpl::bsp_sync(bsp::TaskMapper * mapper) {
 		if (h_recv[CM_NENTRIES * p + CM_FLAGS] & CM_FLAG_GETS) {
 			any_gets = true;
 		}
-
-		reg_req_size = std::max ((unsigned)reg_req_size, h_recv[CM_NENTRIES * p + CM_FLAGS] >> 4);
+		using namespace std;
+		reg_req_size = max ((unsigned)reg_req_size, h_recv[CM_NENTRIES * p + CM_FLAGS] >> 4);
 	}
 
 	/**
@@ -207,23 +207,24 @@ void bsp::ContextImpl::bsp_sync(bsp::TaskMapper * mapper) {
 	 * put requests and messages are sent/received here. 
 	 */
 	if ( any_messages || any_gets ) {
-		int maxdelrows = 0;
+		using namespace std;
+		unsigned int maxdelrows = 0;
 		
 		/* expand buffers if necessary */
 		for (unsigned int p = 0; p < (unsigned)g_bsp.nprocs; p++) {
-			maxdelrows = MAX( h_recv[CM_MESSAGE_COUNT + CM_NENTRIES*p] + 
-				g_bsp.request_table.info.req.data_sizes[p], maxdelrows);
+			maxdelrows = max( h_recv[CM_MESSAGE_COUNT + CM_NENTRIES*p] + 
+				g_bsp.request_table.info.req.data_sizes[p], maxdelrows );
 		}
 		
 		if (g_bsp.delivery_received_table.rows < maxdelrows ) {
-			maxdelrows = std::max (g_bsp.delivery_received_table.rows, (unsigned)maxdelrows);
+			maxdelrows = max (g_bsp.delivery_received_table.rows, (unsigned)maxdelrows);
 			deliveryTable_expand (&g_bsp.delivery_received_table, maxdelrows );
 		}  
 
 		/* copy necessary indices to received_tables */
 		for (unsigned int p = 0; p < (unsigned)g_bsp.nprocs; p++) {
 			g_bsp.delivery_received_table.used_slot_count[p] =
-				g_bsp.recv_index[ CM_MESSAGE_COUNT + CM_NENTRIES * p ] + 
+				h_recv[ CM_MESSAGE_COUNT + CM_NENTRIES * p ] + 
 				g_bsp.request_table.info.req.data_sizes[p] ;
 		}	
 
@@ -252,12 +253,12 @@ void bsp::ContextImpl::bsp_sync(bsp::TaskMapper * mapper) {
 		
 		std::ostringstream s;
 		static int step = 0;
-		s << "s "<< step << "proc " << g_bsp.rank << " receives [";
+		s << "s"<< step << " proc " << g_bsp.rank << " receives [";
 		for (int p = 0; p < g_bsp.nprocs; p++)  {
 			s << g_bsp.delivery_received_table.used_slot_count[p] << ",";
 		}
 		s << "]" << std::endl;
-		s << "s "<< step++ << "proc " << g_bsp.rank << " sends [";
+		s << "s"<< step++ << " proc " << g_bsp.rank << " sends [";
 		for (int p = 0; p < g_bsp.nprocs; p++)  {
 			s << g_bsp.delivery_table.used_slot_count[p] << ",";
 		}
