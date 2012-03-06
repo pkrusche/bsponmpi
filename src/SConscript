@@ -12,6 +12,7 @@ files = [
 	'bsp_global_drma.c',
 	'bsp_time.c', 
 	'bsp_mutex.c',
+	'bsp_comm_seq.c',
 	# these are the files for the c++ part
 	'bsp_cpp/bsp_commandline.cpp',
 	'bsp_cpp/bsp_tbb.cpp',
@@ -20,9 +21,7 @@ files = [
 	'bsp_cpp/bsp_contextimpl_memreg.cpp',
 ]
 
-if sequential:
-	files.append ('bsp_comm_seq.c')
-else:
+if not sequential:
 	files.append ('bsp_comm_mpi.c')
 
 root.Library('#lib/bsponmpi'+libsuffix, files)
