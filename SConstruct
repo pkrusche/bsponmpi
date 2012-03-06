@@ -158,7 +158,7 @@ def ConfRunner(conf, autohdr):
 			print "You have enabled MPI, but I could not find an installation. Have a look at SConsHelpers/mpi.py"
 			Exit (1)
 
-	if not conf.CheckBoost('1.45'):
+	if not conf.CheckBoost('1.40'):
 		print "I could not find Boost >= 1.48. Have a look at SConsHelpers/boost.py"
 		Exit (1)
 
