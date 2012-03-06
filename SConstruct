@@ -142,6 +142,12 @@ SConsHelpers.tbb.MakeEnv(root)
 SConsHelpers.mpi.MakeEnv(root)
 SConsHelpers.boost.MakeEnv(root)
 
+## additional flags not covered by any of the above
+root.Append ( 
+	LINKFLAGS = root['additional_lflags'],
+	CCFLAGS = root['additional_cflags'] 
+)
+
 ###############################################################################
 # Automatic configuration code
 ###############################################################################
