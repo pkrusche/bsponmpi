@@ -1,0 +1,29 @@
+  ###########################################################################
+  ##      README                                                           ##
+  ##                                                                       ##
+  ##      MPIedupack Version 1.0                                           ##
+  ##      Copyright (C) 2004 Rob H. Bisseling                              ##
+  ##                                                                       ##
+  ##      MPIedupack is released under the GNU GENERAL PUBLIC LICENSE      ##
+  ##      Version 2, June 1991 (given in the file LICENSE)                 ##
+  ##                                                                       ##
+  ###########################################################################
+
+Please read the README file from BSPedupack.
+
+The only difference in running the programs from BSPedupack
+and those from MPIedupack are:
+
+1. The running command
+       $ bsprun -npes 3 ip
+   becomes  
+       $ mpirun -np   3 ip
+   (on my system, but running MPI can be different at your site).
+
+2. The question 
+       How many processors do you want to use?
+   is not asked in MPIedupack, since you cannot easily use less 
+   than the maximum number of processors.
+
+3. You may need to create an input file in the MPI case,
+   instead of answering the input questions interactively.
