@@ -116,18 +116,15 @@ inline char * deliveryTable_push2 (ExpandableTable *RESTRICT  table, const int p
 	const unsigned int tag_size = no_slots(sizeof(DelivElement), slot_size);
 	const unsigned int object_size = tag_size + no_slots(element->size, slot_size);
 	ALIGNED_TYPE * RESTRICT pointer;
+	TSLOCK();
 
+	int free_space = table->rows - table->used_slot_count[proc];
+
+	if ((signed)object_size > free_space) 
 	{
-		TSLOCK();
-		int free_space = table->rows - table->used_slot_count[proc];
-
-		if ((signed)object_size > free_space) 
-		{
-			int space_needed = MAX(table->rows, object_size - free_space);
-			deliveryTable_expand(table, space_needed);
-		}  
-
-	}
+		int space_needed = MAX(table->rows, object_size - free_space);
+		deliveryTable_expand(table, space_needed);
+	}  
 
 	/* manage deliveryTable info */
 	if (table->info.deliv.count[proc][type] == 0)
