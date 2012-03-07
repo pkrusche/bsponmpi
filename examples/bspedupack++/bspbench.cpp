@@ -23,6 +23,8 @@ public:
 
 	double time, time0, time1;
 
+	double x[MAXN], y[MAXN], z[MAXN];
+
 	void init() {
 		/**** Determine p ****/
 		p= bsp_nprocs(); /* p = number of processors obtained */
@@ -47,7 +49,6 @@ public:
 			/* Initialize scalars and vectors */
 			double alpha= 1.0/3.0;
 			double beta= 4.0/9.0;
-			double x[MAXN], y[MAXN], z[MAXN];
 			for (int i=0; i < n; i++){
 				z[i]= y[i]= x[i]= (double)i;
 			}
@@ -86,7 +87,7 @@ public:
 						   n, nflops/(maxtime*MEGA),nflops/(mintime*MEGA), r/MEGA);
 					fflush(stdout);
 					/* Output for fooling benchmark-detecting compilers */
-					printf(" fool=%7.1lf\n",y[n-1]+z[n-1]);
+					printf(" fool=%7.1lf\n", y[n-1] + z[n-1]);
 				} else {
 					printf("minimum time is 0\n"); fflush(stdout);
 				}

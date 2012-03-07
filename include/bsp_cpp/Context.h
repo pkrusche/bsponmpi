@@ -204,7 +204,8 @@ namespace bsp {
 			parent (_parent) {}
 
 		inline Context * create ( TaskMapper & mapper, int bsp_pid ) {
-			Context * p = new runnablecontext (&mapper);
+			Context * p = new runnablecontext ();
+			p->set_task_mapper(mapper);
 			p->initialize_context( bsp_pid, parent );
 			return p;
 		}
