@@ -29,13 +29,13 @@ information.
 #ifndef __bsp_localdelivery_H__
 #define __bsp_localdelivery_H__
 
+#include <bsp_tools/Avector.h>
 #include <vector>
 
-#include "bsp_tools/Avector.h"
+typedef utilities :: Avector<double> storagevector;
 
 namespace bsp {
 	
-	typedef utilities::Avector<double> storagevector;
 
 	/** a local memory delivery which will be
 	 *  carried out once a superstep is over
@@ -107,7 +107,7 @@ namespace bsp {
 	private:
 		size_t qend, storage_end;
 		std::vector <LocalMemoryDelivery> deliv_queue;
-		utilities::Avector <double> storage;
+		storagevector storage;
 	};
 
 };

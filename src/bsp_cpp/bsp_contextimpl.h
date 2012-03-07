@@ -48,7 +48,6 @@ extern "C" {
 #include "bsp_delivtable.h"
 #include "bsp_memreg.h"
 };
-
 #include "bsp_localdelivery.h"
 #include "bsp_context_ts.h"
 
