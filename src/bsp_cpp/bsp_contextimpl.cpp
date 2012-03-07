@@ -33,33 +33,12 @@ information.
 #include <sstream>
 
 #include "bsp_contextimpl.h"
-#include "bsp_context_ts.h"
 
 #include "bsp.h"
 #include "bspx.h"
 
-extern "C" {
-#include "bsp_private.h"
-
-#include "bsp_reqtable.h"
-#include "bsp_delivtable.h"
-#include "bsp_memreg.h"
-};
-
 #include "bsp_cpp/TaskMapper.h"
 #include "bsp_cpp/Context.h"
-
-#ifdef _HAVE_MPI
-#include <mpi.h>
-
-extern "C" {
-#include "bspx_comm_mpi.h"
-};
-#endif
-
-extern "C" {
-#include "bspx_comm_seq.h"
-};
 
 BSPObject g_bsp; ///< node-level bsp object
 static int g_bsp_refcount = 0; ///< node level BSP object reference count
@@ -101,12 +80,14 @@ bsp::ContextImpl::ContextImpl(bsp::TaskMapper * tm, int lpid)
 	if (h_recv.exact_size() < CM_NENTRIES * g_bsp.nprocs) {
 		h_recv.resize(CM_NENTRIES * g_bsp.nprocs);
 	}
+	deliveryTable_initialize(&localDeliveries, g_bsp.nprocs, 1);
 }
 
 /** 
  * Destructor. Destroy local BSP object 
  */
 bsp::ContextImpl::~ContextImpl() {
+	expandableTable_destruct (&localDeliveries);
 	g_bsp_refcount--;
 	if (g_bsp_refcount <= 0) {
 		bspx_destroy_bspobject(&g_bsp);
@@ -125,6 +106,14 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 	/************************************************************************/
 	for (int lp = 0; lp < mapper->procs_this_node(); ++lp) {
 		ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(lp).get_impl());
+
+		/* here we also carry out all local deliveries */
+		deliveryTable_execute(&cimpl->localDeliveries, 
+			&g_bsp.memory_register, &g_bsp.message_queue, g_bsp.rank);
+
+		deliveryTable_reset(&cimpl->localDeliveries);
+
+
 		if (reg_req_size < 0) {
 			reg_req_size = (int)cimpl->reg_requests.size();
 		} else {
@@ -328,19 +317,6 @@ void bsp::ContextImpl::bsp_pop_reg(const void * ident) {
 	r.serial = it->second.serial;
 	r.push   = false;
 	reg_requests.push( r );
-}
-
-void bsp::ContextImpl::bsp_put(int pid, const void* src, void* dst, long offset, size_t nbytes) {
-	int n, lp;
-	mapper->where_is(pid, n, lp);
-
-	char * RESTRICT pointer;
-	DelivElement element;
-	element.size = (unsigned int) nbytes;
-	element.info.put.dst = get_memreg_address(dst, pid) + offset;
-	pointer = (char*)deliveryTable_push(&g_bsp.delivery_table, n, &element, it_put);
-	memcpy(pointer, src, nbytes);
-
 }
 
 void bsp::ContextImpl::bsp_get (int pid, const void * src, long int offset, void * dst, size_t nbytes) {

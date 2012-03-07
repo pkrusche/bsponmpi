@@ -41,6 +41,18 @@ Implementation header for ContextImpl implementation
 #include "bsp_cpp/TaskMapper.h"
 #include "bsp_tools/Avector.h"
 
+extern "C" {
+#include "bsp_private.h"
+
+#include "bsp_reqtable.h"
+#include "bsp_delivtable.h"
+#include "bsp_memreg.h"
+};
+
+#include "bsp_context_ts.h"
+
+extern BSPObject g_bsp;
+
 namespace bsp {
 
 	struct MemoryRegister {
@@ -66,11 +78,41 @@ namespace bsp {
 		ContextImpl(TaskMapper * tm, int local_pid);
 		~ContextImpl();
 
+		/** This is where all contexts within a task mapper are synchronized */
 		static void bsp_sync (TaskMapper *);
 
+		/** push and pop operations use the local push/pop queue */
 		void bsp_push_reg (const void *, size_t);
 		void bsp_pop_reg (const void *);
-		void bsp_put (int, const void*, void*, long, size_t);
+		
+		/** Put and get are local node aware, i.e. they only use the global
+		 *  queue when they actually have to do remote deliveries.
+		 *  
+		 *  This should make them faster than standard put/get for local
+		 *  delivery, but might cost some mutex waiting time for remote node
+		 *  deliveries. Which shouldn't matter that much because 
+		 */
+		inline void bsp_put(int pid, const void* src, void* dst, long offset, size_t nbytes) {
+			int n, lp;
+			mapper->where_is(pid, n, lp);
+
+			char * RESTRICT pointer;
+			
+			if (g_bsp.rank == n) {
+				DelivElement element;
+				element.size = (unsigned int) nbytes;
+				element.info.put.dst = get_memreg_address(dst, pid) + offset;
+				pointer = (char*)deliveryTable_push(&localDeliveries, n, &element, it_put);
+			} else {
+				TSLOCK();
+				DelivElement element;
+				element.size = (unsigned int) nbytes;
+				element.info.put.dst = get_memreg_address(dst, pid) + offset;
+				pointer = (char*)deliveryTable_push(&g_bsp.delivery_table, n, &element, it_put);
+			}
+			memcpy(pointer, src, nbytes);
+		}
+
 		void bsp_get (int, const void *, long int, void *, size_t);
 
 		void bsp_send (int, const void *, const void *, size_t);
@@ -118,6 +160,9 @@ namespace bsp {
 
 		static utilities::AVector <unsigned int> h_send;	/**< superstep input element counts */
 		static utilities::AVector <unsigned int> h_recv;	/**< superstep output element counts */
+
+		/** each context can do its node-local deliveries independently. */
+		ExpandableTable localDeliveries;
 
 	};
 

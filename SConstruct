@@ -155,6 +155,15 @@ root.Append (
 def ConfRunner(conf, autohdr):
 	if root['sequential']:
 		autohdr.write("""
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "bspx_comm_seq.h"
+#ifdef __cplusplus
+};
+#endif
+
 #define _BSP_INIT BSP_INIT_SEQ
 #define _BSP_EXIT BSP_EXIT_SEQ
 #define _BSP_ABORT BSP_ABORT_SEQ
