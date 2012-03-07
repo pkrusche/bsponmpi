@@ -91,8 +91,7 @@ public:
 	 */
 	void run( int processors ) {
 		using namespace std;
-		bsp::ContextFactory<MyContext> factory;
-		bsp::TaskMapper tm (processors, &factory, this);
+		BSP_SETUP_CONTEXT (MyContext, processors);
 
 		/** we can still do stuff on node level here. like allocate 
 		 *  global memory. Note that bsp_pushreg doesn't fall into 
@@ -103,7 +102,7 @@ public:
 		h = bsp_global_alloc(processors * sizeof(int));
 		::bsp_sync();
 
-		BSP_BEGIN(MyContext, tm);
+		BSP_BEGIN();
 		// Things from here on are task-level SPMD. 
 		// You'll have as many processes as allocated in the task mapper
 		// also, we inject all members of MyContext into the current

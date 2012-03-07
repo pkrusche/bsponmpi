@@ -37,50 +37,54 @@ information.
 
 #include "bsp_cpp.h"
 
+/** When running BSP contexts, we need to create a
+ *  TaskMapper and a factory. This is the same everywhere,
+ *  so we provide a shortcut.
+ *  
+ *  This must be called in a member function within the declared 
+ *  context class, before the first BSP_BEGIN is executed.
+ */
+
+#define BSP_SETUP_CONTEXT(context, processors)					\
+	typedef context ContextData;								\
+	set_task_mapper( bsp::TaskMapperPtr (						\
+		new bsp::TaskMapper (									\
+			processors,											\
+			bsp::ContextFactoryPtr (							\
+				new bsp::ContextFactory<context> (this)			\
+			)													\
+		)														\
+	) );
+
 /**
  * BSP_BEGIN () macro 
  * 
- * 
- * 
  */
 
-#define BSP_BEGIN(context, taskmapper) {		\
-	bsp::TaskMapper & tm (taskmapper);			\
-	typedef context ContextData;				\
+#define BSP_BEGIN() 							\
 	{											\
 		class MyRC : public ContextData {		\
 		public:									\
 			void run () {
+
+#define BSP_END()								\
+			} 									\
+			static void run_as(Context * thiz) {\
+			( (MyRC*)thiz )->run();			\
+			}									\
+		};										\
+		bsp::run_context(get_task_mapper(),		\
+		&MyRC::run_as);							\
+	}											\
+	bsp_sync();	
 
 /**
  * We need to be able to sync *after* all the tasks
  * have finished, which is why we are replacing 
  * the standard bsp_sync with this construct.
  */
-#define BSP_SYNC()								\
-			} 									\
-			static void run_as(Context * thiz) {\
-				( (MyRC*)thiz )->run();			\
-			}									\
-		};										\
-		bsp::run_context(&tm, &MyRC::run_as); 	\
-	}											\
-	Context::sync_contexts(&tm);				\
-	{											\
-		class MyRC : public ContextData {		\
-		public:									\
-			void run () {						
+#define BSP_SYNC()	BSP_END(); BSP_BEGIN()
 
-#define BSP_END()								\
-			} 									\
-			static void run_as(Context * thiz) {\
-				( (MyRC*)thiz )->run();			\
-			}									\
-		};										\
-												\
-		bsp::run_context(&tm, &MyRC::run_as);	\
-	}											\
-	Context::sync_contexts(&tm);				\
-}
+
 
 #endif

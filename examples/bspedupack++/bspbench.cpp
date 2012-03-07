@@ -32,10 +32,9 @@ public:
 	}
 
 	void run( int processors ) {
-		bsp::ContextFactory<BSPBench> factory;
-		bsp::TaskMapper tm (processors, &factory, this);
+		BSP_SETUP_CONTEXT(BSPBench, processors);
 
-		BSP_BEGIN(BSPBench, tm);
+		BSP_BEGIN();
   
 		Time= new double [p]; bsp_push_reg(Time,p*SZDBL);
 		dest= new double [2*MAXH+p]; bsp_push_reg(dest,(2*MAXH+p)*SZDBL);
@@ -44,7 +43,7 @@ public:
 
 		/**** Determine r ****/
 		for (n=1; n <= MAXN; n *= 2) { 
-			BSP_BEGIN(BSPBench, tm);
+			BSP_BEGIN();
 
 			/* Initialize scalars and vectors */
 			alpha= 1.0/3.0;
@@ -95,7 +94,7 @@ public:
 
 		/**** Determine g and l ****/
 		for (h=0; h<=MAXH; h++){
-			BSP_BEGIN(BSPBench, tm);
+			BSP_BEGIN();
 
 			/* Initialize communication pattern */
 			for (i=0; i<h; i++){
@@ -117,7 +116,7 @@ public:
 
 			time0= bsp_time(); 
 			for (iter=0; iter < NITERS; iter++) {
-				BSP_BEGIN(BSPBench, tm);
+				BSP_BEGIN();
 				for (i=0; i<h; i++)
 					bsp_put(destproc[i],&src[i],dest,destindex[i]*SZDBL,SZDBL);
 				BSP_END();
@@ -146,7 +145,7 @@ public:
 			fflush(stdout);
 		}
 		
-		BSP_BEGIN(BSPBench, tm);
+		BSP_BEGIN();
 		bsp_pop_reg(dest); delete [] dest;
 		bsp_pop_reg(Time); delete [] Time;
 		BSP_END();

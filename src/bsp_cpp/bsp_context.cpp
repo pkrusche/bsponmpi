@@ -38,6 +38,7 @@ information.
 
 namespace bsp {
 	static tbb::spin_mutex g_context_mutex;
+
 };
 
 /** Thread safety helper */
@@ -47,13 +48,14 @@ namespace bsp {
 /** @name Initialisation and destruction */
 /*@{*/
 
-void bsp::Context::initialize_context (TaskMapper * tm, int bsp_pid, Context * parent)  {
-	mapper = tm;
+void bsp::Context::initialize_context (int bsp_pid, Context * parent)  {
+	ASSERT (parent != NULL);
 	parentcontext = parent;
-	local_pid = tm->global_to_local_pid(bsp_pid);
+	
+	local_pid = mapper.global_to_local_pid(bsp_pid);
 	pid = bsp_pid;
 	runme = NULL;	// this is initialized by the code in Runner.h
-	impl = new bsp::ContextImpl(tm, local_pid);
+	impl = new bsp::ContextImpl(mapper, local_pid);
 	init ();
 }
 
@@ -64,8 +66,18 @@ void bsp::Context::destroy_context () {
 
 #define BSP ((ContextImpl*)impl)
 
-void bsp::Context::sync_contexts (bsp::TaskMapper * tm) {
-	ContextImpl::bsp_sync(tm);
+void bsp::Context::bsp_sync ( bool local ) {
+	if (impl != NULL) {
+		// mainly, this serves as a deterrent so programmers don't 
+		// get confused between node and task-level syncs.
+		throw std::runtime_error("When syncing in a Context, BSP_SYNC needs to be used rather than bsp_sync()");
+	} else {
+		if (local) {
+			ContextImpl::bsp_sync( mapper );
+		} else {
+			::bsp_sync();
+		}
+	}
 }
 
 /** @name DRMA */

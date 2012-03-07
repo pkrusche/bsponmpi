@@ -6,6 +6,8 @@
 #ifndef __Context_H__
 #define __Context_H__
 
+#include <tbb/task.h>
+
 #include "TaskMapper.h"
 
 namespace bsp {
@@ -17,14 +19,14 @@ namespace bsp {
 	 */
 	class Context {
 	public:
-		Context () : impl (NULL) {}
+		Context (TaskMapper & _mapper) : mapper(_mapper), impl (NULL) {}
 
 		virtual ~Context() {}
 
 		/** 
 		 * This will be called by the factory after construction
 		 */ 
-		void initialize_context (TaskMapper * tm, int bsp_pid, Context * parent = NULL);
+		void initialize_context (int bsp_pid, Context * );
 
 		/** 
 		 * This will be called by the factory when the context is destroyed
@@ -32,7 +34,7 @@ namespace bsp {
 		void destroy_context ();
 
 		/**
-		 * This is called when the class is inialized by the factory after 
+		 * This is called when the class is initialized by the factory after 
 		 * construction.
 		 */
 		inline virtual void init () { }
@@ -43,7 +45,7 @@ namespace bsp {
 
 		inline int bsp_nprocs() const {
 			if (impl != NULL) { 
-				return mapper->nprocs();
+				return mapper.nprocs();
 			} else {
 				return ::bsp_nprocs();
 			}
@@ -70,21 +72,15 @@ namespace bsp {
 		 *  bsp_sync() will throw an error, we need to use BSP_SYNC 
 		 *  to split tasks up.
 		 *  
+		 *  @param local this will determine whether we call a global or local synchronization
+		 *   
+		 *  If this is called with local == true, then we synchronize only 
+		 *  communication between context tasks.
+		 *  
 		 *  Otherwise, we assume that we are at node level and call 
 		 *  ::bsp_sync()
 		 */
-		inline void bsp_sync() const {
-			if (impl != NULL) {
-				// mainly, this serves as a detterrent so programmers don't 
-				// get confused between node and task-level syncs.
-				throw std::runtime_error("When syncing in a Context, BSP_SYNC needs to be used rather than bsp_sync()");
-			} else {
-				::bsp_sync();
-			}
-		}
-
-		/** This function is called by BSP_SYNC() */
-		static void sync_contexts (TaskMapper * tm);
+		void bsp_sync( bool local = false );
 
 		/** @name DRMA */
 		/*@{*/
@@ -141,12 +137,50 @@ namespace bsp {
 
 									*/
 
+		/** This function executes _runme in all contexts in our mapper */
+		inline void run_in_context ( Context::FUN _runme ) {
+			for (int j = 0;	j < mapper.procs_this_node(); ++j ) {
+				mapper.get_context (j).runme = _runme;
+			}
+			ComputationTask & root = *new( tbb::task::allocate_root() ) 
+				ComputationTask ( mapper );
+			tbb::task::spawn_root_and_wait (root);
+		}
+
 		/** impl helper */
 		inline void * get_impl() { return impl; }
 
+		/** TBB Task to run a context in a mapper */
+		class ComputationTask : public tbb::task {
+		public:
+			ComputationTask( TaskMapper & _mapper, int _pid = -1 ) : 
+			  mapper (_mapper), my_pid (_pid) {}
+
+			  tbb::task * execute() {
+				  if (my_pid < 0) {
+					  tbb::task_list tl;
+
+					  for (int t = 0, e=mapper.procs_this_node(); t < e; ++t) {
+						  ComputationTask & tsk = *new ( allocate_child() ) 
+							  ComputationTask ( mapper, t );
+						  tl.push_back(tsk);
+					  }
+					  set_ref_count( mapper.procs_this_node() + 1 );
+					  spawn_and_wait_for_all(tl);
+				  } else {
+					  mapper.get_context(my_pid).execute();
+				  }
+				  return NULL;
+			  }
+		private:
+			TaskMapper & mapper;
+			int my_pid;
+		};
+
+
 	private:
 		Context * parentcontext;	///< this is the parent context 
-		TaskMapper * mapper;  ///< The process mapper object
+		TaskMapper&  mapper;		///< The process mapper object for this context
 		int pid;		///< The global pid of this computation
 		int local_pid;	///< The local pid of this computation
 
@@ -162,9 +196,12 @@ namespace bsp {
 	template <class runnablecontext> 
 	class ContextFactory : public AbstractContextFactory {
 	public:
-		inline Context * create ( TaskMapper * tm, int bsp_pid, Context * parent) {
-			Context * p = new runnablecontext();
-			p->initialize_context(tm, bsp_pid, parent);
+		ContextFactory ( Context * _parent ) : 
+			parent (_parent) {}
+
+		inline Context * create ( TaskMapper & mapper, int bsp_pid ) {
+			Context * p = new runnablecontext (mapper);
+			p->initialize_context( bsp_pid, parent );
 			return p;
 		}
 
@@ -172,6 +209,9 @@ namespace bsp {
 			t->destroy_context();
 			delete (runnablecontext * ) t;
 		}
+
+	private:
+		Context * parent;
 	};
 
 };

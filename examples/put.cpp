@@ -22,10 +22,8 @@ public:
 
 	void run( int processors ) {
 		using namespace std;
-		bsp::ContextFactory<MyContext> factory;
-		bsp::TaskMapper tm (processors, &factory, this);
-
-		BSP_BEGIN(MyContext, tm);
+		BSP_SETUP_CONTEXT(MyContext, processors);
+		BSP_BEGIN();
 
 		bsp_push_reg(&var1, sizeof (int));
 		bsp_push_reg(var2, sizeof (int));

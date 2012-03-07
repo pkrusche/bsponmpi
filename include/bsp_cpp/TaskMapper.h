@@ -18,6 +18,9 @@ namespace bsp {
 	class TaskMapper;
 	class Context;
 
+	/** Shortcut to shared pointer */
+	typedef boost::shared_ptr<TaskMapper> TaskMapperPtr;
+
 	/**
 	 * Factory interface for creating BSP contexts.
 	 * 
@@ -25,15 +28,17 @@ namespace bsp {
 	 * 
 	 * Subclassed objects need a default constructor, initialisation
 	 * can be performed by overriding init () and reading data
-	 * e.g. from the parent context.
+	 * from the parent context.
 	 * 
 	 */
 	class AbstractContextFactory {
 	public:
+		virtual ~AbstractContextFactory() {}
+
 		/**
 		 * create a context for a given bsp pid
 		 */
-		virtual Context * create ( TaskMapper *, int bsp_pid, Context * ) = 0;
+		virtual Context * create ( TaskMapper & , int bsp_pid ) = 0;
 
 		/**
 		 * destroy a context
@@ -41,7 +46,8 @@ namespace bsp {
 		virtual void destroy ( Context * t ) = 0;
 	};
 
-
+	/** Shortcut to shared pointer */
+	typedef boost::shared_ptr<AbstractContextFactory> ContextFactoryPtr;
 
 	/**
 	 * Basic balanced task mapper which works for tasks of approximately 
@@ -52,8 +58,7 @@ namespace bsp {
 	class TaskMapper {
 	public:
 		TaskMapper (int _processors, 
-			AbstractContextFactory * factory,
-			Context * parent = NULL
+			ContextFactoryPtr factory
 		) : contextfactory(factory),
 			processors (_processors) {
 			using namespace std;
@@ -71,7 +76,7 @@ namespace bsp {
 			using namespace std;
 			context_store.resize(max (1, procs_on_this_node));
 			for (int i = 0, i_end = (int)context_store.size(); i < i_end; ++i ) {
-				context_store[i] = factory->create( this, local_to_global_pid(i), parent );
+				context_store[i] = factory->create( *this, local_to_global_pid(i) );
 			}
 		}
 
@@ -155,12 +160,13 @@ namespace bsp {
 
 	private:
 		std::vector<Context *> context_store;
-		AbstractContextFactory * contextfactory;
+		ContextFactoryPtr contextfactory;
 
 		int processors;
 		int procs_on_this_node;
 		int max_procs_per_node;
 	};
+
 };
 
 #endif 

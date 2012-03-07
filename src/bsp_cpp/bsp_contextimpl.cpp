@@ -78,7 +78,7 @@ utilities::AVector <unsigned int> bsp::ContextImpl::h_recv;
 /**
  * Constructor. Make local BSP object, update processor locations
  */
-bsp::ContextImpl::ContextImpl(bsp::TaskMapper * tm, int lpid) 
+bsp::ContextImpl::ContextImpl(bsp::TaskMapper & tm, int lpid) 
 	: mapper (tm), any_hp(false), local_pid(lpid) {
 	if (g_bsp_refcount <= 0) {
 		g_bsp_refcount = 1;
@@ -115,15 +115,15 @@ bsp::ContextImpl::~ContextImpl() {
 /**
  * Execute BSP sync.
  */
-void bsp::ContextImpl::bsp_sync(bsp::TaskMapper * mapper) {	
+void bsp::ContextImpl::bsp_sync(bsp::TaskMapper & mapper) {	
 	int reg_req_size = -1;
 	bool any_hp = false;
 
 	/************************************************************************/
 	/* Step 1. exchange communication matrix.                               */
 	/************************************************************************/
-	for (int lp = 0; lp < mapper->procs_this_node(); ++lp) {
-		ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(lp).get_impl());
+	for (int lp = 0; lp < mapper.procs_this_node(); ++lp) {
+		ContextImpl * cimpl = (ContextImpl *)(mapper.get_context(lp).get_impl());
 		if (reg_req_size < 0) {
 			reg_req_size = (int)cimpl->reg_requests.size();
 		} else {
@@ -332,7 +332,7 @@ void bsp::ContextImpl::bsp_pop_reg(const void * ident) {
 /** bsp_put which is aware of node locality */
 void bsp::ContextImpl::bsp_put(int pid, const void * src, void * dst, long int offset, size_t nbytes) {
 	int n, lp;
-	mapper->where_is(pid, n, lp);
+	mapper.where_is(pid, n, lp);
 	
 	char * RESTRICT pointer;
 	DelivElement element;
@@ -344,7 +344,7 @@ void bsp::ContextImpl::bsp_put(int pid, const void * src, void * dst, long int o
 
 void bsp::ContextImpl::bsp_get (int pid, const void * src, long int offset, void * dst, size_t nbytes) {
 	int n, lp;
-	mapper->where_is(pid, n, lp);
+	mapper.where_is(pid, n, lp);
 
 	ReqElement elem;
 	elem.size = (unsigned int )nbytes;
@@ -360,7 +360,7 @@ void bsp::ContextImpl::bsp_get (int pid, const void * src, long int offset, void
  *  instantly */
 void bsp::ContextImpl::bsp_hpput (int pid, const void * src, void * dst, long int offset, size_t nbytes) {
 	int n, lp;
-	mapper->where_is(pid, n, lp);
+	mapper.where_is(pid, n, lp);
 
 	if (n == ::bsp_pid()) {
 		// we have the data here on the same node, and can do the transfer now.
@@ -387,7 +387,7 @@ void bsp::ContextImpl::bsp_hpput (int pid, const void * src, void * dst, long in
  *  instantly */
 void bsp::ContextImpl::bsp_hpget (int pid, const void * src, long int offset, void * dst, size_t nbytes) {
 	int n, lp;
-	mapper->where_is(pid, n, lp);
+	mapper.where_is(pid, n, lp);
 
 	if (n == ::bsp_pid()) {
 		char * source = ((char*)memory_register_map[src].pointers[pid]) + offset;

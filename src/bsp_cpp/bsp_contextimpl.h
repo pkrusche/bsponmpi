@@ -63,10 +63,10 @@ namespace bsp {
 			MAX_REGISTER_REQS = 0xfffffff,	///< maximum number of memory register (de-)registrations per superstep
 		};
 
-		ContextImpl(TaskMapper * tm, int local_pid);
+		ContextImpl(TaskMapper & tm, int local_pid);
 		~ContextImpl();
 
-		static void bsp_sync (bsp::TaskMapper * mapper);
+		static void bsp_sync (bsp::TaskMapper & mapper);
 
 		void bsp_push_reg (const void *, size_t);
 		void bsp_pop_reg (const void *);
@@ -94,12 +94,12 @@ namespace bsp {
 		 * @param reg_req_size : number of push and pop requests.
 		 */
 
-		static void process_memoryreg_ops(bsp::TaskMapper * mapper, int reg_req_size);
+		static void process_memoryreg_ops(bsp::TaskMapper & mapper, int reg_req_size);
 
 		int local_pid; ///< local pid 
 
 		/** remember the task mapper */
-		TaskMapper * mapper;
+		TaskMapper & mapper;
 
 		/** We reimplement BSPonMPI's registration mechanism here
 		 *  using C++ maps. 
