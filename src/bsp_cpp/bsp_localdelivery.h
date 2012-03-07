@@ -29,7 +29,7 @@ information.
 #ifndef __bsp_localdelivery_H__
 #define __bsp_localdelivery_H__
 
-#include <queue>
+#include <vector>
 #include <tbb/scalable_allocator.h>
 
 namespace bsp {
@@ -48,16 +48,27 @@ namespace bsp {
 	public:
 		tbb::scalable_allocator<char> alloc;
 
+		enum {
+			LQ_MIN = 64,
+		};
+
+		LocalDeliveryQueue() : qend (0) {
+			deliv_queue.resize(LQ_MIN);
+		}
+
 		/** execute all queued deliveries */
 		inline void execute () {
-			while (!deliv_queue.empty()) {
-				LocalMemoryDelivery d = deliv_queue.front();
+			size_t z = 0;
+			while (z < qend) {
+				LocalMemoryDelivery & d (deliv_queue[z]);
 				memcpy (d.dst, d.src, d.nbytes);
 				if(d.free_src) {
 					alloc.deallocate(d.src, d.nbytes);
 				}
-				deliv_queue.pop();
+				++z;
 			}
+			qend = 0;
+			deliv_queue.resize(LQ_MIN);
 		}
 
 		/** enqueue a put operation */
@@ -73,11 +84,15 @@ namespace bsp {
 				memcpy (d.src, src, nbytes);
 			}
 			d.nbytes = nbytes;
-			deliv_queue.push(d);
+			if (deliv_queue.size() < qend+1) {
+				deliv_queue.resize(deliv_queue.size()*2);
+			}
+			deliv_queue[qend++] = d;
 		}
 
 	private:
-		std::queue <LocalMemoryDelivery> deliv_queue;
+		size_t qend;
+		std::vector <LocalMemoryDelivery> deliv_queue;
 	};
 
 };
