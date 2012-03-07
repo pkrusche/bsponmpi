@@ -36,8 +36,11 @@ def AutoConfig (root, crunner,customtests = {}):
 #endif 
 #endif 
 
-#ifdef _MSC_VER
-#define _SCL_SECURE_NO_WARNINGS
+#ifdef _DEBUG
+#include <assert.h>
+#define ASSERT assert
+#else
+#define ASSERT(x)
 #endif
 
 """)
@@ -51,6 +54,10 @@ def AutoConfig (root, crunner,customtests = {}):
 #define inline 
 #endif
 
+#ifdef _MSC_VER
+#define _SCL_SECURE_NO_WARNINGS
+#endif
+
 #define BSP_CALLING __cdecl
 #define __func__ __FUNCTION__ 
 #define RESTRICT
@@ -60,13 +67,6 @@ def AutoConfig (root, crunner,customtests = {}):
 		autohdr.write("""
 #define RESTRICT
 #define BSP_CALLING
-
-#ifdef _DEBUG
-#include <assert.h>
-#define ASSERT assert
-#else
-#define ASSERT(x)
-#endif
 """)
 
 	crunner(conf, autohdr)

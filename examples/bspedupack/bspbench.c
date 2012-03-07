@@ -166,7 +166,7 @@ void bspbench(){
 
 int main(int argc, char **argv){
     bsp_init(&argc, &argv);
-
+	bsp_warmup (2.0);
 	bspbench();
     
 	bsp_end();

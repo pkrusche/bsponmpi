@@ -70,6 +70,7 @@ namespace bsp {
 
 		void bsp_push_reg (const void *, size_t);
 		void bsp_pop_reg (const void *);
+		void bsp_put (int, const void*, void*, long, size_t);
 		void bsp_get (int, const void *, long int, void *, size_t);
 
 		void bsp_send (int, const void *, const void *, size_t);

@@ -33,6 +33,7 @@ information.
 #include <sstream>
 
 #include "bsp_contextimpl.h"
+#include "bsp_context_ts.h"
 
 #include "bsp.h"
 #include "bspx.h"
@@ -327,6 +328,19 @@ void bsp::ContextImpl::bsp_pop_reg(const void * ident) {
 	r.serial = it->second.serial;
 	r.push   = false;
 	reg_requests.push( r );
+}
+
+void bsp::ContextImpl::bsp_put(int pid, const void* src, void* dst, long offset, size_t nbytes) {
+	int n, lp;
+	mapper->where_is(pid, n, lp);
+
+	char * RESTRICT pointer;
+	DelivElement element;
+	element.size = (unsigned int) nbytes;
+	element.info.put.dst = get_memreg_address(dst, pid) + offset;
+	pointer = (char*)deliveryTable_push(&g_bsp.delivery_table, n, &element, it_put);
+	memcpy(pointer, src, nbytes);
+
 }
 
 void bsp::ContextImpl::bsp_get (int pid, const void * src, long int offset, void * dst, size_t nbytes) {

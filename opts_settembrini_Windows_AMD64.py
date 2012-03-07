@@ -1,4 +1,4 @@
-sequential=1
+sequential=0
 
 toolset = "msvc"
 # toolset = "intel_windows"

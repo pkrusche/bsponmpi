@@ -240,8 +240,8 @@ int main(int argc, char **argv){
 		bsp_abort(s.c_str());
 	}
 
-	BSPBench b;
-	b.run(recursive_processors);
+	bsp_warmup (2.0);
+	BSPBench :: run(recursive_processors);
     
 	bsp_end();
 } /* end main */

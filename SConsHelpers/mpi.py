@@ -71,7 +71,7 @@ def MakeEnv(root):
 		if arch == 'Windows':
 			mpidir = root['MPIDIR']
 			
-			if os.path.exists (mpidir + "\\lib\\msmpi.lib"):
+			if os.path.exists (mpidir + "\\lib\\i386\\msmpi.lib"):
 				print "Found MSMPI in " + mpidir
 				
 				## TODO add support for HPC pack here

@@ -96,13 +96,6 @@ extern "C" {
 	void BSP_CALLING bspx_global_hpput(BSPObject *, const void * src, bsp_global_handle_t dest, size_t offset, size_t size);
 	/*@}*/
 
-	/** @name Timing and benchmarking */
-	/*@{*/
-	double BSP_CALLING bsp_time ();
-	void BSP_CALLING bsp_warmup (double);
-	/*@}*/
-
-
 #ifdef __cplusplus
 };
 #endif // __cplusplus

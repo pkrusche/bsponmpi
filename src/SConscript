@@ -16,6 +16,7 @@ files = [
 	# these are the files for the c++ part
 	'bsp_cpp/bsp_commandline.cpp',
 	'bsp_cpp/bsp_context.cpp',
+	'bsp_cpp/bsp_context_ts.cpp',
 	'bsp_cpp/bsp_contextimpl.cpp',
 	'bsp_cpp/bsp_contextimpl_memreg.cpp',
 ]
