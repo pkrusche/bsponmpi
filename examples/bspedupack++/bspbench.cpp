@@ -16,24 +16,23 @@
 
 #define SZDBL sizeof(double)
 
-int P; /* number of processors requested */
-
 class BSPBench : public bsp::Context {
 public:
-    int p, s, s1, iter, i, n, h, destproc[MAXH], destindex[MAXH];
-    double alpha, beta, x[MAXN], y[MAXN], z[MAXN], src[MAXH], *dest,
-           time0, time1, time, *Time, mintime, maxtime,
-           nflops, r, g0, l0, g, l, t[MAXH+1]; 
-  
+	int p, s;
+	double * Time, * dest;
+
+	double time, time0, time1;
+
 	void init() {
 		/**** Determine p ****/
 		p= bsp_nprocs(); /* p = number of processors obtained */
 		s= bsp_pid();    /* s = processor number */
 	}
 
-	void run( int processors ) {
-		BSP_SETUP_CONTEXT(BSPBench, processors);
-
+	static void run( int processors ) {
+		BSPBench b;
+		BSP_SCOPE(BSPBench, b, processors);
+		
 		BSP_BEGIN();
   
 		Time= new double [p]; bsp_push_reg(Time,p*SZDBL);
@@ -42,21 +41,22 @@ public:
 		BSP_END();
 
 		/**** Determine r ****/
-		for (n=1; n <= MAXN; n *= 2) { 
+		for (static int n = 1; n <= MAXN; n *= 2) { 
 			BSP_BEGIN();
 
 			/* Initialize scalars and vectors */
-			alpha= 1.0/3.0;
-			beta= 4.0/9.0;
-			for (i=0; i<n; i++){
+			double alpha= 1.0/3.0;
+			double beta= 4.0/9.0;
+			double x[MAXN], y[MAXN], z[MAXN];
+			for (int i=0; i < n; i++){
 				z[i]= y[i]= x[i]= (double)i;
 			}
 			/* Measure time of 2*NITERS DAXPY operations of length n */
 			time0=bsp_time();
-			for (iter=0; iter<NITERS; iter++){
-				for (i=0; i<n; i++)
+			for (int iter=0; iter < NITERS; iter++){
+				for (int i=0; i < n; i++)
 					y[i] += alpha*x[i];
-				for (i=0; i<n; i++)
+				for (int i=0; i < n; i++)
 					z[i] -= beta*x[i];
 			}
 			time1= bsp_time(); 
@@ -67,17 +67,19 @@ public:
     
 			/* Processor 0 determines minimum, maximum, average computing rate */
 			if (s == 0){
+				double mintime, maxtime;
+
 				mintime= maxtime= Time[0];
-				for(s1=1; s1<p; s1++){
+				for(int s1 = 1; s1<p; s1++){
 					using namespace std;
 					mintime= min (mintime,Time[s1]);
 					maxtime= max (maxtime,Time[s1]);
 				}
-				if (mintime>0.0){
+				if (mintime > 0.0){
 					/* Compute r = average computing rate in flop/s */
-					nflops= 4*NITERS*n;
-					r= 0.0;
-					for(s1=0; s1<p; s1++)
+					double nflops= 4*NITERS*n;
+					double r= 0.0;
+					for(int s1=0; s1 < p; s1++)
 						r += nflops/Time[s1];
 					r /= p; 
 					printf("n= %5d min= %7.3lf max= %7.3lf av= %7.3lf Mflop/s ",
@@ -92,6 +94,7 @@ public:
 			BSP_END();
 		}
 
+#ifdef MACCAROON
 		/**** Determine g and l ****/
 		for (h=0; h<=MAXH; h++){
 			BSP_BEGIN();
@@ -145,6 +148,7 @@ public:
 			fflush(stdout);
 		}
 		
+#endif // MACCAROON
 		BSP_BEGIN();
 		bsp_pop_reg(dest); delete [] dest;
 		bsp_pop_reg(Time); delete [] Time;

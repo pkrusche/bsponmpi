@@ -37,53 +37,41 @@ information.
 
 #include "bsp_cpp.h"
 
-/** When running BSP contexts, we need to create a
- *  TaskMapper and a factory. This is the same everywhere,
- *  so we provide a shortcut.
- *  
- *  This must be called in a member function within the declared 
- *  context class, before the first BSP_BEGIN is executed.
- */
-
-#define BSP_SETUP_CONTEXT(context, processors)					\
-	typedef context ContextData;								\
-	set_task_mapper( bsp::TaskMapperPtr (						\
-		new bsp::TaskMapper (									\
-			processors,											\
-			bsp::ContextFactoryPtr (							\
-				new bsp::ContextFactory<context> (this)			\
-			)													\
-		)														\
-	) );
-
 /**
  * BSP_BEGIN () macro 
  * 
  */
 
-#define BSP_BEGIN() 							\
-	{											\
-		class MyRC : public ContextData {		\
+#define BSP_SCOPE(context_type, context, p)		\
+	typedef context_type __bspmy_type;			\
+	context_type & __bspcx (context);			\
+	bsp::ContextFactoryPtr factory (			\
+		new bsp::ContextFactory<context_type>	\
+			(&context) );						\
+	bsp::TaskMapper tm (p, factory);			\
+	context.set_task_mapper(tm);
+
+#define BSP_BEGIN()	{							\
+		class MyRC : public __bspmy_type {		\
 		public:									\
 			void run () {
 
 #define BSP_END()								\
 			} 									\
 			static void run_as(Context * thiz) {\
-			( (MyRC*)thiz )->run();			\
+			( (MyRC*)thiz )->run();				\
 			}									\
 		};										\
-		bsp::run_context(get_task_mapper(),		\
-		&MyRC::run_as);							\
+		__bspcx.run_in_context(&MyRC::run_as);	\
 	}											\
-	bsp_sync();	
+	__bspcx.bsp_sync();	
 
 /**
  * We need to be able to sync *after* all the tasks
  * have finished, which is why we are replacing 
  * the standard bsp_sync with this construct.
  */
-#define BSP_SYNC()	BSP_END(); BSP_BEGIN()
+#define BSP_SYNC()	BSP_END() BSP_BEGIN()
 
 
 

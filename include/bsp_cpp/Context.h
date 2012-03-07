@@ -19,7 +19,7 @@ namespace bsp {
 	 */
 	class Context {
 	public:
-		Context (TaskMapper & _mapper) : mapper(_mapper), impl (NULL) {}
+		Context (TaskMapper * _mapper = NULL) : mapper(*_mapper), impl (NULL) {}
 
 		virtual ~Context() {}
 
@@ -150,6 +150,10 @@ namespace bsp {
 		/** impl helper */
 		inline void * get_impl() { return impl; }
 
+		inline void set_task_mapper(TaskMapper & _mapper) {
+			mapper = _mapper;
+		}
+
 		/** TBB Task to run a context in a mapper */
 		class ComputationTask : public tbb::task {
 		public:
@@ -200,7 +204,7 @@ namespace bsp {
 			parent (_parent) {}
 
 		inline Context * create ( TaskMapper & mapper, int bsp_pid ) {
-			Context * p = new runnablecontext (mapper);
+			Context * p = new runnablecontext (&mapper);
 			p->initialize_context( bsp_pid, parent );
 			return p;
 		}

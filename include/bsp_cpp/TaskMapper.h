@@ -18,9 +18,6 @@ namespace bsp {
 	class TaskMapper;
 	class Context;
 
-	/** Shortcut to shared pointer */
-	typedef boost::shared_ptr<TaskMapper> TaskMapperPtr;
-
 	/**
 	 * Factory interface for creating BSP contexts.
 	 * 

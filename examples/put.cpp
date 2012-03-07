@@ -20,9 +20,10 @@ public:
 		var3 = ((MyContext*)get_parent_context())->var3;
 	}
 
-	void run( int processors ) {
+	static void run( int processors ) {
 		using namespace std;
-		BSP_SETUP_CONTEXT(MyContext, processors);
+		MyContext c;
+		BSP_SCOPE(MyContext, c, processors);
 		BSP_BEGIN();
 
 		bsp_push_reg(&var1, sizeof (int));
