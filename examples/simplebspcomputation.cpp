@@ -53,7 +53,13 @@ public:
 	 * 
 	 * - the code in this function does not have to be inside the class.
 	 *   Once MyContext is declared as a subclass of bsp::Context,
-	 *   BSP_BEGIN(MyContext, tm) works IN ANY SCOPE. 
+	 *   BSP_SCOPE(...); BSP_BEGIN() works IN ANY SCOPE. 
+	 *   
+	 *   We do these things in a static member function to 
+	 *   
+	 *    a) make things look C++-ish
+	 *    b) allow static member handdown (see below)
+	 *   
 	 * - Debugging this is a little non-obvious. The code for each
 	 *   superstep is injected into local subclasses of MyContext, 
 	 *   and run on the MyContext objects belonging to each task. 
@@ -76,22 +82,30 @@ public:
 	 *	 @code 
 	 *	 BSP_END()
 	 *	 while ( j > 0 ) {
-	 *	    BSP_BEGIN(MyContext, tm)
+	 *	    BSP_BEGIN()
 	 *	    // do some BSP stuff
 	 *	 
-	 *	 	BSP_SYNC();
 	 *	    BSP_END()
 	 *	 }
 	 *	 BSP_BEGIN(MyContext, tm)
 	 *	 @endcode
 	 *  
+	 *   Things get tricky if you need variable j shown above inside the BSP_BEGIN() block.
+	 *   
+	 *   On new GCC you can hand it down by making it static within the block. Really, 
+	 *   we'd want to use a lambda function here (these allow for scope transfer), but
+	 *   not all compilers support these yet. So until they do, we're stuck with the 
+	 *   static approach (static class members always work, but have some pitfalls, 
+	 *   like multiple tasks being able to write to them).
+	 *  
 	 *   Needless to say, to minimize overhead, try avoiding this, or if you
 	 *   do it, put the while loop as far out as possible.
 	 *  
 	 */
-	void run( int processors ) {
+	static void run( int processors ) {
 		using namespace std;
-		BSP_SETUP_CONTEXT (MyContext, processors);
+		MyContext c;
+		BSP_SCOPE (MyContext, c, processors);
 
 		/** we can still do stuff on node level here. like allocate 
 		 *  global memory. Note that bsp_pushreg doesn't fall into 
@@ -171,8 +185,7 @@ int main (int argc, char** argv) {
 		s+= "\n";
 		bsp_abort(s.c_str());
 	}
-	MyContext root;
-	root.run( recursive_processors );
+	MyContext::run( recursive_processors );
 
 	bsp_end();
 }

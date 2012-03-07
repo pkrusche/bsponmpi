@@ -107,8 +107,7 @@ int main (int argc, char** argv) {
 
 
 	try {
-		MyContext root;
-		root.run( recursive_processors );
+		MyContext::run( recursive_processors );
 
 		bsp_end();
 

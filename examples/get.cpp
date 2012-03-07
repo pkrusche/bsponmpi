@@ -24,9 +24,10 @@ public:
 		myval3 = -1;
 	}
 
-	void run( int processors ) {
+	static void run( int processors ) {
 		using namespace std;
-		BSP_SETUP_CONTEXT(MyContext, processors);
+		MyContext r;
+		BSP_SCOPE(MyContext, r, processors);
 
 		BSP_BEGIN();
 
@@ -112,8 +113,7 @@ int main (int argc, char** argv) {
 
 
 	try {
-		MyContext root;
-		root.run( recursive_processors );
+		MyContext::run( recursive_processors );
 
 		bsp_end();
 
