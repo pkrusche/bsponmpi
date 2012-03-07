@@ -244,3 +244,4 @@ if runtests:
 
 SConscript('examples/SConscript')
 SConscript('examples/bspedupack/SConscript')
+SConscript('examples/bspedupack++/SConscript')

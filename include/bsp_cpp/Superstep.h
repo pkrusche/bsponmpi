@@ -45,6 +45,7 @@ information.
  */
 
 #define BSP_BEGIN(context, taskmapper) {		\
+	bsp::TaskMapper & tm (taskmapper);			\
 	typedef context ContextData;				\
 	{											\
 		class MyRC : public ContextData {		\

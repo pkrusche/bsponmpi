@@ -1,0 +1,3 @@
+Import("bsp")
+
+bsp.Program('bspbench', ['bspbench.cpp'])

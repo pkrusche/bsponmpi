@@ -1,4 +1,4 @@
 
-Import("bsp", "libsuffix")
+Import("bsp")
 
 bsp.Program('bspbench', ['bspbench.c', 'bspedupack.c'])
