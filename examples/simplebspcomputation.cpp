@@ -149,7 +149,7 @@ protected:
 	/** Members must be public or protected, since BSP_BEGIN et al. 
 	 *  rely on them being accessible to subclasses */
 	int counter;
-	bsp_global_handle_t h;
+	static bsp_global_handle_t h;
 };
 
 
