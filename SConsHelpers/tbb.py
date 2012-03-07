@@ -88,5 +88,5 @@ def MakeEnv (root):
 			)
 	else:
 		root.Append( 
-			LIBS = ['tbb'],
+			LIBS = ['tbb', 'tbbmalloc'],
 		)

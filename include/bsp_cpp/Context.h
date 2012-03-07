@@ -7,6 +7,7 @@
 #define __Context_H__
 
 #include <tbb/task.h>
+#include <stdexcept>
 
 #include "TaskMapper.h"
 
