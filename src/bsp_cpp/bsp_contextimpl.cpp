@@ -287,20 +287,6 @@ void bsp::ContextImpl::bsp_pop_reg(const void * ident) {
 	reg_requests.push( r );
 }
 
-void bsp::ContextImpl::bsp_get (int pid, const void * src, long int offset, void * dst, size_t nbytes) {
-	int n, lp;
-	mapper->where_is(pid, n, lp);
-
-	ReqElement elem;
-	elem.size = (unsigned int )nbytes;
-	elem.src = ((char*)memory_register_map[src].pointers[pid]);
-	elem.dst = (char* )dst;
-	elem.offset = offset;
-
-	/* place get command in buffer */
-	requestTable_push(&g_bsp.request_table, n, &elem);
-}
-
 /** With hpput, we may win some time because we can do local ones
  *  instantly */
 void bsp::ContextImpl::bsp_hpput (int pid, const void * src, void * dst, long int offset, size_t nbytes) {

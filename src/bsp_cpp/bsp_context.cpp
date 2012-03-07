@@ -89,7 +89,6 @@ void bsp::Context::bsp_put (int pid, const void *src, void *dst, long int offset
 }
 
 void bsp::Context::bsp_get (int pid, const void *src, long int offset, void *dst, size_t nbytes) {
-	TSLOCK();
 	BSP->bsp_get(pid, src, offset, dst, nbytes);
 }
 

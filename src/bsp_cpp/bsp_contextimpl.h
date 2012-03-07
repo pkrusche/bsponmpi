@@ -114,7 +114,28 @@ namespace bsp {
 			}
 		}
 
-		void bsp_get (int, const void *, long int, void *, size_t);
+		/**
+		 * Local gets become preferable over puts in this implementation. 
+		 */
+		inline void bsp_get (int pid, const void * src, long int offset, void * dst, size_t nbytes) {
+			int n, lp;
+			mapper->where_is(pid, n, lp);
+
+			if (g_bsp.rank == n) {
+				localDeliveries.put (((char*)memory_register_map[src].pointers[pid]) + offset, 
+					(char*) dst, nbytes, false);
+			} else {
+				ReqElement elem;
+				elem.size = (unsigned int )nbytes;
+				elem.src = ((char*)memory_register_map[src].pointers[pid]);
+				elem.dst = (char* )dst;
+				elem.offset = offset;
+
+				TSLOCK();
+				/* place get command in buffer */
+				requestTable_push(&g_bsp.request_table, n, &elem);
+			}
+		}
 
 		void bsp_send (int, const void *, const void *, size_t);
 		void bsp_qsize (int * , size_t * );
