@@ -96,7 +96,3 @@ def MakeEnv(root):
 				LINK = root['MPILINK'],
 				CC = root['MPICC']
 			)
-		root.Append (CPPDEFINES = "_HAVE_MPI")
-	else:
-		root.Append (CPPDEFINES = "_NO_MPI")
-

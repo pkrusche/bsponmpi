@@ -60,34 +60,6 @@ def AutoConfig (root, crunner,customtests = {}):
 		autohdr.write("""
 #define RESTRICT
 #define BSP_CALLING
-""")
-
-	autohdr.write("""
-	
-#ifdef UNITTESTING
-#include "../tests/bsp_test.h"
-#else  
-
-#ifdef _HAVE_MPI
-#include <mpi.h>
-
-#define _BSP_INIT BSP_INIT_MPI
-#define _BSP_EXIT BSP_EXIT_MPI
-#define _BSP_ABORT BSP_ABORT_MPI
-#define _BSP_COMM0 BSP_MPI_ALLTOALL_COMM
-#define _BSP_COMM1 BSP_MPI_ALLTOALLV_COMM
-
-#else 
-
-#define _BSP_INIT BSP_INIT_SEQ
-#define _BSP_EXIT BSP_EXIT_SEQ
-#define _BSP_ABORT BSP_ABORT_SEQ
-#define _BSP_COMM0 BSP_SEQ_ALLTOALL_COMM
-#define _BSP_COMM1 BSP_SEQ_ALLTOALLV_COMM
-
-#endif 
-
-#endif  
 
 #ifdef _DEBUG
 #include <assert.h>

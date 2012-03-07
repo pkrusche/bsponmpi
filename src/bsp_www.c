@@ -349,9 +349,6 @@ digraph G {
 
 #include "bsp_threadsafe.h"
 
-#ifdef _HAVE_MPI
-#include "bspx_comm_mpi.h"
-#endif
 #include "bspx_comm_seq.h"
 
 /** Packed global variables for a single BSP object. 

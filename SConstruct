@@ -153,6 +153,35 @@ root.Append (
 ###############################################################################
 
 def ConfRunner(conf, autohdr):
+	if root['sequential']:
+		autohdr.write("""
+#define _BSP_INIT BSP_INIT_SEQ
+#define _BSP_EXIT BSP_EXIT_SEQ
+#define _BSP_ABORT BSP_ABORT_SEQ
+#define _BSP_COMM0 BSP_SEQ_ALLTOALL_COMM
+#define _BSP_COMM1 BSP_SEQ_ALLTOALLV_COMM
+#define _NO_MPI 1
+""")
+	else:
+		autohdr.write("""
+#include <mpi.h>
+
+#ifdef __cplusplus
+extern "C" {
+#endif
+#include "bspx_comm_mpi.h"
+#ifdef __cplusplus
+};
+#endif
+
+#define _BSP_INIT BSP_INIT_MPI
+#define _BSP_EXIT BSP_EXIT_MPI
+#define _BSP_ABORT BSP_ABORT_MPI
+#define _BSP_COMM0 BSP_MPI_ALLTOALL_COMM
+#define _BSP_COMM1 BSP_MPI_ALLTOALLV_COMM
+#define _HAVE_MPI 1
+""")
+
 	if not root['sequential']:
 		if not conf.CheckMPI(2):
 			print "You have enabled MPI, but I could not find an installation. Have a look at SConsHelpers/mpi.py"

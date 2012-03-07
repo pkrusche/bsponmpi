@@ -157,11 +157,7 @@ void bsp::Context::bsp_put (int pid, const void *src, void *dst, long int offset
 	DelivElement element;
 	element.size = (unsigned int) nbytes;
 	element.info.put.dst = BSP->get_memreg_address(dst, pid) + offset;
-	
-	{
-		TSLOCK();
-		pointer = deliveryTable_push2(&g_bsp.delivery_table, n, &element, it_put);
-	}
+	pointer = deliveryTable_push2(&g_bsp.delivery_table, n, &element, it_put);
 	memcpy(pointer, src, nbytes);
 }
 
