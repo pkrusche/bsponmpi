@@ -51,8 +51,7 @@ namespace bsp {
 void bsp::Context::initialize_context (int bsp_pid, Context * parent)  {
 	ASSERT (parent != NULL);
 	parentcontext = parent;
-	
-	local_pid = mapper.global_to_local_pid(bsp_pid);
+	local_pid = mapper->global_to_local_pid(bsp_pid);
 	pid = bsp_pid;
 	runme = NULL;	// this is initialized by the code in Runner.h
 	impl = new bsp::ContextImpl(mapper, local_pid);

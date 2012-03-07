@@ -16,6 +16,8 @@
 
 #define SZDBL sizeof(double)
 
+static int n, h;
+
 class BSPBench : public bsp::Context {
 public:
 	int p, s;
@@ -23,7 +25,11 @@ public:
 
 	double time, time0, time1;
 
-	double x[MAXN], y[MAXN], z[MAXN];
+	double x[MAXN], y[MAXN], z[MAXN], src[MAXH], t[MAXH+1];
+
+	double r;
+
+	int destproc[MAXH], destindex[MAXH];
 
 	void init() {
 		/**** Determine p ****/
@@ -33,6 +39,7 @@ public:
 
 	static void run( int processors ) {
 		BSPBench b;
+		b.init();
 		BSP_SCOPE(BSPBench, b, processors);
 		
 		BSP_BEGIN();
@@ -43,7 +50,7 @@ public:
 		BSP_END();
 
 		/**** Determine r ****/
-		for (static int n = 1; n <= MAXN; n *= 2) { 
+		for (n = 1; n <= MAXN; n *= 2) { 
 			BSP_BEGIN();
 
 			/* Initialize scalars and vectors */
@@ -79,7 +86,7 @@ public:
 				if (mintime > 0.0){
 					/* Compute r = average computing rate in flop/s */
 					double nflops= 4*NITERS*n;
-					double r= 0.0;
+					r= 0.0;
 					for(int s1=0; s1 < p; s1++)
 						r += nflops/Time[s1];
 					r /= p; 
@@ -95,13 +102,12 @@ public:
 			BSP_END();
 		}
 
-#ifdef MACCAROON
 		/**** Determine g and l ****/
 		for (h=0; h<=MAXH; h++){
 			BSP_BEGIN();
 
 			/* Initialize communication pattern */
-			for (i=0; i<h; i++){
+			for (int i=0; i<h; i++){
 				src[i]= (double)i;
 				if (p==1){
 					destproc[i]=0;
@@ -118,13 +124,16 @@ public:
 			
 			BSP_END();
 
+			BSP_BEGIN();
 			time0= bsp_time(); 
-			for (iter=0; iter < NITERS; iter++) {
+			BSP_END();
+			for (int iter=0; iter < NITERS; iter++) {
 				BSP_BEGIN();
-				for (i=0; i<h; i++)
+				for (int i=0; i < h; i++)
 					bsp_put(destproc[i],&src[i],dest,destindex[i]*SZDBL,SZDBL);
 				BSP_END();
 			}
+			BSP_BEGIN();
 			time1= bsp_time();
 			time= time1-time0;
  
@@ -134,13 +143,16 @@ public:
 				printf("Time of %5d-relation= %lf sec= %8.0lf flops\n",
 					   h, time/NITERS, t[h]); fflush(stdout);
 			}
+			BSP_END();
 		}
-
+		BSP_BEGIN();
 		if (s == 0) {
+			double g0, l0;
+			double g, l;
 			printf("size of double = %d bytes\n",(int)SZDBL);
-			leastsquares(0,p,t,&g0,&l0); 
+			leastsquares(0, p , t , &g0, &l0); 
 			printf("Range h=0 to p   : g= %.1lf, l= %.1lf\n",g0,l0);
-			leastsquares(p,MAXH,t,&g,&l);
+			leastsquares(p, MAXH, t, &g, &l);
 			printf("Range h=p to HMAX: g= %.1lf, l= %.1lf\n",g,l);
 
 			printf("The bottom line for this BSP computer is:\n");
@@ -149,8 +161,8 @@ public:
 			fflush(stdout);
 		}
 		
-#endif // MACCAROON
-		BSP_BEGIN();
+		BSP_SYNC();
+
 		bsp_pop_reg(dest); delete [] dest;
 		bsp_pop_reg(Time); delete [] Time;
 		BSP_END();
@@ -158,7 +170,7 @@ public:
 
 	protected:
 
-	void leastsquares(int h0, int h1, double *t, double *g, double *l){
+	static void leastsquares(int h0, int h1, double *t, double *g, double *l){
 	/* This function computes the parameters g and l of the 
 		linear function T(h)= g*h+l that best fits
 		the data points (h,t[h]) with h0 <= h <= h1. */

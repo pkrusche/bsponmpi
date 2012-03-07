@@ -64,7 +64,7 @@ information.
 		};										\
 		__bspcx.run_in_context(&MyRC::run_as);	\
 	}											\
-	__bspcx.bsp_sync();	
+	__bspcx.bsp_sync( true );	
 
 /**
  * We need to be able to sync *after* all the tasks

@@ -19,7 +19,7 @@ namespace bsp {
 	 */
 	class Context {
 	public:
-		Context (TaskMapper * _mapper = NULL) : mapper(*_mapper), impl (NULL) {}
+		Context (TaskMapper * _mapper = NULL) : mapper(_mapper), impl (NULL) {}
 
 		virtual ~Context() {}
 
@@ -45,7 +45,7 @@ namespace bsp {
 
 		inline int bsp_nprocs() const {
 			if (impl != NULL) { 
-				return mapper.nprocs();
+				return mapper->nprocs();
 			} else {
 				return ::bsp_nprocs();
 			}
@@ -139,11 +139,11 @@ namespace bsp {
 
 		/** This function executes _runme in all contexts in our mapper */
 		inline void run_in_context ( Context::FUN _runme ) {
-			for (int j = 0;	j < mapper.procs_this_node(); ++j ) {
-				mapper.get_context (j).runme = _runme;
+			for (int j = 0;	j < mapper->procs_this_node(); ++j ) {
+				mapper->get_context (j).runme = _runme;
 			}
 			ComputationTask & root = *new( tbb::task::allocate_root() ) 
-				ComputationTask ( mapper );
+				ComputationTask ( *mapper );
 			tbb::task::spawn_root_and_wait (root);
 		}
 
@@ -151,7 +151,7 @@ namespace bsp {
 		inline void * get_impl() { return impl; }
 
 		inline void set_task_mapper(TaskMapper & _mapper) {
-			mapper = _mapper;
+			mapper = &_mapper;
 		}
 
 		/** TBB Task to run a context in a mapper */
@@ -184,7 +184,7 @@ namespace bsp {
 
 	private:
 		Context * parentcontext;	///< this is the parent context 
-		TaskMapper&  mapper;		///< The process mapper object for this context
+		TaskMapper*  mapper;		///< The process mapper object for this context
 		int pid;		///< The global pid of this computation
 		int local_pid;	///< The local pid of this computation
 

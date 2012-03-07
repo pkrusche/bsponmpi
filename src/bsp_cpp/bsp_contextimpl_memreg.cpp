@@ -61,14 +61,14 @@ extern "C" {
 extern BSPObject g_bsp;
 
 /** Sync memory register operations */
-void bsp::ContextImpl::process_memoryreg_ops(bsp::TaskMapper & mapper, int reg_req_size) {
-	int ppn = mapper.procs_per_node();
+void bsp::ContextImpl::process_memoryreg_ops(TaskMapper * mapper, int reg_req_size) {
+	int ppn = mapper->procs_per_node();
 	utilities::AVector<MemoryRegister_Reg> vs, vr;
 	vs.resize(g_bsp.nprocs * reg_req_size * ppn);
 	vr.resize(g_bsp.nprocs * reg_req_size * ppn);
 
-	for (int lp = 0; lp < mapper.procs_this_node(); ++lp) {
-		ContextImpl * cimpl = (ContextImpl *)(mapper.get_context(lp).get_impl());
+	for (int lp = 0; lp < mapper->procs_this_node(); ++lp) {
+		ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(lp).get_impl());
 		int o = lp * reg_req_size;
 		int r = 0;
 		while (!cimpl->reg_requests.empty()) {
@@ -88,19 +88,19 @@ void bsp::ContextImpl::process_memoryreg_ops(bsp::TaskMapper & mapper, int reg_r
 		size_t size = -1;
 		int push_or_pop = -1;
 
-		for (int llp = 0; llp < mapper.procs_this_node(); ++llp) {
-			ContextImpl * cimpl = (ContextImpl *)(mapper.get_context(llp).get_impl());
+		for (int llp = 0; llp < mapper->procs_this_node(); ++llp) {
+			ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(llp).get_impl());
 			int my_local_pid = cimpl->local_pid;
 
 			MemoryRegister reg;
 
-			reg.pointers = boost::shared_array<const void*>(new const void * [mapper.nprocs()]);
+			reg.pointers = boost::shared_array<const void*>(new const void * [mapper->nprocs()]);
 
 			MemoryRegister_Reg & my_r (vr[ g_bsp.rank*reg_req_size*ppn + my_local_pid*reg_req_size + req ]);
 
-			for (int gp = 0; gp < mapper.nprocs(); ++gp) {
+			for (int gp = 0; gp < mapper->nprocs(); ++gp) {
 				int p, lp;
-				mapper.where_is(gp, p, lp);
+				mapper->where_is(gp, p, lp);
 				MemoryRegister_Reg & r (vr[ p*reg_req_size*ppn + lp*reg_req_size + req ]);
 
 				// Check ordering 

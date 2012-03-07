@@ -12,6 +12,9 @@
 /** this is a helper to make sure output doesn't get garbled */
 tbb::spin_mutex output_mutex;
 
+
+static bsp_global_handle_t h;
+
 /** When declaring BSP computations, we first declare a 
  *  Context. A context holds all variables which persist 
  *  over multiple supersteps.
@@ -149,7 +152,6 @@ protected:
 	/** Members must be public or protected, since BSP_BEGIN et al. 
 	 *  rely on them being accessible to subclasses */
 	int counter;
-	static bsp_global_handle_t h;
 };
 
 
