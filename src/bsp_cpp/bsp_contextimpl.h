@@ -70,7 +70,6 @@ namespace bsp {
 
 		void bsp_push_reg (const void *, size_t);
 		void bsp_pop_reg (const void *);
-		void bsp_put (int, const void *, void *, long int, size_t);
 		void bsp_get (int, const void *, long int, void *, size_t);
 
 		void bsp_send (int, const void *, const void *, size_t);
@@ -82,6 +81,10 @@ namespace bsp {
 		void bsp_hpput (int, const void *, void *, long int, size_t);
 		void bsp_hpget (int, const void *, long int, void *, size_t);
 		int bsp_hpmove (void **, void **);
+
+		inline char * get_memreg_address (void * addr, int pid) {
+			return ((char*)memory_register_map[addr].pointers[pid]);
+		}
 
 	private:
 

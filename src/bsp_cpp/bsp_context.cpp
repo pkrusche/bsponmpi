@@ -34,6 +34,14 @@ information.
 
 #include <tbb/spin_mutex.h>
 
+extern "C" {
+#include "bsp_private.h"
+
+#include "bsp_reqtable.h"
+#include "bsp_delivtable.h"
+#include "bsp_memreg.h"
+};
+
 /** Mutex to make access to message buffers thread safe */
 
 namespace bsp {
@@ -91,9 +99,73 @@ void bsp::Context::bsp_pop_reg (const void * data) {
 	BSP->bsp_pop_reg(data);
 }
 
+extern BSPObject g_bsp;
+
+/** Adds an element to the table and expands the table when necessary. The
+* payload may be copied to the address referenced by the returned pointer. 
+@param table Reference to a VarElSizeTable
+@param proc Destination processor
+@param element Element to be added
+@param type Type of element
+@return pointer to memory location in which data can be copied
+*/
+inline char * deliveryTable_push2 (ExpandableTable *RESTRICT  table, const int proc,
+	const DelivElement *RESTRICT element, const ItemType type)
+{
+	const unsigned int slot_size = sizeof(ALIGNED_TYPE);
+	const unsigned int tag_size = no_slots(sizeof(DelivElement), slot_size);
+	const unsigned int object_size = tag_size + no_slots(element->size, slot_size);
+	ALIGNED_TYPE * RESTRICT pointer;
+
+	{
+		TSLOCK();
+		int free_space = table->rows - table->used_slot_count[proc];
+
+		if ((signed)object_size > free_space) 
+		{
+			int space_needed = MAX(table->rows, object_size - free_space);
+			deliveryTable_expand(table, space_needed);
+		}  
+
+	}
+
+	/* manage deliveryTable info */
+	if (table->info.deliv.count[proc][type] == 0)
+		table->info.deliv.start[proc][type] = table->used_slot_count[proc];
+	else
+	{
+		pointer = (ALIGNED_TYPE *) table->data + table->info.deliv.end[proc][type] + proc * table->rows;
+		((DelivElement *) pointer)->next = table->used_slot_count[proc] - table->info.deliv.end[proc][type];
+	}
+
+	table->info.deliv.end[proc][type] = table->used_slot_count[proc];
+	table->info.deliv.count[proc][type]++;
+
+	pointer = (ALIGNED_TYPE *) table->data + table->used_slot_count[proc] + proc * table->rows;
+	* (DelivElement *) pointer = *element;
+	pointer+=tag_size;
+	
+	/* increment counters */
+	table->used_slot_count[proc] += object_size;
+
+	return (char* )pointer ;  
+}
+
+
 void bsp::Context::bsp_put (int pid, const void *src, void *dst, long int offset, size_t nbytes) {
-	TSLOCK();
-	BSP->bsp_put(pid, src, dst, offset, nbytes);
+	int n, lp;
+	mapper->where_is(pid, n, lp);
+
+	char * RESTRICT pointer;
+	DelivElement element;
+	element.size = (unsigned int) nbytes;
+	element.info.put.dst = BSP->get_memreg_address(dst, pid) + offset;
+	
+	{
+		TSLOCK();
+		pointer = deliveryTable_push2(&g_bsp.delivery_table, n, &element, it_put);
+	}
+	memcpy(pointer, src, nbytes);
 }
 
 void bsp::Context::bsp_get (int pid, const void *src, long int offset, void *dst, size_t nbytes) {

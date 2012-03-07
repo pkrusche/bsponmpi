@@ -329,19 +329,6 @@ void bsp::ContextImpl::bsp_pop_reg(const void * ident) {
 	reg_requests.push( r );
 }
 
-/** bsp_put which is aware of node locality */
-void bsp::ContextImpl::bsp_put(int pid, const void * src, void * dst, long int offset, size_t nbytes) {
-	int n, lp;
-	mapper->where_is(pid, n, lp);
-	
-	char * RESTRICT pointer;
-	DelivElement element;
-	element.size = (unsigned int) nbytes;
-	element.info.put.dst = ((char*)memory_register_map[dst].pointers[pid]) + offset;
-	pointer = (char*)deliveryTable_push(&g_bsp.delivery_table, n, &element, it_put);
-	memcpy(pointer, src, nbytes);
-}
-
 void bsp::ContextImpl::bsp_get (int pid, const void * src, long int offset, void * dst, size_t nbytes) {
 	int n, lp;
 	mapper->where_is(pid, n, lp);
