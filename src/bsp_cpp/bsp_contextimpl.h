@@ -39,7 +39,7 @@ Implementation header for ContextImpl implementation
 #include <boost/shared_array.hpp>
 
 #include "bsp_cpp/TaskMapper.h"
-#include "bsp_tools/Avector.h"
+#include "bsp_cpp/Context.h"
 
 extern "C" {
 #include "bsp_private.h"
@@ -49,9 +49,8 @@ extern "C" {
 #include "bsp_memreg.h"
 };
 
+#include "bsp_localdelivery.h"
 #include "bsp_context_ts.h"
-
-extern BSPObject g_bsp;
 
 namespace bsp {
 
@@ -96,21 +95,23 @@ namespace bsp {
 			int n, lp;
 			mapper->where_is(pid, n, lp);
 
-			char * RESTRICT pointer;
-			
 			if (g_bsp.rank == n) {
-				DelivElement element;
-				element.size = (unsigned int) nbytes;
-				element.info.put.dst = get_memreg_address(dst, pid) + offset;
-				pointer = (char*)deliveryTable_push(&localDeliveries, n, &element, it_put);
+				localDeliveries.put(
+					(char *)src, 
+					((char*)memory_register_map[dst].pointers[pid]) + offset, 
+					nbytes, 
+					true);
 			} else {
-				TSLOCK();
+				char * pointer;
 				DelivElement element;
 				element.size = (unsigned int) nbytes;
-				element.info.put.dst = get_memreg_address(dst, pid) + offset;
-				pointer = (char*)deliveryTable_push(&g_bsp.delivery_table, n, &element, it_put);
+				element.info.put.dst = ((char*)memory_register_map[dst].pointers[pid]) + offset;
+				{ 
+					TSLOCK();
+					pointer = (char*)deliveryTable_push(&g_bsp.delivery_table, n, &element, it_put);
+				}
+				memcpy(pointer, src, nbytes);
 			}
-			memcpy(pointer, src, nbytes);
 		}
 
 		void bsp_get (int, const void *, long int, void *, size_t);
@@ -124,10 +125,6 @@ namespace bsp {
 		void bsp_hpput (int, const void *, void *, long int, size_t);
 		void bsp_hpget (int, const void *, long int, void *, size_t);
 		int bsp_hpmove (void **, void **);
-
-		inline char * get_memreg_address (void * addr, int pid) {
-			return ((char*)memory_register_map[addr].pointers[pid]);
-		}
 
 	private:
 
@@ -158,12 +155,12 @@ namespace bsp {
 
 		std::queue< MemoryRegister_Reg > reg_requests;	/**< new registrations are buffered here */
 
-		static utilities::AVector <unsigned int> h_send;	/**< superstep input element counts */
-		static utilities::AVector <unsigned int> h_recv;	/**< superstep output element counts */
-
 		/** each context can do its node-local deliveries independently. */
-		ExpandableTable localDeliveries;
+		LocalDeliveryQueue	localDeliveries;
 
+		/** we use our own bsp object */
+		static BSPObject g_bsp;
+		static int g_bsp_refcount;
 	};
 
 };

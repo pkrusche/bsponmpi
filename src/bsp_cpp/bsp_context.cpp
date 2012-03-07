@@ -84,8 +84,6 @@ void bsp::Context::bsp_pop_reg (const void * data) {
 	BSP->bsp_pop_reg(data);
 }
 
-extern BSPObject g_bsp;
-
 void bsp::Context::bsp_put (int pid, const void *src, void *dst, long int offset, size_t nbytes) {
 	BSP->bsp_put(pid, src, dst, offset, nbytes);
 }

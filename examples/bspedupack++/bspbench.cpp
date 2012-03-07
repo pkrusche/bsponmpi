@@ -45,6 +45,7 @@ public:
 		BSP_BEGIN();
   
 		Time= new double [p]; bsp_push_reg(Time,p*SZDBL);
+		BSP_SYNC();
 		dest= new double [2*MAXH+p]; bsp_push_reg(dest,(2*MAXH+p)*SZDBL);
 		
 		BSP_END();
@@ -166,6 +167,7 @@ public:
 		bsp_pop_reg(dest); delete [] dest;
 		bsp_pop_reg(Time); delete [] Time;
 		BSP_END();
+
 	} 
 
 	protected:

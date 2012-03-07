@@ -35,30 +35,7 @@ Implementation of memory registers for Contexts
 
 #include "bsp_contextimpl.h"
 
-#include "bsp.h"
-#include "bspx.h"
-
-extern "C" {
-#include "bsp_private.h"
-};
-
-#include "bsp_cpp/TaskMapper.h"
-#include "bsp_cpp/Context.h"
-
-#ifdef _HAVE_MPI
-#include <mpi.h>
-
-extern "C" {
-#include "bspx_comm_mpi.h"
-};
-#endif
-
-extern "C" {
-#include "bspx_comm_seq.h"
-};
-
-/** from bsp_contextimpl.cpp */
-extern BSPObject g_bsp;
+#include "bsp_tools/Avector.h"
 
 /** Sync memory register operations */
 void bsp::ContextImpl::process_memoryreg_ops(TaskMapper * mapper, int reg_req_size) {

@@ -40,10 +40,9 @@ information.
 #include "bsp_cpp/TaskMapper.h"
 #include "bsp_cpp/Context.h"
 
-BSPObject g_bsp; ///< node-level bsp object
-static int g_bsp_refcount = 0; ///< node level BSP object reference count
 
-#define CM_NENTRIES		3
+BSPObject bsp::ContextImpl::g_bsp; ///< node-level bsp object
+int bsp::ContextImpl::g_bsp_refcount = 0; ///< node level BSP object reference count
 
 #define	CM_REQUEST_COUNT	0
 #define	CM_MESSAGE_COUNT	1
@@ -51,9 +50,6 @@ static int g_bsp_refcount = 0; ///< node level BSP object reference count
 
 #define CM_FLAG_GETS			1
 #define CM_FLAG_MESSAGES		2
-
-utilities::AVector <unsigned int> bsp::ContextImpl::h_send;
-utilities::AVector <unsigned int> bsp::ContextImpl::h_recv;
 
 /**
  * Constructor. Make local BSP object, update processor locations
@@ -71,23 +67,12 @@ bsp::ContextImpl::ContextImpl(bsp::TaskMapper * tm, int lpid)
 	} else {
 		g_bsp_refcount++;
 	}
-
-	// make processor location map
-
-	if (h_send.exact_size() < CM_NENTRIES * ::bsp_nprocs()) {
-		h_send.resize(CM_NENTRIES * ::bsp_nprocs());
-	}
-	if (h_recv.exact_size() < CM_NENTRIES * g_bsp.nprocs) {
-		h_recv.resize(CM_NENTRIES * g_bsp.nprocs);
-	}
-	deliveryTable_initialize(&localDeliveries, g_bsp.nprocs, 1);
 }
 
 /** 
  * Destructor. Destroy local BSP object 
  */
 bsp::ContextImpl::~ContextImpl() {
-	expandableTable_destruct (&localDeliveries);
 	g_bsp_refcount--;
 	if (g_bsp_refcount <= 0) {
 		bspx_destroy_bspobject(&g_bsp);
@@ -108,11 +93,7 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 		ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(lp).get_impl());
 
 		/* here we also carry out all local deliveries */
-		deliveryTable_execute(&cimpl->localDeliveries, 
-			&g_bsp.memory_register, &g_bsp.message_queue, g_bsp.rank);
-
-		deliveryTable_reset(&cimpl->localDeliveries);
-
+		cimpl->localDeliveries.execute();
 
 		if (reg_req_size < 0) {
 			reg_req_size = (int)cimpl->reg_requests.size();
@@ -134,22 +115,22 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 	bool any_messages = deliveryTable_empty(&g_bsp.delivery_table) == 0;
 
  	for (int p = 0; p < g_bsp.nprocs; ++p) {
-		h_send[CM_NENTRIES * p + CM_MESSAGE_COUNT] = g_bsp.delivery_table.used_slot_count[p];
-		h_send[CM_NENTRIES * p + CM_REQUEST_COUNT] = g_bsp.request_table.used_slot_count[p];
+		g_bsp.send_index[3 * p + CM_MESSAGE_COUNT] = g_bsp.delivery_table.used_slot_count[p];
+		g_bsp.send_index[3 * p + CM_REQUEST_COUNT] = g_bsp.request_table.used_slot_count[p];
 
-		h_send[CM_NENTRIES * p + CM_FLAGS] = 0;
-		if ( h_send[CM_NENTRIES * p + CM_REQUEST_COUNT] > 0) {
-			h_send[CM_NENTRIES * p + CM_FLAGS] |= CM_FLAG_GETS;
+		g_bsp.send_index[3 * p + CM_FLAGS] = 0;
+		if ( g_bsp.send_index[3 * p + CM_REQUEST_COUNT] > 0) {
+			g_bsp.send_index[3 * p + CM_FLAGS] |= CM_FLAG_GETS;
 		}
 		if ( any_messages ) {
-			h_send[CM_NENTRIES * p + CM_FLAGS] |= CM_FLAG_MESSAGES;
+			g_bsp.send_index[3 * p + CM_FLAGS] |= CM_FLAG_MESSAGES;
 		}
 		
-		h_send[CM_NENTRIES * p + CM_FLAGS] |= reg_req_size; 
+		g_bsp.send_index[3 * p + CM_FLAGS] |= reg_req_size; 
 	}
 	
-	_BSP_COMM0 (h_send.data, CM_NENTRIES*sizeof(unsigned int), 
-				h_recv.data, CM_NENTRIES*sizeof(unsigned int) );
+	_BSP_COMM0 (g_bsp.send_index, 3*sizeof(unsigned int), 
+				g_bsp.recv_index, 3*sizeof(unsigned int) );
 
 	/************************************************************************/
 	/* Step 2. Process memory register registrations.                       */
@@ -162,19 +143,15 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 	bool local_messages = false;
 	for (int p = 0; p < g_bsp.nprocs; ++p) {
 		// local operations are exempt
-		if ( p == g_bsp.rank ) {
-			continue;
-		}
-
-		if (h_recv[CM_NENTRIES * p + CM_FLAGS] & CM_FLAG_MESSAGES) {
+		if (g_bsp.recv_index[3 * p + CM_FLAGS] & CM_FLAG_MESSAGES) {
 			any_messages = true;
 		}
 
-		if (h_recv[CM_NENTRIES * p + CM_FLAGS] & CM_FLAG_GETS) {
+		if (g_bsp.recv_index[3 * p + CM_FLAGS] & CM_FLAG_GETS) {
 			any_gets = true;
 		}
 		using namespace std;
-		reg_req_size = max ((unsigned)reg_req_size, h_recv[CM_NENTRIES * p + CM_FLAGS] >> 4);
+		reg_req_size = max ((unsigned)reg_req_size, g_bsp.recv_index[3 * p + CM_FLAGS] >> 4);
 	}
 
 	/**
@@ -202,7 +179,7 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 		
 		/* expand buffers if necessary */
 		for (unsigned int p = 0; p < (unsigned)g_bsp.nprocs; p++) {
-			maxdelrows = max( h_recv[CM_MESSAGE_COUNT + CM_NENTRIES*p] + 
+			maxdelrows = max( g_bsp.recv_index[CM_MESSAGE_COUNT + 3*p] + 
 				g_bsp.request_table.info.req.data_sizes[p], maxdelrows );
 		}
 		
@@ -214,7 +191,7 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 		/* copy necessary indices to received_tables */
 		for (unsigned int p = 0; p < (unsigned)g_bsp.nprocs; p++) {
 			g_bsp.delivery_received_table.used_slot_count[p] =
-				h_recv[ CM_MESSAGE_COUNT + CM_NENTRIES * p ] + 
+				g_bsp.recv_index[ CM_MESSAGE_COUNT + 3 * p ] + 
 				g_bsp.request_table.info.req.data_sizes[p] ;
 		}	
 
@@ -222,8 +199,7 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 	  	 *  exchange them and convert them to put requests
 		 */
 		if (any_gets) {
-			unsigned int maxreqrows = array_max(h_recv.data 
-				+ CM_REQUEST_COUNT, CM_NENTRIES*g_bsp.nprocs, CM_NENTRIES);
+			unsigned int maxreqrows = array_max(g_bsp.recv_index + CM_REQUEST_COUNT, 3*g_bsp.nprocs, 3);
 
 			if ( maxreqrows > 0 ) {
 				requestTable_expand(&g_bsp.request_received_table, maxreqrows);
@@ -232,7 +208,7 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 			// tell expandableTable_comm how much data to expect
 			for (int p = 0; p < g_bsp.nprocs; p++)  {
 				g_bsp.request_received_table.used_slot_count[p] 
-					= h_recv[CM_NENTRIES * p + CM_REQUEST_COUNT];
+					= g_bsp.recv_index[3 * p + CM_REQUEST_COUNT];
 			}
 
 			expandableTable_comm(&g_bsp.request_table, &g_bsp.request_received_table,
@@ -241,7 +217,7 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 			requestTable_execute(&g_bsp.request_received_table, &g_bsp.delivery_table);
 		}
 
-#ifdef _DEBUG_SUPERSTEPS
+#ifdef _DEBUGSUPERSTEPS
 		std::ostringstream s;
 		static int step = 0;
 		s << "s"<< step << " proc " << g_bsp.rank << " receives [";
@@ -256,21 +232,13 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 		s << "]" << std::endl;
 		std::cerr << s.str() << std::endl;
 #endif
+
 		expandableTable_comm(&g_bsp.delivery_table, &g_bsp.delivery_received_table,
 			_BSP_COMM1);
 
 		/** execute put operations */
 		deliveryTable_execute(&g_bsp.delivery_received_table, 
-			&g_bsp.memory_register, &g_bsp.message_queue, g_bsp.rank);
-			
-	// check if we want to do a local delivery round
-	} else if ( 
-		h_recv[CM_NENTRIES * g_bsp.rank + CM_FLAGS] &  ( CM_FLAG_MESSAGES |  CM_FLAG_GETS )
-	) {
-		requestTable_execute(&g_bsp.request_table, &g_bsp.delivery_table);		
-		/** execute put operations locally */
-		deliveryTable_execute(&g_bsp.delivery_table, 
-			&g_bsp.memory_register, &g_bsp.message_queue, g_bsp.rank);		
+			&g_bsp.memory_register, &g_bsp.message_queue, g_bsp.rank);			
 	}
 
 	/* clear the buffers */			
