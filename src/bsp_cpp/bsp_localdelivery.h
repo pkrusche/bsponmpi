@@ -30,9 +30,12 @@ information.
 #define __bsp_localdelivery_H__
 
 #include <vector>
-#include <tbb/scalable_allocator.h>
+
+#include "bsp_tools/Avector.h"
 
 namespace bsp {
+	
+	typedef utilities::Avector<double> storagevector;
 
 	/** a local memory delivery which will be
 	 *  carried out once a superstep is over
@@ -41,19 +44,19 @@ namespace bsp {
 		char * src;
 		char * dst;
 		size_t nbytes;
-		bool free_src;
 	};
 
 	class LocalDeliveryQueue {
 	public:
-		tbb::scalable_allocator<char> alloc;
-
 		enum {
 			LQ_MIN = 64,
+			ST_MIN = 128,
 		};
 
 		LocalDeliveryQueue() : qend (0) {
 			deliv_queue.resize(LQ_MIN);
+			storage.resize(ST_MIN);
+			storage_end = 0;
 		}
 
 		/** execute all queued deliveries */
@@ -62,37 +65,49 @@ namespace bsp {
 			while (z < qend) {
 				LocalMemoryDelivery & d (deliv_queue[z]);
 				memcpy (d.dst, d.src, d.nbytes);
-				if(d.free_src) {
-					alloc.deallocate(d.src, d.nbytes);
-				}
 				++z;
 			}
 			qend = 0;
+			storage_end = 0;
+			storage.resize(ST_MIN);
 			deliv_queue.resize(LQ_MIN);
 		}
 
 		/** enqueue a put operation */
-		inline void put ( char * src, char * dst, size_t nbytes, bool buffer ) {
-			LocalMemoryDelivery d;
-			d.dst = dst;
-			if ( !buffer ) {
-				d.src = src;
-				d.free_src = false;
-			} else {
-				d.src = alloc.allocate(nbytes);
-				d.free_src = true;
-				memcpy (d.src, src, nbytes);
-			}
-			d.nbytes = nbytes;
+		inline void put ( char * src, char * dst, size_t nbytes ) {
 			if (deliv_queue.size() < qend+1) {
 				deliv_queue.resize(deliv_queue.size()*2);
 			}
-			deliv_queue[qend++] = d;
+			LocalMemoryDelivery & d(deliv_queue[qend++]);
+			d.dst = dst;
+			d.src = storage.data + storage_end;
+			d.free_src = true;
+			
+			storage_end += ( nbytes + 7 ) >> 3;
+			if(storage_end >= storage.size() ) {
+				storage.resize( (storage_end + 1) * 2 );
+			}
+			
+			memcpy (d.src, src, nbytes);
+			d.nbytes = nbytes;
+		}
+
+		/** enqueue an unbuffered put operation */
+		inline void hpput ( char * src, char * dst, size_t nbytes ) {
+			if (deliv_queue.size() < qend+1) {
+				deliv_queue.resize(deliv_queue.size()*2);
+			}
+			LocalMemoryDelivery & d(deliv_queue[qend++]);
+			d.dst = dst;
+			d.src = src;
+			d.free_src = false;
+			d.nbytes = nbytes;
 		}
 
 	private:
-		size_t qend;
+		size_t qend, storage_end;
 		std::vector <LocalMemoryDelivery> deliv_queue;
+		utilities::Avector <double> storage;
 	};
 
 };

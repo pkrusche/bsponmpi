@@ -211,7 +211,7 @@ public:
 	} /* end leastsquares */
 }; /* end bspbench */
 
-int main(int argc, char **argv){
+int main(int argc, char **argv) {
     bsp_init(&argc, &argv);
 	using namespace std;
 	using namespace bsp;
@@ -220,6 +220,7 @@ int main(int argc, char **argv){
 	// You'll have as many processes as there are
 	// available via MPI.
 	int recursive_processors = 2;
+	double warmuptime = 2.0;
 
 	/** This is how we read and parse command line options */
 	try {
@@ -228,21 +229,25 @@ int main(int argc, char **argv){
 		options_description opts;
 		opts.add_options()
 			("help", "produce a help message")
-			("procs,p", value<int>()->default_value(2),
+			("procs,p", value<int>()->default_value(2), 
 			"How many processors to recursively create.")
+			("warmup,w", value<double>()->default_value(2.0),
+			 "How much time to warm up. (default: 2s)"
+			)
 			;
 		variables_map vm;
 
 		bsp_command_line(argc, argv, opts, vm);
 
 		recursive_processors = vm["procs"].as<int>();
+		warmuptime = vm["warmup"].as<double>();
 	} catch (std::exception e) {
 		string s = e.what();
 		s+= "\n";
 		bsp_abort(s.c_str());
 	}
 
-	bsp_warmup (2.0);
+	bsp_warmup ( warmuptime );
 	BSPBench :: run(recursive_processors);
     
 	bsp_end();
