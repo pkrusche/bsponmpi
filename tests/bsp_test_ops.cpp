@@ -80,11 +80,18 @@ int main (int argc, char** argv) {
 	try {
 
 		while (procs <= max_processors) {
-			cout << "Testing p = " << procs << endl;
+			cout << "Testing put p = " << procs << endl;
 			TestPut::run( procs );
+			bsp_sync();
+			cout << "Testing hpput p = " << procs << endl;
 			TestHpPut::run( procs );
-			TestGet::run( procs );
-			TestHpGet::run( procs );
+			bsp_sync();
+			cout << "Testing get p = " << procs << endl;
+//			TestGet::run( procs );
+			bsp_sync();
+			cout << "Testing hpget p = " << procs << endl;
+//			TestHpGet::run( procs );
+			bsp_sync();
 			++procs;
 		}
 
