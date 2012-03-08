@@ -87,10 +87,10 @@ int main (int argc, char** argv) {
 			TestHpPut::run( procs );
 			bsp_sync();
 			cout << "Testing get p = " << procs << endl;
-//			TestGet::run( procs );
+			TestGet::run( procs );
 			bsp_sync();
 			cout << "Testing hpget p = " << procs << endl;
-//			TestHpGet::run( procs );
+			TestHpGet::run( procs );
 			bsp_sync();
 			++procs;
 		}

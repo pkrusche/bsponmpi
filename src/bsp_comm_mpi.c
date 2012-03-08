@@ -65,6 +65,7 @@ void BSP_EXIT_MPI () {
 }
 
 void BSP_MPI_ALLTOALL_COMM (void * sendbuf, int  sendcount, void * recvbuf, int  recvcount) {
+//	MPI_Barrier(bsp_communicator);
 	MPI_Alltoall(sendbuf, sendcount, MPI_BYTE, recvbuf, recvcount, MPI_BYTE, bsp_communicator);
 }
 
@@ -74,6 +75,7 @@ void BSP_MPI_ALLTOALL_COMM (void * sendbuf, int  sendcount, void * recvbuf, int 
  */
 void BSP_MPI_ALLTOALLV_COMM (void * sendbuf, int * sendcounts, int * sendoffsets,
 	void * recvbuf, int * recvcounts, int * recvoffsets ) {
+//	MPI_Barrier(bsp_communicator);
 	MPI_Alltoallv(sendbuf, sendcounts, sendoffsets, MPI_BYTE, 
 				  recvbuf, recvcounts, recvoffsets, MPI_BYTE,
 				  bsp_communicator);

@@ -40,6 +40,7 @@ information.
 #include "bsp_cpp/TaskMapper.h"
 #include "bsp_cpp/Context.h"
 
+// #define _DEBUGSUPERSTEPS
 
 BSPObject bsp::ContextImpl::g_bsp; ///< node-level bsp object
 int bsp::ContextImpl::g_bsp_refcount = 0; ///< node level BSP object reference count
@@ -85,6 +86,7 @@ bsp::ContextImpl::~ContextImpl() {
 void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {	
 	int reg_req_size = -1;
 	bool any_hp = false;
+	bool any_gets = false;
 
 	/************************************************************************/
 	/* Step 1. exchange communication matrix.                               */
@@ -113,24 +115,89 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 	reg_req_size = ((reg_req_size&MAX_REGISTER_REQS) << 4);
 
 	bool any_messages = deliveryTable_empty(&g_bsp.delivery_table) == 0;
-
+#ifdef _DEBUGSUPERSTEPS
+	static int nstep = 0;
+	nstep++;
+#endif
  	for (int p = 0; p < g_bsp.nprocs; ++p) {
 		g_bsp.send_index[3 * p + CM_MESSAGE_COUNT] = g_bsp.delivery_table.used_slot_count[p];
 		g_bsp.send_index[3 * p + CM_REQUEST_COUNT] = g_bsp.request_table.used_slot_count[p];
-
 		g_bsp.send_index[3 * p + CM_FLAGS] = 0;
-		if ( g_bsp.send_index[3 * p + CM_REQUEST_COUNT] > 0) {
+
+		if (g_bsp.request_table.used_slot_count[p] > 0) {
+			any_gets = true;
+		}
+	}
+
+	for (int p = 0; p < g_bsp.nprocs; ++p) {
+		if ( any_gets ) {
 			g_bsp.send_index[3 * p + CM_FLAGS] |= CM_FLAG_GETS;
 		}
 		if ( any_messages ) {
 			g_bsp.send_index[3 * p + CM_FLAGS] |= CM_FLAG_MESSAGES;
 		}
 		
-		g_bsp.send_index[3 * p + CM_FLAGS] |= reg_req_size; 
+		g_bsp.send_index[3 * p + CM_FLAGS] |= reg_req_size 
+#ifdef _DEBUGSUPERSTEPS
+			| (nstep & 0xf) << 20
+#endif
+			; 
 	}
-	
+
+#ifdef _DEBUGSUPERSTEPS
+	std::cout << "step " << nstep << " - " << "P" << g_bsp.rank << " CM Exchange" << std::endl;
+	std::cout.flush();
+#endif
+
 	_BSP_COMM0 (g_bsp.send_index, 3*sizeof(unsigned int), 
 				g_bsp.recv_index, 3*sizeof(unsigned int) );
+
+#ifdef _DEBUGSUPERSTEPS
+	{
+		int step = nstep & 0xf;
+		// check all processors are in the same superstep
+		for (int p = 0; p < g_bsp.nprocs; ++p) {
+			int step2 = g_bsp.recv_index[3 * p + CM_FLAGS] >> 20;
+			g_bsp.recv_index[3 * p + CM_FLAGS] &= 0xfff;
+			if (step2 != step) {
+				bsp_abort("Not all processors are in the same superstep. I (%i) am in %i. Got %i from %i \n", g_bsp.rank, step, step2, p);
+			}
+		}
+
+		std::ostringstream s;
+		s << "step " << nstep << " - " << "P" << g_bsp.rank << " sent: ";
+		for (int p = 0; p < g_bsp.nprocs; ++p) {
+			s << p << ":(M" << g_bsp.send_index[3 * p + CM_MESSAGE_COUNT] << ",R"
+				<<	    g_bsp.send_index[3 * p + CM_REQUEST_COUNT] << ",F"
+				<<	    g_bsp.send_index[3 * p + CM_REQUEST_COUNT] << ") ";
+		}
+		s << std::endl;
+		s << "step " << nstep << " - " << "P" << g_bsp.rank << " got: ";
+		bool _any_messages = false;
+		bool _any_gets = false;
+		for (int p = 0; p < g_bsp.nprocs; ++p) {
+			s << p << ":(M" << g_bsp.recv_index[3 * p + CM_MESSAGE_COUNT] << ",R"
+			  <<	    g_bsp.recv_index[3 * p + CM_REQUEST_COUNT] << ",F"
+			  <<	    g_bsp.recv_index[3 * p + CM_REQUEST_COUNT] << ") ";
+			if (g_bsp.recv_index[3 * p + CM_FLAGS] & CM_FLAG_MESSAGES) {
+				_any_messages = true;
+			}
+
+			if (g_bsp.recv_index[3 * p + CM_FLAGS] & CM_FLAG_GETS) {
+				_any_gets = true;
+			}
+		}
+		if (_any_messages) {
+			s << ", will exchange messages";
+		}
+		if (_any_gets) {
+			s << ", will exchange RT";
+		}
+		s << std::endl;
+		std::cout << s.str();
+		std::cout.flush();
+	}
+#endif
 
 	/************************************************************************/
 	/* Step 2. Process memory register registrations.                       */
@@ -139,7 +206,6 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 	reg_req_size >>= 4;
 
 	any_messages = false;
-	bool any_gets = false;
 	bool local_messages = false;
 	for (int p = 0; p < g_bsp.nprocs; ++p) {
 		// local operations are exempt
@@ -211,30 +277,46 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 					= g_bsp.recv_index[3 * p + CM_REQUEST_COUNT];
 			}
 
+#ifdef _DEBUGSUPERSTEPS
+			std::cout << "step " << nstep << " - " << "P" << g_bsp.rank << " RT Exchange --->" << std::endl;
+			std::cout.flush();
+#endif
 			expandableTable_comm(&g_bsp.request_table, &g_bsp.request_received_table,
 				_BSP_COMM1);
+#ifdef _DEBUGSUPERSTEPS
+			std::cout << "step " << nstep << " - " << "P" << g_bsp.rank << " RT Exchange done." << std::endl;
+			std::cout.flush();
+#endif
 
 			requestTable_execute(&g_bsp.request_received_table, &g_bsp.delivery_table);
 		}
 
 #ifdef _DEBUGSUPERSTEPS
 		std::ostringstream s;
-		static int step = 0;
-		s << "s"<< step << " proc " << g_bsp.rank << " receives [";
+		s << "\ts"<< nstep << " proc " << g_bsp.rank << " receives [";
 		for (int p = 0; p < g_bsp.nprocs; p++)  {
 			s << g_bsp.delivery_received_table.used_slot_count[p] << ",";
 		}
 		s << "]" << std::endl;
-		s << "s"<< step++ << " proc " << g_bsp.rank << " sends [";
+		s << "\ts"<< nstep << " proc " << g_bsp.rank << " sends [";
 		for (int p = 0; p < g_bsp.nprocs; p++)  {
 			s << g_bsp.delivery_table.used_slot_count[p] << ",";
 		}
 		s << "]" << std::endl;
-		std::cerr << s.str() << std::endl;
+		std::cout << s.str() << std::endl;
+		std::cout.flush();
 #endif
 
+#ifdef _DEBUGSUPERSTEPS
+		std::cout << "step " << nstep << " - " << "P" << g_bsp.rank << " Data Exchange --->" << std::endl;
+		std::cout.flush();
+#endif
 		expandableTable_comm(&g_bsp.delivery_table, &g_bsp.delivery_received_table,
 			_BSP_COMM1);
+#ifdef _DEBUGSUPERSTEPS
+		std::cout << "step " << nstep << " - " << "P" << g_bsp.rank << " Data Exchange done." << std::endl;
+		std::cout.flush();
+#endif
 
 		/** execute put operations */
 		deliveryTable_execute(&g_bsp.delivery_received_table, 
