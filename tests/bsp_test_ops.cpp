@@ -80,6 +80,7 @@ int main (int argc, char** argv) {
 	try {
 
 		while (procs <= max_processors) {
+			cout << "Testing p = " << procs << endl;
 			TestPut::run( procs );
 			TestHpPut::run( procs );
 			TestGet::run( procs );

@@ -129,10 +129,11 @@ namespace bsp {
 				elem.src = ((char*)memory_register_map[src].pointers[pid]);
 				elem.dst = (char* )dst;
 				elem.offset = offset;
-
-				TSLOCK();
-				/* place get command in buffer */
-				requestTable_push(&g_bsp.request_table, n, &elem);
+				{
+					TSLOCK();
+					/* place get command in buffer */
+					requestTable_push(&g_bsp.request_table, n, &elem);
+				}
 			}
 		}
 
