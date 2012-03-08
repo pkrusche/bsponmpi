@@ -38,6 +38,8 @@ Implementation header for ContextImpl implementation
 
 #include <boost/shared_array.hpp>
 
+#include <tbb/concurrent_hash_map.h>
+
 #include "bsp_localdelivery.h"
 #include "bsp_context_ts.h"
 
