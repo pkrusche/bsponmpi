@@ -58,6 +58,8 @@ public:
 		myval2 = bsp_nprocs() - bsp_pid();
 		myval3 = bsp_pid() + 1;
 
+		BSP_SYNC();
+
 		bsp_hpput (bsp_nprocs() - 1 - bsp_pid(), &myval1, &var1, 0, sizeof(int));
 		bsp_hpput (bsp_nprocs() - 1 - bsp_pid(), &myval2, var2, 2*sizeof(int), sizeof(int));
 		bsp_hpput (bsp_nprocs() - 1 - bsp_pid(), &myval3, &var3, 0, sizeof(int));
