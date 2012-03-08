@@ -84,9 +84,6 @@ namespace bsp {
 			bqend = 0;
 
 			storage_end = 0;
-			storage.resize(ST_MIN);
-			deliv_queue.resize(LQ_MIN);
-			buffered_deliv_queue.resize(LQ_MIN);
 		}
 
 		/** enqueue a put operation */
@@ -98,8 +95,12 @@ namespace bsp {
 			d.dst = dst;
 			d.offset = storage_end;
 			storage_end += ( nbytes + 7 ) >> 3;
-			if(storage_end >= storage.exact_size() ) {
-				storage.resize( (storage_end + 1) * 2 );
+			size_t s = storage.exact_size();
+			while(storage_end >= s ) {
+				s*= 2;
+			}
+			if (storage.exact_size() < s) {
+				storage.resize(s);
 			}
 			memcpy ((char*)(storage.data + d.offset), src, nbytes);
 			d.nbytes = nbytes;
@@ -114,6 +115,16 @@ namespace bsp {
 			d.dst = dst;
 			d.src = src;
 			d.nbytes = nbytes;
+		}
+
+		/** reset the buffer sizes */
+		inline void reset_buffers () {
+			storage.resize(ST_MIN);
+			deliv_queue.resize(LQ_MIN);
+			buffered_deliv_queue.resize(LQ_MIN);
+			storage_end = 0;
+			qend = 0;
+			bqend = 0;
 		}
 
 	private:

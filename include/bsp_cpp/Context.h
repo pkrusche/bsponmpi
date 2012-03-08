@@ -83,6 +83,8 @@ namespace bsp {
 		 */
 		void bsp_sync( bool local = false );
 
+		void bsp_reset_buffers();
+
 		/** @name DRMA */
 		/*@{*/
 		void bsp_push_reg (const void *, size_t);

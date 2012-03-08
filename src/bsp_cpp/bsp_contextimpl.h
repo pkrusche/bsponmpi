@@ -80,6 +80,8 @@ namespace bsp {
 		/** This is where all contexts within a task mapper are synchronized */
 		static void bsp_sync (TaskMapper *);
 
+		void bsp_reset_buffers();
+
 		/** push and pop operations use the local push/pop queue */
 		void bsp_push_reg (const void *, size_t);
 		void bsp_pop_reg (const void *);

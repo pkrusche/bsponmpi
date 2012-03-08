@@ -72,6 +72,14 @@ void bsp::Context::bsp_sync ( bool local ) {
 	}
 }
 
+void bsp::Context::bsp_reset_buffers () {
+	if (impl != NULL) {
+		BSP->bsp_reset_buffers();
+	} else {
+		::bsp_reset_buffers();
+	}
+}
+
 /** @name DRMA */
 /*@{*/
 void bsp::Context::bsp_push_reg (const void * data, size_t len) {

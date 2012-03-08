@@ -249,6 +249,13 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 	memoryRegister_pack(&g_bsp.memory_register);
 }
 
+void bsp::ContextImpl::bsp_reset_buffers() {
+	localDeliveries.reset_buffers();
+	TSLOCK();
+	bspx_resetbuffers(&g_bsp);
+}
+
+
 /** Push register implementation which distinguishes between local and 
  *  remote locations.
  */
