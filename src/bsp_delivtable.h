@@ -176,6 +176,39 @@ static inline void
 	}  
 }
 
+/** Make a deliverytable smaller. 
+@param table Reference to a DeliveryTable object
+@param rows Number of rows which should be added to this table
+*/
+
+static inline void
+	deliveryTable_resetrowcount (ExpandableTable * RESTRICT table, const int rows)
+{
+	const int index_size = 
+		no_slots(3 * 6 * sizeof(unsigned int), sizeof(ALIGNED_TYPE));
+	unsigned int p;
+
+	/**  save table info */
+	union SpecInfo info = table->info;
+	expandableTable_resetrowcount (table, rows);
+	table->info = info;
+
+	/* point the pointers to the correct places: the top each column */
+	for (p = 0; p < table->nprocs; p++) 
+	{
+		table->info.deliv.start[p] = (unsigned int *)
+			((char *) table->data + p * table->rows * sizeof(ALIGNED_TYPE)) ;
+		table->info.deliv.count[p] = (unsigned int *) 
+			((char *) table->data + p * table->rows * sizeof(ALIGNED_TYPE)) + 6 ;
+		table->info.deliv.end[p] = (unsigned int *) 
+			((char *) table->data + p * table->rows * sizeof(ALIGNED_TYPE)) + 12 ;
+
+		memset((ALIGNED_TYPE *) table->data + p * table->rows , 0, sizeof(ALIGNED_TYPE) * index_size );
+		/* don't overwrite this information */
+		table->used_slot_count[p] = index_size;	 
+	}  
+}
+
 
 /** Adds an element to the table and expands the table when necessary. The
 * payload may be copied to the address referenced by the returned pointer. 

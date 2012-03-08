@@ -33,9 +33,17 @@
 #include "bsp_alloc.h"
 #include "bsp_abort.h"
 
-#define DELIVTAB_SIZE 1
-#define REQTAB_SIZE   1
-#define MEMREG_SIZE   1	
+#ifndef BSP_DELIVTAB_MIN_SIZE
+#define BSP_DELIVTAB_MIN_SIZE 128
+#endif
+
+#ifndef BSP_REQTAB_MIN_SIZE
+#define BSP_REQTAB_MIN_SIZE   32
+#endif
+
+#ifndef BSP_MEMREG_MIN_SIZE
+#define BSP_MEMREG_MIN_SIZE  1	
+#endif
 
 /** Create buffers within a BSP object
  *
@@ -51,15 +59,15 @@ inline void bspx_init_bspobject (BSPObject * bsp, int nprocs, int rank) {
 	bsp->recv_index = (unsigned int *)bsp_malloc(3 * bsp->nprocs, sizeof(unsigned int));
 
 	/* initialize data structures */
-	memoryRegister_initialize(&bsp->memory_register, bsp->nprocs, MEMREG_SIZE,
+	memoryRegister_initialize(&bsp->memory_register, bsp->nprocs, BSP_MEMREG_MIN_SIZE,
 		bsp->rank);
 	messageQueue_initialize (&bsp->message_queue);
-	deliveryTable_initialize(&bsp->delivery_table, bsp->nprocs, DELIVTAB_SIZE);
-	requestTable_initialize(&bsp->request_table, bsp->nprocs, REQTAB_SIZE);
+	deliveryTable_initialize(&bsp->delivery_table, bsp->nprocs, BSP_DELIVTAB_MIN_SIZE);
+	requestTable_initialize(&bsp->request_table, bsp->nprocs, BSP_REQTAB_MIN_SIZE);
 	deliveryTable_initialize(&bsp->delivery_received_table, bsp->nprocs, 
-		DELIVTAB_SIZE);
+		BSP_DELIVTAB_MIN_SIZE);
 	requestTable_initialize(&bsp->request_received_table, bsp->nprocs,
-		REQTAB_SIZE);
+		BSP_REQTAB_MIN_SIZE);
 
 	bsp->global_array_last = 0;
 	bsp->global_overflow = 0;
@@ -168,6 +176,30 @@ void bspx_sync (BSPObject * bsp, BSPX_CommFn0 infocomm, BSPX_CommFn communicator
 	/* pack the memoryRegister */
 	memoryRegister_pack(&bsp->memory_register);
 }
+
+/** Reset buffer sizes 
+  As messages are buffered, the buffers will not be reset to their standard size
+  unless this function is called. 
+
+  If memory-usage is essential, this should be called after bsp_sync. Note that this
+  function also deletes all undelivered bsmp messages.
+
+  The only memory that is "lost" to the application is through memory register 
+  registrations, we do not reset the size of bsp->memory_register, so the amount
+  of memory used by this is equal to the maximum necessary amount over all supersteps.
+  This should be negligible, since we only store a void pointer per each processor
+  and bsp_pushreg operation (programs which do millions of pushreg's have bigger 
+  problems than can be fixed by this function).
+
+*/
+void bspx_resetbuffers(BSPObject * bsp) {
+	requestTable_resetrowcount(&bsp->request_table, BSP_REQTAB_MIN_SIZE);
+	requestTable_resetrowcount(&bsp->request_received_table, BSP_REQTAB_MIN_SIZE);
+	deliveryTable_resetrowcount(&bsp->delivery_table, BSP_DELIVTAB_MIN_SIZE);
+	deliveryTable_resetrowcount(&bsp->delivery_received_table, BSP_DELIVTAB_MIN_SIZE);
+	messageQueue_sync (&bsp->message_queue);
+}
+
 /*@}*/
 
 /** @name DRMA */

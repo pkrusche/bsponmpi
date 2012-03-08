@@ -38,6 +38,10 @@ Implementation header for ContextImpl implementation
 
 #include <boost/shared_array.hpp>
 
+#include "bsp_localdelivery.h"
+#include "bsp_context_ts.h"
+
+
 #include "bsp_cpp/TaskMapper.h"
 #include "bsp_cpp/Context.h"
 
@@ -48,9 +52,6 @@ extern "C" {
 #include "bsp_delivtable.h"
 #include "bsp_memreg.h"
 };
-#include "bsp_localdelivery.h"
-#include "bsp_context_ts.h"
-
 namespace bsp {
 
 	struct MemoryRegister {
@@ -95,11 +96,10 @@ namespace bsp {
 			mapper->where_is(pid, n, lp);
 
 			if (g_bsp.rank == n) {
-				localDeliveries.put(
+				localDeliveries.hpput(
 					(char *)src, 
 					((char*)memory_register_map[dst].pointers[pid]) + offset, 
-					nbytes, 
-					true);
+					nbytes);
 			} else {
 				char * pointer;
 				DelivElement element;
@@ -122,7 +122,7 @@ namespace bsp {
 
 			if (g_bsp.rank == n) {
 				localDeliveries.put (((char*)memory_register_map[src].pointers[pid]) + offset, 
-					(char*) dst, nbytes, false);
+					(char*) dst, nbytes);
 			} else {
 				ReqElement elem;
 				elem.size = (unsigned int )nbytes;

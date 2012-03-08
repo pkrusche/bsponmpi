@@ -32,9 +32,9 @@ information.
 #include <bsp_tools/Avector.h>
 #include <vector>
 
-typedef utilities :: Avector<double> storagevector;
 
 namespace bsp {
+	typedef utilities::AVector<double> storagevector;
 	
 
 	/** a local memory delivery which will be
@@ -80,11 +80,10 @@ namespace bsp {
 			}
 			LocalMemoryDelivery & d(deliv_queue[qend++]);
 			d.dst = dst;
-			d.src = storage.data + storage_end;
-			d.free_src = true;
+			d.src = (char*)(storage.data + storage_end);
 			
 			storage_end += ( nbytes + 7 ) >> 3;
-			if(storage_end >= storage.size() ) {
+			if(storage_end >= storage.exact_size() ) {
 				storage.resize( (storage_end + 1) * 2 );
 			}
 			
@@ -100,7 +99,6 @@ namespace bsp {
 			LocalMemoryDelivery & d(deliv_queue[qend++]);
 			d.dst = dst;
 			d.src = src;
-			d.free_src = false;
 			d.nbytes = nbytes;
 		}
 

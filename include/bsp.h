@@ -61,6 +61,7 @@ extern "C" {
 	/** @name Superstep */
 	/*@{*/
 	void BSP_CALLING bsp_sync ();
+	void BSP_CALLING bsp_reset_buffers();
 	/*@}*/
 
 	/** @name DRMA */

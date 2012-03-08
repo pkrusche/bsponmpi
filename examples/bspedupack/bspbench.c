@@ -135,6 +135,7 @@ void bspbench(){
             for (i=0; i<h; i++)
                 bsp_put(destproc[i],&src[i],dest,destindex[i]*SZDBL,SZDBL);
             bsp_sync(); 
+			bsp_reset_buffers();
         }
         time1= bsp_time();
         time= time1-time0;

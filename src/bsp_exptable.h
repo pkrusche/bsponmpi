@@ -280,6 +280,10 @@ static inline void
 }  
 
 /** Add some additional rows to the table
+ * 
+ * This function will only grow a table, it cannot shrink it.
+ * Use expandableTable_resetrowcount to reset the size of a table.
+ * 
 @param table Reference to an ExpandableTable object
 @param rows Number of rows to add
 @param newinfo The object specific information may have to be changed. This
@@ -303,6 +307,18 @@ static inline void
 	table->data = newdata;
 	table->rows = newrows;
 	table->info = *newinfo;
+}
+
+/** Reset row count of a table 
+ * 
+ @param table Reference to an ExpandableTable object
+ @param rows Number of rows to initially add
+ */
+static inline void
+	expandableTable_resetrowcount (ExpandableTable * RESTRICT table, const unsigned int rows ) {
+	bsp_free(table->data);
+	table->data = (char*)bsp_malloc( rows * table->nprocs, table->slot_size );
+	table->rows = rows;
 }
 /*@}*/
 

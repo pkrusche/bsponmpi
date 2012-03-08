@@ -65,6 +65,13 @@ static inline void
 	expandableTable_reset(table);
 }  
 
+static inline void
+	requestTable_resetrowcount(ExpandableTable *RESTRICT table, const int rows)
+{
+	memset(table->info.req.data_sizes, 0, table->nprocs * sizeof(unsigned int));
+	expandableTable_resetrowcount(table, rows);
+}  
+
 
 /** Add additional rows to RequestTable
 @param table Reference to a RequestTable

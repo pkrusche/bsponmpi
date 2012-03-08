@@ -487,6 +487,12 @@ void BSP_CALLING
 	bspx_sync(&bsp, _BSP_COMM0, _BSP_COMM1);
 	BSP_TS_UNLOCK();
 }
+
+/** Free message buffer memory */
+void BSP_CALLING bsp_reset_buffers() {
+	bspx_resetbuffers(&bsp);
+}
+
 /*@}*/
 
 /** @name DRMA */

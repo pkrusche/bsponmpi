@@ -58,6 +58,7 @@ extern "C" {
 	/** @name Superstep */
 	/*@{*/
 	void bspx_sync (BSPObject *, BSPX_CommFn0,  BSPX_CommFn);
+	void bspx_resetbuffers(BSPObject *);
 	/*@}*/
 	
 
