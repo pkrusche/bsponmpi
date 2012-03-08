@@ -118,6 +118,8 @@ public:
 			}
 		}
 
+		BSP_SYNC();
+
 		bsp_pop_reg(a2a_in);
 
 		delete [] a2a_in;
