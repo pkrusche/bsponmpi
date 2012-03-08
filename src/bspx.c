@@ -33,18 +33,6 @@
 #include "bsp_alloc.h"
 #include "bsp_abort.h"
 
-#ifndef BSP_DELIVTAB_MIN_SIZE
-#define BSP_DELIVTAB_MIN_SIZE 128
-#endif
-
-#ifndef BSP_REQTAB_MIN_SIZE
-#define BSP_REQTAB_MIN_SIZE   32
-#endif
-
-#ifndef BSP_MEMREG_MIN_SIZE
-#define BSP_MEMREG_MIN_SIZE  1	
-#endif
-
 /** Create buffers within a BSP object
  *
   @param bsp The BSPObject to use (user handles allocation). 

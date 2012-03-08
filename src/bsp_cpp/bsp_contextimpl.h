@@ -96,7 +96,7 @@ namespace bsp {
 			mapper->where_is(pid, n, lp);
 
 			if (g_bsp.rank == n) {
-				localDeliveries.hpput(
+				localDeliveries.put(
 					(char *)src, 
 					((char*)memory_register_map[dst].pointers[pid]) + offset, 
 					nbytes);
@@ -121,7 +121,7 @@ namespace bsp {
 			mapper->where_is(pid, n, lp);
 
 			if (g_bsp.rank == n) {
-				localDeliveries.put (((char*)memory_register_map[src].pointers[pid]) + offset, 
+				localDeliveries.hpput (((char*)memory_register_map[src].pointers[pid]) + offset, 
 					(char*) dst, nbytes);
 			} else {
 				ReqElement elem;

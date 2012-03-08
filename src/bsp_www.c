@@ -355,10 +355,6 @@ digraph G {
  ** To keep it private it is not included in bsp.h */
 static BSPObject bsp;
 
-#define DELIVTAB_SIZE 1
-#define REQTAB_SIZE   1
-#define MEMREG_SIZE   1	
-
 /** @file bsp.c 
     Implements the BSPlib primitives.
     @author Wijnand Suijlen
