@@ -110,8 +110,8 @@ namespace bsp {
 				{ 
 					TSLOCK();
 					pointer = (char*)deliveryTable_push(&g_bsp.delivery_table, n, &element, it_put);
+					memcpy(pointer, src, nbytes);
 				}
-				memcpy(pointer, src, nbytes);
 			}
 		}
 
@@ -161,8 +161,8 @@ namespace bsp {
 				{
 					TSLOCK();
 					pointer = (char*)deliveryTable_push(&g_bsp.delivery_table, n, &element, it_put);
+					memcpy(pointer, src, nbytes);
 				}
-				memcpy(pointer, src, nbytes);
 			}
 		}
 
