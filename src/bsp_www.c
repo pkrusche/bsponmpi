@@ -486,7 +486,9 @@ void BSP_CALLING
 
 /** Free message buffer memory */
 void BSP_CALLING bsp_reset_buffers() {
+	BSP_TS_LOCK();
 	bspx_resetbuffers(&bsp);
+	BSP_TS_UNLOCK();
 }
 
 /*@}*/
