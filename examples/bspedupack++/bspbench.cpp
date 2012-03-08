@@ -241,7 +241,7 @@ int main(int argc, char **argv) {
 
 		recursive_processors = vm["procs"].as<int>();
 		warmuptime = vm["warmup"].as<double>();
-	} catch (std::exception e) {
+	} catch (std::runtime_error e) {
 		string s = e.what();
 		s+= "\n";
 		bsp_abort(s.c_str());

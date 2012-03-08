@@ -79,7 +79,7 @@ int main (int argc, char** argv) {
 			TestGet::run( procs );
 		}
 
-	} catch (std::exception e) {
+	} catch (std::runtime_error e) {
 		string s = string ("BSP Application runtime error at p=%i: ") + e.what() + "\n";
 		bsp_abort(s.c_str(), procs);
 	}

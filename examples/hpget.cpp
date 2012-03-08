@@ -117,7 +117,7 @@ int main (int argc, char** argv) {
 
 		bsp_end();
 
-	} catch (std::exception e) {
+	} catch (std::runtime_error e) {
 		string s = string ("BSP Application runtime error: ") + e.what();
 		s+= "\n";
 		bsp_abort(s.c_str());
