@@ -18,8 +18,6 @@
 #define STRLEN 100
 typedef struct {int i,j;} indexpair;
 
-int P;
-
 void bspinput2triple(int p, int s, int *pnA, int *pnz, 
                      int **pia, int **pja, double **pa){
   
@@ -505,7 +503,6 @@ void bspmv_test(){
     double *a, *v, *u, time0, time1, time2;
     char vfilename[STRLEN], ufilename[STRLEN];
 
-    bsp_begin(P);
     p= bsp_nprocs(); /* p=P */
     s= bsp_pid();
 
@@ -595,14 +592,8 @@ void bspmv_test(){
 
 int main(int argc, char **argv){
  
-    bsp_init(bspmv_test, argc, argv);
-    printf("How many processors do you want to use?\n");
-    scanf("%d",&P);
-    if (P>bsp_nprocs()){
-        printf("Not enough processors available:");
-        printf(" %d wanted, %d available\n", P, bsp_nprocs());
-        exit(1);
-    }
-    bspmv_test();
+    bsp_init(&argc, &argv);
+	bspmv_test();
+	bsp_end();
     exit(0);
 }

@@ -7,8 +7,6 @@
     The distribution of x is cyclic.
 */
 
-int P; /* number of processors requested */ 
-
 int nloc(int p, int s, int n){
     /* Compute number of local components of processor s for vector
        of length n distributed cyclically over p processors. */
@@ -53,7 +51,6 @@ void bspinprod(){
     double *x, alpha, time0, time1;
     int p, s, n, nl, i, iglob;
     
-    bsp_begin(P);
     p= bsp_nprocs(); /* p = number of processors obtained */ 
     s= bsp_pid();    /* s = processor number */ 
     if (s==0){
@@ -90,24 +87,17 @@ void bspinprod(){
     }
 
     vecfreed(x);
-    bsp_end();
 
 } /* end bspinprod */
 
 int main(int argc, char **argv){
 
-    bsp_init(bspinprod, argc, argv);
-
-    /* sequential part */
-    printf("How many processors do you want to use?\n"); fflush(stdout);
-    scanf("%d",&P);
-    if (P > bsp_nprocs()){
-        printf("Sorry, not enough processors available.\n"); fflush(stdout);
-        exit(1);
-    }
+    bsp_init(&argc, &argv);
 
     /* SPMD part */
     bspinprod();
+	
+	bsp_end();
 
     /* sequential part */
     exit(0);

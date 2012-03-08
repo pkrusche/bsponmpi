@@ -21,6 +21,11 @@
 #define MAX(a,b) ((a)>(b) ? (a) : (b))
 #define MIN(a,b) ((a)<(b) ? (a) : (b))
 
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846
+#endif
+
 double *vecallocd(int n);
 int *vecalloci(int n);
 double **matallocd(int m, int n);

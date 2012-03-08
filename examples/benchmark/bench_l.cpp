@@ -1,61 +1,43 @@
-/* 
-	bench_l.cpp
+/*
+BSPonMPI. This is an implementation of the BSPlib standard on top of MPI
+Copyright (C) 2006  Wijnand J. Suijlen, 2012 Peter Krusche
 
-#####################################################################
-#                                                                   #
-#  This file is part of the BSPWrapper package.                     #
-#                                                                   #
-#  Parts of this code have been adapted from the bspprobe tool      #
-#  from the Oxford BSP toolset                                      #
-#  (http://www.bsp-worldwide.org/implmnts/oxtool), which is         #
-#                                                                   #
-#  Copyright (C) 1995,1996,1997 University of Oxford                #
-#                                                                   #
-# Permission to use, copy, modify, and distribute this software,    #
-# and to incorporate it, in whole or in part, into other software,  #
-# is hereby granted without fee, provided that                      #
-#   (1) the above copyright notice and this permission notice       #
-#       appear in all copies of the source code, and the above      #
-#       copyright notice appear in clearly visible form on all      #
-#       supporting documentation and distribution media;            #
-#   (2) modified versions of this software be accompanied by a      #
-#       complete change history describing author, date, and        #
-#       modifications made; and                                     #
-#   (3) any redistribution of the software, in original or modified #
-#       form, be without fee and subject to these same conditions.  #
-#                                                                   # 
-#  THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,  #
-#  EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES  #
-#  OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND         #
-#  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT      #
-#  HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY,     #
-#  WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING     #
-#  FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR    #
-#  OTHER DEALINGS IN THE SOFTWARE.                                  #
-#                                                                   #
-#                                                                   #
-#                                                                   #
-#####################################################################
-	
-	Conversion of original bspprobe (Oxtool) functions
-	for measuring the latency to BSPWrapper. Added alltoall
-	measurement
-		
-	10/02/2005 Peter Krusche
+This library is free software; you can redistribute it and/or
+modify it under the terms of the GNU Lesser General Public
+License as published by the Free Software Foundation; either
+version 2.1 of the License, or (at your option) any later version.
+
+This library is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+Lesser General Public License for more details.
+
+You should have received a copy of the GNU Lesser General Public
+License along with this library; if not, write to the Free Software
+Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301  USA
+
+See the AUTHORS file distributed with this library for author contact
+information.
 */
 
-#include "BSPWrapper.h"
-#include "BSPUtils.h"
-#include "BSPBenchmark.h"
+
+/** @file bench_l.cpp
+
+Conversion of original bspprobe (Oxtool) functions
+for measuring the latency to BSPonMPI. Added alltoall-type
+measurement.
+
+@author Peter Krusche
+*/
+
+#include "bsp_cpp/bsp_cpp.h"
 
 using namespace std;
-using namespace BSPWrapper;
-using namespace BSPUtils;
 
-#define MIN_SAMPLE			10  /* 10 */
-#define L_OVERSAMPLE        100 /* 100 */
+#define MIN_SAMPLE			10  
+#define L_OVERSAMPLE        100
 
-namespace BSPBenchmark {
+namespace bsp_benchmark {
 
 int measure_sync_oversample() {
 	int oversample;
@@ -65,7 +47,8 @@ int measure_sync_oversample() {
 	if(oversample_scale < 0) {
 		bsp_dtime();
 		for(int i=0;i<500;i++) 
-			Sync();
+			
+			;
 		
 		tA = bsp_dtime();
 		Fold(&tA,&tB,sizeof(double), BSP_OPFUN dbl_max);

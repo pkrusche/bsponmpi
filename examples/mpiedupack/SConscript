@@ -1,0 +1,10 @@
+
+Import ("root", "sequential")
+
+# we can only make this if we have MPI
+if not sequential:
+	root.Program('mpibench', ['mpibench.c', 'mpiedupack.c'])
+	root.Program('mpifft', ['mpifft.c', 'mpifft_test.c', 'mpiedupack.c'])
+	root.Program('mpiinprod', ['mpiinprod.c', 'mpiedupack.c'])
+	root.Program('mpilu', ['mpilu.c', 'mpilu_test.c', 'mpiedupack.c'])
+	root.Program('mpimv', ['mpimv.c', 'mpimv_test.c', 'mpiedupack.c'])

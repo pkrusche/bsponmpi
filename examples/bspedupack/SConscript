@@ -1,4 +1,9 @@
 
 Import("bsp")
 
+# we can only make this if we have MPI
 bsp.Program('bspbench', ['bspbench.c', 'bspedupack.c'])
+bsp.Program('bspfft', ['bspfft.c', 'bspfft_test.c', 'bspedupack.c'])
+bsp.Program('bspinprod', ['bspinprod.c', 'bspedupack.c'])
+bsp.Program('bsplu', ['bsplu.c', 'bsplu_test.c', 'bspedupack.c'])
+bsp.Program('bspmv', ['bspmv.c', 'bspmv_test.c', 'bspedupack.c'])

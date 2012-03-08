@@ -1,4 +1,6 @@
 #include "bspedupack.h"
+#include "bsp_broadcast.h"
+#include <stdlib.h>
 
 /*  This is a test program which uses bsplu to decompose an n by n
     matrix A into triangular factors L and U, with partial row pivoting.
@@ -30,7 +32,7 @@
     between processor rows. 
 */
 
-int M, N;
+int M, N, matrix_size;
 
 void bsplu_test(){
     int nloc(int p, int s, int n);
@@ -38,28 +40,10 @@ void bsplu_test(){
     int p, pid, q, s, t, n, nlr, nlc, i, j, iglob, jglob, *pi;
     double **a, time0, time1;
   
-    bsp_begin(M*N);
     p=bsp_nprocs(); /* p=M*N */
     pid=bsp_pid();
 
-    bsp_push_reg(&M,SZINT);
-    bsp_push_reg(&N,SZINT);
-    bsp_push_reg(&n,SZINT);
-    bsp_sync();
-
-    if (pid==0){
-        printf("Please enter matrix size n:\n");
-        scanf("%d",&n);
-        for (q=0; q<p; q++){
-            bsp_put(q,&M,&M,0,SZINT);
-            bsp_put(q,&N,&N,0,SZINT);
-            bsp_put(q,&n,&n,0,SZINT);
-        }
-    }
-    bsp_sync();
-    bsp_pop_reg(&n); /* not needed anymore */
-    bsp_pop_reg(&N);
-    bsp_pop_reg(&M);
+	n = matrix_size;
 
     /* Compute 2D processor numbering from 1D numbering */
     s= pid%M;  /* 0 <= s < M */
@@ -74,6 +58,7 @@ void bsplu_test(){
     if (s==0 && t==0){
         printf("LU decomposition of %d by %d matrix\n",n,n);
         printf("using the %d by %d cyclic distribution\n",M,N);
+		fflush(stdout);
     }
     for (i=0; i<nlr; i++){
         iglob= i*M+s;         /* Global row index in A */
@@ -123,24 +108,38 @@ void bsplu_test(){
     vecfreei(pi);
     matfreed(a);
 
-    bsp_end();
 }
 
 int main(int argc, char **argv){
  
-    bsp_init(bsplu_test, argc, argv);
+    bsp_init(&argc, &argv);
 
-    printf("Please enter number of processor rows M:\n");
-    scanf("%d",&M);
-    printf("Please enter number of processor columns N:\n");
-    scanf("%d",&N);
-    if (M*N > bsp_nprocs()){
-        printf("Sorry, not enough processors available.\n"); 
-        fflush(stdout);
-        exit(1);
+	M = 0;
+	N = 0;
+	matrix_size = 0;
+
+	if (bsp_pid() == 0) {
+		if (argc > 3) {
+			M = atoi (argv[1]);
+			N = atoi (argv[2]);
+			matrix_size = atoi (argv[3]);
+		}
+	}
+
+	bsp_broadcast(0, &M, sizeof(int));
+	bsp_broadcast(0, &N, sizeof(int));
+	bsp_broadcast(0, &matrix_size, sizeof(int));
+
+	if (M == 0 || N == 0 || matrix_size == 0) {
+		bsp_abort("Please run like this: \n\tbsplu [M] [N] [matrix_size]\n [M]*[N] must be equal to the number of processors." );
+	}
+
+    if (M*N != bsp_nprocs()){
+        bsp_abort("M*N must be equal to the number of processors specified in mpirun.\n"); 
     }
 
     bsplu_test();
+	bsp_end();
     exit(0);
 
 } /* end main */

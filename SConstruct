@@ -269,7 +269,7 @@ if threadsafe:
 bsp = root.Clone()
 bsp.Prepend(LIBS = ['bsponmpi'+libsuffix ,])
 
-Export(['root', 'bsp', 'sequential' , 'libsuffix'])
+Export(['root', 'bsp', 'sequential' , 'libsuffix', 'runtests'])
 
 ###############################################################################
 # get SConscripts
@@ -277,9 +277,9 @@ Export(['root', 'bsp', 'sequential' , 'libsuffix'])
 
 SConscript('src/SConscript')
 
-if runtests:
-	SConscript('tests/SConscript')
+SConscript('tests/SConscript')
 
 SConscript('examples/SConscript')
 SConscript('examples/bspedupack/SConscript')
+SConscript('examples/mpiedupack/SConscript')
 SConscript('examples/bspedupack++/SConscript')

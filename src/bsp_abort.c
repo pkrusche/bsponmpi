@@ -43,6 +43,7 @@ bsp_intern_abort (const int err_number, const char *func,
   const char *messages[] = ERR_MESSAGES;
   fprintf (stderr, "%s at %s:%d: %s\n", func, file, line, 
             messages[err_number - 1]);
+  fflush (stderr);
   _BSP_ABORT (err_number);
 }
 

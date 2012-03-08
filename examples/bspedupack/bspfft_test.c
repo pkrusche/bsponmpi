@@ -18,8 +18,6 @@
 #define NPRINT 10  /* Print NPRINT values per processor */
 #define MEGA 1000000.0
 
-int P;
-
 void bspfft_test(){
     void bspfft(double *x, int n, int p, int s, int sign, double *w0,
                 double *w, double *tw, int *rho_np, int *rho_p);
@@ -32,7 +30,6 @@ void bspfft_test(){
            max_error, error_re, error_im, error,
            *Error, *x, *w0, *w, *tw;
   
-    bsp_begin(P);
     p= bsp_nprocs();
     s= bsp_pid();
 
@@ -43,6 +40,7 @@ void bspfft_test(){
 
     if (s==0){
         printf("Please enter length n: \n");
+		fflush(stdout);
         scanf("%d",&n);
         if(n<2*p)
             bsp_abort("Error in input: n < 2p");
@@ -143,22 +141,16 @@ void bspfft_test(){
     vecfreed(w0);
     vecfreed(x);
     vecfreed(Error);
-    bsp_end();
 
 } /* end bspfft_test */
 
 int main(int argc, char **argv){
  
-    bsp_init(bspfft_test, argc, argv);
- 
-    printf("How many processors do you want to use?\n"); fflush(stdout);
-    scanf("%d",&P);
-    if (P > bsp_nprocs()){
-        printf("Sorry, not enough processors available.\n"); fflush(stdout);
-        exit(1);
-    }
- 
+    bsp_init(&argc, &argv);
+  
     bspfft_test();
+	
+	bsp_end();
  
     exit(0);
  

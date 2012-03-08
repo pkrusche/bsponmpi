@@ -44,12 +44,15 @@ int main(int argc, char **argv){
 
     if (pid==0){
         printf("Please enter number of processor rows M:\n");
+		fflush(stdout);
         scanf("%d",&M);
         printf("Please enter number of processor columns N:\n");
+		fflush(stdout);
         scanf("%d",&N);
         if (M*N != p)
             MPI_Abort(MPI_COMM_WORLD,-5);
         printf("Please enter matrix size n:\n");
+		fflush(stdout);
         scanf("%d",&n);
     }
     MPI_Bcast(&M,1,MPI_INT,0,MPI_COMM_WORLD);

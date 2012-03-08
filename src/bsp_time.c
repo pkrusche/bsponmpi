@@ -63,6 +63,16 @@ double BSP_CALLING bsp_time() {
 }
 
 /**
+ * Differential time measurement
+ */
+double BSP_CALLING bsp_dtime () {
+	static double t = 0;
+	double t1 = bsp_time() - t;
+	t = t1;
+	return t1;
+}
+
+/**
  * @brief Waste some time. Useful for benchmarking on systems that clock
  *        down when idle.
  */

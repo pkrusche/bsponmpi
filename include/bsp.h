@@ -101,6 +101,7 @@ extern "C" {
 	/** @name Timing and benchmarking */
 	/*@{*/
 	double BSP_CALLING bsp_time ();
+	double BSP_CALLING bsp_dtime ();
 	void BSP_CALLING bsp_warmup (double);
 	/*@}*/
 
