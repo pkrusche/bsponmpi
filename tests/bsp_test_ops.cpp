@@ -34,6 +34,7 @@ Test all BSP communication operations in a context.
 #include "ops/test_put.h"
 #include "ops/test_hpput.h"
 #include "ops/test_get.h"
+#include "ops/test_hpget.h"
 
 
 /**
@@ -46,6 +47,7 @@ int main (int argc, char** argv) {
 	// Things from here on are node-level SPMD. 
 	// You'll have as many processes as there are
 	// available via MPI.
+	int procs = 1;
 	int max_processors = 100;
 
 	/** This is how we read and parse command line options */
@@ -55,28 +57,34 @@ int main (int argc, char** argv) {
 		options_description opts;
 		opts.add_options()
 			("help", "produce a help message")
-			("procs,p", value<int>()->default_value(100),
-			"We test for all numbers of processors from 1 to p.")
+			("pmin,l", value<int>()->default_value(1),
+			"We test for all numbers of processors from pmin to pmax.")
+			("pmax,r", value<int>()->default_value(100),
+			"We test for all numbers of processors from pmin to pmax.")
 			;
 		variables_map vm;
 
 		bsp_command_line(argc, argv, opts, vm);
 
-		max_processors = vm["procs"].as<int>();
+		procs = vm["pmin"].as<int>();
+		max_processors = vm["pmax"].as<int>();
 	} catch (std::exception e) {
 		string s = e.what();
 		s+= "\n";
 		bsp_abort(s.c_str());
 	}
-
-	int procs = 1;
 	
+	procs = min(procs, max_processors);
+	max_processors = max(procs, max_processors);
+
 	try {
 
-		for (procs = 1; procs <= max_processors; ++procs) {
+		while (procs <= max_processors) {
 			TestPut::run( procs );
 			TestHpPut::run( procs );
 			TestGet::run( procs );
+			TestHpGet::run( procs );
+			++procs;
 		}
 
 	} catch (std::runtime_error e) {

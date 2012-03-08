@@ -155,7 +155,10 @@ namespace bsp {
 				DelivElement element;
 				element.size = (unsigned int) nbytes;
 				element.info.put.dst = ((char*)memory_register_map[dst].pointers[pid]) + offset;
-				pointer = (char*)deliveryTable_push(&g_bsp.delivery_table, n, &element, it_put);
+				{
+					TSLOCK();
+					pointer = (char*)deliveryTable_push(&g_bsp.delivery_table, n, &element, it_put);
+				}
 				memcpy(pointer, src, nbytes);
 			}
 		}
@@ -176,6 +179,7 @@ namespace bsp {
 				elem.offset = offset;
 
 				/* place get command in buffer */
+				TSLOCK();
 				requestTable_push(&g_bsp.request_table, n, &elem);
 			}
 		}

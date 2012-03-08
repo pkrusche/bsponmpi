@@ -44,8 +44,8 @@ public:
 
 	static void run( int processors ) {
 		using namespace std;
-		TestPut c;
-		BSP_SCOPE(TestPut, c, processors);
+		TestGet c;
+		BSP_SCOPE(TestGet, c, processors);
 		BSP_BEGIN();
 
 		bsp_push_reg(&var1, sizeof (int));
@@ -57,6 +57,8 @@ public:
 		myval3 = -1;
 
 		BSP_SYNC();
+
+		// Nearest Neighbour.
 
 		var1 = bsp_pid() + 1;
 		var2[2] = bsp_nprocs() - bsp_pid();
@@ -75,13 +77,56 @@ public:
 		CHECK_EQUAL( 0 , var2[1] );
 		CHECK_EQUAL( 0 , var2[3] );
 		CHECK_EQUAL( 0 , var2[4] );
-		CHECK_EQUAL( bsp_nprocs() - bsp_pid(), var1 );
-		CHECK_EQUAL( bsp_pid() + 1, var2[2] );
-		CHECK_EQUAL( bsp_nprocs() - bsp_pid(), var3);
+		CHECK_EQUAL( bsp_pid() + 1, var1 );
+		CHECK_EQUAL( bsp_nprocs() - bsp_pid(), var2[2] );
+		CHECK_EQUAL( bsp_pid() + 1, var3 );
 
 		bsp_pop_reg(&var1);
 		bsp_pop_reg(var2);
 		bsp_pop_reg(&var3);
+
+		a2a_in = new int [bsp_nprocs() * 100];
+		a2a_out = new int [bsp_nprocs() * 100];
+
+		memset (a2a_in, 0, bsp_nprocs() * 100 * sizeof(int));
+		memset (a2a_out, -1, bsp_nprocs() * 100 * sizeof(int));
+
+		bsp_push_reg(a2a_out, bsp_nprocs() * 100 * sizeof(int));
+
+		BSP_SYNC();
+
+		for (int j = 0; j < bsp_nprocs(); ++j) {
+			for (int k = 0; k < 10; ++k) {
+				CHECK_EQUAL(0, a2a_in[j*10+k]);
+				CHECK_EQUAL(-1, a2a_out[j*10+k]);
+				a2a_in [j*10+k] = -1;
+				a2a_out[j*10+k] = ( j * bsp_nprocs() + bsp_pid() ) * k;
+			}
+		}
+
+		for (int j = 0; j < bsp_nprocs(); ++j) {
+			for (int k = 0; k < 10; ++k) {
+				bsp_get(j, a2a_out, (bsp_pid()*10 + k)*sizeof(int), a2a_in + (j*10+k), sizeof(int));
+			}
+		}
+
+		BSP_SYNC();
+
+		for (int j = 0; j < bsp_nprocs(); ++j) {
+			for (int k = 0; k < 10; ++k) {
+				using namespace std;
+				CHECK_EQUAL(
+					(bsp_pid() * bsp_nprocs() + j)*k, 
+					a2a_in[j*10 + k]
+				);
+				CHECK_EQUAL(( j * bsp_nprocs() + bsp_pid() ) * k, a2a_out[j*10+k]);
+			}
+		}
+
+		bsp_pop_reg(a2a_out);
+
+		delete [] a2a_in;
+		delete [] a2a_out;
 
 		BSP_END();
 	}
@@ -93,6 +138,8 @@ protected:
 	int myval1;
 	int myval2;
 	int myval3;
+	int * a2a_in;
+	int * a2a_out;
 };
 
 

@@ -134,12 +134,10 @@ void bsp::Context::bsp_set_tagsize (size_t * tag_nbytes) {
 /** @name High Performance */
 /*@{*/
 void bsp::Context::bsp_hpput (int pid, const void * src, void * dst, long int offset, size_t nbytes) {
-	TSLOCK();
 	BSP->bsp_hpput(pid, src, dst, offset, nbytes);
 }
 
 void bsp::Context::bsp_hpget (int pid, const void * src, long int offset, void * dst, size_t nbytes) {
-	TSLOCK();
 	BSP->bsp_hpget(pid, src, offset, dst, nbytes);
 }
 
