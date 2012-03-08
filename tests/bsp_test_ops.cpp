@@ -68,7 +68,7 @@ int main (int argc, char** argv) {
 
 		procs = vm["pmin"].as<int>();
 		max_processors = vm["pmax"].as<int>();
-	} catch (std::exception e) {
+	} catch (std::runtime_error e) {
 		string s = e.what();
 		s+= "\n";
 		bsp_abort(s.c_str());
@@ -78,7 +78,6 @@ int main (int argc, char** argv) {
 	max_processors = max(procs, max_processors);
 
 	try {
-
 		while (procs <= max_processors) {
 			cout << "Testing put p = " << procs << endl;
 			TestPut::run( procs );

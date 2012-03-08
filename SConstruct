@@ -233,12 +233,12 @@ def builder_unit_test_mpi(target, source, env):
 	mpiexec_params = env["mpiexec_params"]
 
 	app = str(source[0].abspath)
-	runme = mpiexec + " " + mpiexec_params + ' "' + app + '"'
+	runme = mpiexec + " " + mpiexec_params + ' "' + app + '" > ' + str(target[0]) 
 
 	print "Test: running " + runme
 
 	if os.system(runme) == 0:
-		open(str(target[0]),'w').write("PASSED\n")
+		open(str(target[0]),'a').write("PASSED\n")
 	else:
 		return 1
 

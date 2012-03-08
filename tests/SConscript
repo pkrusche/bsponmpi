@@ -15,5 +15,4 @@ if runtests:
 	Test (bsp, 'bsp_test_put', ['bsp_test_put.c'])
 	Test (bsp, 'bsp_test_send', ['bsp_test_send.c'])
 	Test (bsp, 'bsp_test_global_drma', ['bsp_test_global_drma.c'])
-
-bsp.Program ('bsp_test_ops', ['bsp_test_ops.cpp'])
+	Test (bsp, 'bsp_test_ops', ['bsp_test_ops.cpp'])
