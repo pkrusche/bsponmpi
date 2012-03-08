@@ -76,8 +76,8 @@ void bsp::ContextImpl::process_memoryreg_ops(TaskMapper * mapper, int reg_req_si
 			MemoryRegister_Reg & my_r (vr[ g_bsp.rank*reg_req_size*ppn + my_local_pid*reg_req_size + req ]);
 
 			for (int gp = 0; gp < mapper->nprocs(); ++gp) {
-				int p, lp;
-				mapper->where_is(gp, p, lp);
+				int p = mapper->global_to_node(gp), lp = mapper->global_to_local(gp);
+
 				MemoryRegister_Reg & r (vr[ p*reg_req_size*ppn + lp*reg_req_size + req ]);
 
 				// Check ordering 

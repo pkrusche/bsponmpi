@@ -59,12 +59,40 @@ namespace bsp {
 		) : contextfactory(factory),
 			processors (_processors) {
 			using namespace std;
-			max_procs_per_node = ICD(processors, ::bsp_nprocs());
-			if( max_procs_per_node * (::bsp_pid()+1) > processors ) {
-				procs_on_this_node =  
-					max(processors - max_procs_per_node * (signed) ::bsp_pid(), 0);
-			} else {
-				procs_on_this_node = max_procs_per_node;
+
+			where_is_node = new int [processors];
+			where_is_local = new int [processors];
+			where_is_local_here = new int [processors];
+			
+			procs_on_node = new int [::bsp_nprocs()];
+			memset(procs_on_node, 0, sizeof(int) * ::bsp_nprocs());
+
+			int my_node = ::bsp_pid();
+			procs_on_this_node = 0;
+			max_procs_per_node = 0;
+			for (int p = 0; p < processors; ++p) {
+				int n;
+				int lp;
+				where_is(processors, p, n, lp);
+				where_is_node[p] = n;
+				where_is_local[p] = lp;
+				++procs_on_node[n];
+				max_procs_per_node = max(max_procs_per_node, procs_on_node[n]);
+
+				if (n == my_node) {
+					where_is_local_here[p] = lp;
+					++procs_on_this_node;
+				} else {
+					where_is_local_here[p] = -1;
+				}
+			}
+
+			which_global = new int [bsp_nprocs() * max_procs_per_node];
+			memset(which_global, -1, sizeof(int) * (bsp_nprocs() * max_procs_per_node));
+			for (int p = 0; p < processors; ++p) {
+				int n = where_is_node[p];
+				int lp = where_is_local[p];
+				which_global[n*max_procs_per_node + lp] = p;
 			}
 
 			// we create at least one context. We might not use this context,
@@ -81,13 +109,18 @@ namespace bsp {
 			for (size_t i = 0, i_end = context_store.size(); i < i_end; ++i ) {
 				contextfactory->destroy(context_store[i]);
 			}
+			delete [] where_is_node;
+			delete [] where_is_local;
+			delete [] where_is_local_here;
+			delete [] procs_on_node;
+			delete [] which_global;
 		}
 
 		/**
 		 * Number of processors in this mapper
 		 */
 
-		virtual int nprocs () const {
+		inline int nprocs () const {
 			return processors;
 		}
 
@@ -95,7 +128,7 @@ namespace bsp {
 		 * Number of maximum processors per node
 		 */
 
-		virtual int procs_per_node() const {
+		inline int procs_per_node() const {
 			return max_procs_per_node;
 		}
 
@@ -103,7 +136,7 @@ namespace bsp {
 		 * Number of processors on this node
 		 */
 
-		virtual int procs_this_node() const {
+		inline int procs_this_node() const {
 			return procs_on_this_node;
 		}
 
@@ -111,8 +144,8 @@ namespace bsp {
 		 * Take a local processor id, translate to global id
 		 */
 
-		virtual int local_to_global_pid(int local_pid) const {
-			return ::bsp_pid() * max_procs_per_node + local_pid;
+		inline int local_to_global_pid(int local_pid) const {
+			return which_global[max_procs_per_node * ::bsp_pid() + local_pid];
 		}
 
 
@@ -120,8 +153,8 @@ namespace bsp {
 		 * Take a local processor id and node id, translate to global id
 		 */
 
-		virtual int local_to_global_pid(int node, int local_pid) const {
-			return node * max_procs_per_node + local_pid;
+		inline int local_to_global_pid(int node, int local_pid) const {
+			return which_global[max_procs_per_node * node + local_pid];
 		}
 
 		/**
@@ -131,37 +164,51 @@ namespace bsp {
 		 * node.
 		 */
 
-		virtual int global_to_local_pid(int global_pid) const {
-			int p = global_pid - ::bsp_pid() * procs_per_node();
-			if (p < 0 || p >= procs_on_this_node)	{
-				return -1;
-			} else {
-				return p;
-			}
+		inline int global_to_local_pid(int global_pid) const {
+			return where_is_local_here[global_pid];
 		}
 
 		/**
 		 * Get the context for a local process
 		 */
-		virtual Context & get_context(int local_pid) {
+		inline Context & get_context(int local_pid) {
 			return *(context_store[local_pid]);
 		}
 
+		/** On which node is a given logical processor running */
+		inline const int & global_to_node (int global_pid) const {
+			return where_is_node[global_pid];
+		}
+
+		/** What is the local pid of a logical processor */
+		inline const int & global_to_local (int global_pid) const {
+			return where_is_local[global_pid];
+		}
+
+	protected:
 		/** 
 		 * Find out where a given global processor context is held. 
 		 */
-		virtual void where_is (int global_pid, int & node, int & local_pid) {
-			node = global_pid / max_procs_per_node;
-			local_pid = global_pid - node * max_procs_per_node;
+		virtual void where_is (int processors, int global_pid, int & node, int & local_pid) {
+			int mppn = ICD (processors, ::bsp_nprocs());
+
+			node = global_pid / mppn;
+			local_pid = global_pid - node * mppn;
 		}
 
 	private:
 		std::vector<Context *> context_store;
 		ContextFactoryPtr contextfactory;
 
-		int processors;
-		int procs_on_this_node;
-		int max_procs_per_node;
+		int * where_is_node;		///< which node contains logical processor p
+		int * where_is_local;		///< which context contains logical processor p
+		int * where_is_local_here;	///< on this node, which context contains logical processor p (-1 when remote)
+		int * procs_on_node;		///< how many processors on given node
+		int * which_global;			///< which global processor is represented by local pid 
+
+		int processors;				///< overall number of logical processors
+		int procs_on_this_node;		///< how many logical processors on our node
+		int max_procs_per_node;		///< max over procs_on_node
 	};
 
 };

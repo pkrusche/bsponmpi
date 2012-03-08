@@ -294,54 +294,6 @@ void bsp::ContextImpl::bsp_pop_reg(const void * ident) {
 	reg_requests.push( r );
 }
 
-/** With hpput, we may win some time because we can do local ones
- *  instantly */
-void bsp::ContextImpl::bsp_hpput (int pid, const void * src, void * dst, long int offset, size_t nbytes) {
-	int n, lp;
-	mapper->where_is(pid, n, lp);
-
-	if (n == ::bsp_pid()) {
-		// we have the data here on the same node, and can do the transfer now.
-		char * destination = ((char*)memory_register_map[dst].pointers[pid]) + offset;
-		memcpy(destination, src, nbytes);
-	} else {
-		// TODO we could technically also move this bit into 
-		// a separate thread and use send/recv to allow sparse communication
-		// ( presumably this would be faster than pooling in our Alltoallv
-		//   call in bsp_sync() )
-		// The same applies to hpget.
-		// 
-		// if it's somewhere else, we do the same as put
-		char * RESTRICT pointer;
-		DelivElement element;
-		element.size = (unsigned int) nbytes;
-		element.info.put.dst = ((char*)memory_register_map[dst].pointers[pid]) + offset;
-		pointer = (char*)deliveryTable_push(&g_bsp.delivery_table, n, &element, it_put);
-		memcpy(pointer, src, nbytes);
-	}
-}
-
-/** With hpget, we may also win some time because we can do local ones
- *  instantly */
-void bsp::ContextImpl::bsp_hpget (int pid, const void * src, long int offset, void * dst, size_t nbytes) {
-	int n, lp;
-	mapper->where_is(pid, n, lp);
-
-	if (n == ::bsp_pid()) {
-		char * source = ((char*)memory_register_map[src].pointers[pid]) + offset;
-		memcpy(dst, source, nbytes);
-	} else {
-		ReqElement elem;
-		elem.size = (unsigned int )nbytes;
-		elem.src = ((char*)memory_register_map[src].pointers[pid]);
-		elem.dst = (char* )dst;
-		elem.offset = offset;
-
-		/* place get command in buffer */
-		requestTable_push(&g_bsp.request_table, n, &elem);
-	}
-}
-
 /** bsp_send with added int to specify which local processor it's for */
 void bsp::ContextImpl::bsp_send (int pid, 
 	const void *tag, const void *payload, size_t payload_nbytes) {
