@@ -83,7 +83,7 @@ namespace bsp {
 		static void bsp_sync (TaskMapper *);
 
 		/** reset global and local delivery buffers */
-		void bsp::ContextImpl::bsp_reset_buffers() {
+		void bsp_reset_buffers() {
 			TSLOCK();
 			localDeliveries.reset_buffers();
 			bspx_resetbuffers(&g_bsp);
