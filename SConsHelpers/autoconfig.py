@@ -29,6 +29,8 @@ def AutoConfig (root, crunner,customtests = {}):
 #ifndef __BSPCONFIG_H__
 #define __BSPCONFIG_H__
 
+#include <tbb/scalable_allocator.h>
+
 /** No MSVC => no __cdecl */
 #ifndef _MSC_VER
 #ifndef __cdecl

@@ -43,11 +43,11 @@ writing a BSP program and is therefore  part of the installation.
  */
 
 #ifndef BSP_DELIVTAB_MIN_SIZE
-#define BSP_DELIVTAB_MIN_SIZE 128
+#define BSP_DELIVTAB_MIN_SIZE 256*8
 #endif
 
 #ifndef BSP_REQTAB_MIN_SIZE
-#define BSP_REQTAB_MIN_SIZE   64
+#define BSP_REQTAB_MIN_SIZE   256
 #endif
 
 #ifndef BSP_MEMREG_MIN_SIZE

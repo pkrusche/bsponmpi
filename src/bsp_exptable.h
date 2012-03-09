@@ -375,4 +375,35 @@ static inline void
 }
 /*@}*/
 
+/** adds an element for a specific processor to the table and expands the
+* table when necessary. 
+@param table Reference to a FixedSizeElement
+@param proc Destination processor
+@param changeinfo Reference to the function which changes the table info in
+case of table expansion
+@param element pointer to data element
+*/
+
+static inline void *
+	fixedElSizeTable_push2 (ExpandableTable * RESTRICT table, 
+	const unsigned int proc )
+{
+	int j;
+
+	/* add table if necessary */
+	if (table->used_slot_count[proc] == table->rows)
+	{
+		union SpecInfo info = table->info;
+		expandableTable_expand (table, table->rows , &info);
+	}
+
+	/* add pointer */
+	j = table->used_slot_count[proc] + proc * table->rows;
+	table->used_slot_count[proc] ++;
+
+	return table->data + j * table->slot_size;
+}
+/*@}*/
+
+
 #endif

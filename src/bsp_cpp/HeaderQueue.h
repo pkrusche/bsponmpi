@@ -33,51 +33,58 @@ A queue for message fixed size headers.
 
 #include "bsp.h"
 
-#include <vector>
+extern "C" {
+#include "../bsp_exptable.h"
+};
+
 
 namespace utilities {
 
 	template <class _header>
 	class HeaderQueue {
 	public:
-		HeaderQueue() : start (0), end(0) {
-			queue.resize(BSP_REQTAB_MIN_SIZE);
+		HeaderQueue() {
+			SpecInfo info;
+			fixedElSizeTable_initialize(
+				&tbl, 1, BSP_REQTAB_MIN_SIZE, sizeof(_header), info );
+			start = 0;
+		}
+		~HeaderQueue() {
+			expandableTable_destruct(&tbl);
 		}
 
 		/** clear the queue, remove all headers */
 		inline void clear () {
+			tbl.used_slot_count[0] = 0;
 			start = 0;
-			end = 0;
 		}
 
 		/** reset the queue, free memory  */
 		inline void reset() {
 			clear();
-			queue.resize(BSP_REQTAB_MIN_SIZE);
+			expandableTable_resetrowcount(&tbl, BSP_REQTAB_MIN_SIZE);
 		}
 
 		/** return a reference to a new queue element */
 		inline _header & enqueue () {
-			if (end+1 > queue.size()) {
-				queue.resize(queue.size()*2);
-			}
-			return queue[end++];
+			_header * h = (_header*)fixedElSizeTable_push2(&tbl, 0);
+			return *h;
 		}
 
 		/** length of the queue */
 		inline int qsize () {
-			return ((int) end) - ((int) start);
+			return ((int) tbl.used_slot_count[0]) - ((int) start);
 		}
 
 		/** get a reference to the queue head */
 		inline _header & head () {
-			ASSERT (start < end);
-			return queue[start];
+			ASSERT (start < tbl.used_slot_count[0]);
+			return  *((_header*)( (tbl.data + start * tbl.slot_size)));
 		}
 
 		/** return true if queue is empty */
 		inline bool empty() {
-			return start >= end;
+			return start >= tbl.used_slot_count[0];
 		}
 
 		/** get next queue element, return true if there is one */
@@ -86,9 +93,8 @@ namespace utilities {
 		}
 
 	private:
-		std::vector<_header> queue;
-		size_t start, end;
-		tbb::spin_rw_mutex lock;
+		ExpandableTable tbl;
+		size_t start;
 	};
 
 }

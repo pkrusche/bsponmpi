@@ -44,7 +44,7 @@
     @param n number of elements to be allocated
     @param sz size of one element
     @param func Function from where this function is called
-    @param file File from where this function is calles
+    @param file File from where this function is called
     @param line line number from where this function is called
     @return a pointer to a memory location big enough to contain the data or
             NULL when a region of size 0 is requested
@@ -58,7 +58,7 @@ bsp_mallocx (const size_t n, const size_t sz,
   if (n * sz == 0)
     return NULL;
   
-  result = (void *) malloc (n * sz);
+  result = (void *) scalable_malloc (n * sz);
   if (result == NULL)
     bsp_intern_abort (ERR_NOT_ENOUGH_MEMORY, func, file, line);
   
@@ -83,7 +83,7 @@ bsp_callocx (const size_t n, const size_t sz,
   if (n * sz == 0)
     return NULL;
     
-  result = (void *) calloc (n, sz);
+  result = (void *) scalable_calloc (n, sz);
   if (result == NULL)
     bsp_intern_abort (ERR_NOT_ENOUGH_MEMORY, func, file, line);
    
@@ -97,7 +97,7 @@ static inline void
 bsp_free (void *ptr)
 {
   if (ptr != NULL)
-    free (ptr);
+    scalable_free (ptr);
 }
 
 #endif

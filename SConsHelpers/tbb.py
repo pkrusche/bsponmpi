@@ -80,11 +80,11 @@ def MakeEnv (root):
 	if platform_name == 'Windows':
 		if root['mode'] == 'debug':
 			root.Append( 
-				LIBS = ['tbb_debug'],
+				LIBS = ['tbb_debug', 'tbbmalloc_debug'],
 			)
 		else:
 			root.Append( 
-				LIBS = ['tbb'],
+				LIBS = ['tbb', 'tbbmalloc'],
 			)
 	else:
 		root.Append( 

@@ -38,7 +38,7 @@ def PrepareEnv (root):
 
     if mode == 'release':
         root.Append( 
-		    CCFLAGS='/MD /O2',
+		    CCFLAGS='/MD /Ox',
 	    )
 
 #    if subarch == 'AMD64':

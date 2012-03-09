@@ -34,8 +34,9 @@ Implements local delivery. All functions in here are not thread safe.
 #include <vector>
 #include <algorithm>
 
-#include "bsp_tools/HeaderQueue.h"
 #include "bsp_tools/MessageBuffer.h"
+
+#include "HeaderQueue.h"
 
 namespace bsp {
 	
