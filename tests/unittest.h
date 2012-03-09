@@ -63,7 +63,7 @@ inline void checkequal_impl(const char * f, int l, const char * func, const _t &
 			<< std::endl;
 		std::cerr << s.str();
 		std::cerr.flush();
-//		throw std::runtime_error(s.str());
+		throw std::runtime_error(s.str());
 
 	}
 }
