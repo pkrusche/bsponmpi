@@ -4,10 +4,10 @@ SEQUENTIAL?=0
 THREADSAFE?=1
 
 all: 
-	scons -Q mode=${MODE} sequential=${SEQUENTIAL} threadsafe=${THREADSAFE}
+	scons -Q mode=${MODE} sequential=${SEQUENTIAL} threadsafe=${THREADSAFE} runtests=1
 
 clean:
-	scons -Q -c mode=${MODE} sequential=${SEQUENTIAL} threadsafe=${THREADSAFE}
+	scons -Q -c mode=${MODE} sequential=${SEQUENTIAL} threadsafe=${THREADSAFE} runtests=1
 
 test:
 	scons -Q mode=${MODE} sequential=${SEQUENTIAL} threadsafe=${THREADSAFE} runtests=1

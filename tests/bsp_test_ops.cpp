@@ -35,6 +35,7 @@ Test all BSP communication operations in a context.
 #include "ops/test_hpput.h"
 #include "ops/test_get.h"
 #include "ops/test_hpget.h"
+#include "ops/test_send.h"
 
 
 /**
@@ -90,6 +91,9 @@ int main (int argc, char** argv) {
 			bsp_sync();
 			cout << "Testing hpget p = " << procs << endl;
 			TestHpGet::run( procs );
+			bsp_sync();
+			cout << "Testing BSMP p = " << procs << endl;
+			TestSend::run( procs );
 			bsp_sync();
 			++procs;
 		}
