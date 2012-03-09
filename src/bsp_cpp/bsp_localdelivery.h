@@ -206,8 +206,11 @@ namespace bsp {
 			bytes_to_move = bytes_sent;
 			bytes_sent = 0;
 
+			puts.reset();
+			hpputs.reset();
+
 			message_send_buffer->clear();
-			message_send_queue->empty();
+			message_send_queue->reset();
 		}
 
 		/** reset the buffer sizes */

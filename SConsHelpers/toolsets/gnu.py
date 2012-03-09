@@ -26,12 +26,12 @@ def PrepareEnv (root):
 			)
 		if profile:
 			root.Append(
-				CCFLAGS=' -pg -O2',
+				CCFLAGS=' -pg -O3',
 				LINKFLAGS=' -pg',
 			)
 		else:
 			root.Append(
-			CCFLAGS=' -O2',
+			CCFLAGS=' -fast',
 			)
 
 Export( [ 'PrepareEnv'] )

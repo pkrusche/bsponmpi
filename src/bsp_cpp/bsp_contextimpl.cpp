@@ -104,7 +104,7 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 				throw std::runtime_error("bsp_sync(): mismatched number of registration requests.");
 			}
 		}
-
+		cimpl->localDeliveries.bsmp_messagequeue_sync();
 		any_hp |= cimpl->any_hp;
 	}
 	
@@ -231,7 +231,7 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 	/************************************************************************/
 	/* Step 3: Global sync                                                  */
 	/************************************************************************/
-
+	
 	messageQueue_sync(&g_bsp.message_queue);
 	requestTable_reset(&g_bsp.request_received_table);
 	deliveryTable_reset(&g_bsp.delivery_received_table);

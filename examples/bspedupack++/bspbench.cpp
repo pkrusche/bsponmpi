@@ -132,8 +132,6 @@ public:
 				BSP_BEGIN();
 				for (int i=0; i < h; i++)
 					bsp_put(destproc[i],&src[i],dest,destindex[i]*SZDBL,SZDBL);
-				BSP_SYNC();
-				bsp_reset_buffers();
 				BSP_END();
 			}
 			BSP_BEGIN();
