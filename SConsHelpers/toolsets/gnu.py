@@ -1,3 +1,4 @@
+import platform
 ###############################################################################
 # Make add options to an environment to use GCC
 ###############################################################################
@@ -13,12 +14,16 @@ def PrepareEnv (root):
 	mode      = root['mode']
 	debuginfo = root['debuginfo']
 	profile   = root['profile']
+	platform_name = platform.uname()[0]
 
 	if mode == 'debug':
 		root.Append(
 		CCFLAGS=' -g -O0',
 		)
 	elif mode == 'release':
+		fast = '-Ofast'
+		if platform_name == 'Darwin':
+			fast= '-fast'
 		if debuginfo:
 			root.Append(
 				CCFLAGS=' -g ',
@@ -31,7 +36,7 @@ def PrepareEnv (root):
 			)
 		else:
 			root.Append(
-			CCFLAGS=' -fast',
+			CCFLAGS=fast,
 			)
 
 Export( [ 'PrepareEnv'] )
