@@ -376,22 +376,6 @@ void bsp::ContextImpl::bsp_pop_reg(const void * ident) {
 	reg_requests.push( r );
 }
 
-/** bsp_send with added int to specify which local processor it's for */
-void bsp::ContextImpl::bsp_send (int pid, 
-	const void *tag, const void *payload, size_t payload_nbytes) {
-	
-	DelivElement element;
-	char * RESTRICT pointer;
-	element.size = (unsigned int )payload_nbytes + g_bsp.message_queue.send_tag_size;
-	element.info.send.payload_size = (unsigned int )payload_nbytes + sizeof(int);
-	pointer = (char *)deliveryTable_push(&g_bsp.delivery_table, pid, &element, it_send);
-
-	// we prepend the target pid
-	*((int*)pointer) = pid;
-	memcpy( pointer + sizeof(int), tag, g_bsp.message_queue.send_tag_size);
-	memcpy( pointer + sizeof(int)+ g_bsp.message_queue.send_tag_size, payload, payload_nbytes);
-}
-
 void bsp::ContextImpl::bsp_qsize (int * , size_t * ) {
 
 }

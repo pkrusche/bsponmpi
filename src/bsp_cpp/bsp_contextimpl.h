@@ -187,13 +187,26 @@ namespace bsp {
 			}
 		}
 
+		/** we add an int to indicate which processor it's going to */
+		inline void bsp_send (int pid, 
+			const void *tag, const void *payload, size_t payload_nbytes) {
 
-		void bsp_send (int, const void *, const void *, size_t);
+			DelivElement element;
+			char * RESTRICT pointer;
+			element.size = (unsigned int )payload_nbytes + g_bsp.message_queue.send_tag_size;
+			element.info.send.payload_size = (unsigned int )payload_nbytes + sizeof(int);
+			pointer = (char *)deliveryTable_push(&g_bsp.delivery_table, pid, &element, it_send);
+
+			// we prepend the target pid
+			*((int*)pointer) = pid;
+			memcpy( pointer + sizeof(int), tag, g_bsp.message_queue.send_tag_size);
+			memcpy( pointer + sizeof(int)+ g_bsp.message_queue.send_tag_size, payload, payload_nbytes);
+		}
+		
 		void bsp_qsize (int * , size_t * );
 		void bsp_get_tag (int * , void * );
 		void bsp_move (void *, size_t);
 		void bsp_set_tagsize (size_t *);
-
 		int bsp_hpmove (void **, void **);
 
 	private:
