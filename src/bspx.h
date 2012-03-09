@@ -43,23 +43,6 @@ which can use tbb mutexes rather than OS standard ones.
 
 #include "bsp.h"
 
-/** These control the default buffer sizes.
- *  They could be tuned to optimize behaviour of the library
- *  towards space or time efficiency.
- */
-
-#ifndef BSP_DELIVTAB_MIN_SIZE
-#define BSP_DELIVTAB_MIN_SIZE 128
-#endif
-
-#ifndef BSP_REQTAB_MIN_SIZE
-#define BSP_REQTAB_MIN_SIZE   64
-#endif
-
-#ifndef BSP_MEMREG_MIN_SIZE
-#define BSP_MEMREG_MIN_SIZE  1	
-#endif
-
 #ifdef __cplusplus
 extern "C" {
 #endif // __cplusplus

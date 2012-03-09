@@ -96,6 +96,7 @@ namespace bsp {
 		/** @name BSMP */
 		/*@{*/
 		void bsp_send (int, const void *, const void *, size_t);
+		void bsp_hpsend (int, const void *, const void *, size_t);
 		void bsp_qsize (int * , size_t * );
 		void bsp_get_tag (int * , void * );
 		void bsp_move (void *, size_t);

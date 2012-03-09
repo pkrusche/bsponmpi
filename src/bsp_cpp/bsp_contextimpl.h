@@ -82,7 +82,12 @@ namespace bsp {
 		/** This is where all contexts within a task mapper are synchronized */
 		static void bsp_sync (TaskMapper *);
 
-		void bsp_reset_buffers();
+		/** reset global and local delivery buffers */
+		void bsp::ContextImpl::bsp_reset_buffers() {
+			TSLOCK();
+			localDeliveries.reset_buffers();
+			bspx_resetbuffers(&g_bsp);
+		}
 
 		/** push and pop operations use the local push/pop queue */
 		void bsp_push_reg (const void *, size_t);
@@ -190,24 +195,106 @@ namespace bsp {
 		/** we add an int to indicate which processor it's going to */
 		inline void bsp_send (int pid, 
 			const void *tag, const void *payload, size_t payload_nbytes) {
+			int n = mapper->global_to_node(pid);
+			int lp = mapper->global_to_local(pid);
 
-			DelivElement element;
-			char * RESTRICT pointer;
-			element.size = (unsigned int )payload_nbytes + g_bsp.message_queue.send_tag_size;
-			element.info.send.payload_size = (unsigned int )payload_nbytes + sizeof(int);
-			pointer = (char *)deliveryTable_push(&g_bsp.delivery_table, pid, &element, it_send);
+			if (n == g_bsp.rank) {
+				TSLOCK();
+				((ContextImpl*)mapper->get_context(lp).get_impl())->localDeliveries.send(
+					tag, g_bsp.message_queue.send_tag_size, 
+					payload, payload_nbytes
+				);
+			} else {
+				/** remote delivery */
+				DelivElement element;
+				char * RESTRICT pointer;
+				element.size = (unsigned int )payload_nbytes + g_bsp.message_queue.send_tag_size + sizeof(int);
+				element.info.send.payload_size = (unsigned int )payload_nbytes + sizeof(int);
 
-			// we prepend the target pid
-			*((int*)pointer) = pid;
-			memcpy( pointer + sizeof(int), tag, g_bsp.message_queue.send_tag_size);
-			memcpy( pointer + sizeof(int)+ g_bsp.message_queue.send_tag_size, payload, payload_nbytes);
+				TSLOCK();
+				pointer = (char *)deliveryTable_push(&g_bsp.delivery_table, pid, &element, it_send);
+
+				// we prepend the target local pid to the data
+				*((int*) (pointer + g_bsp.message_queue.send_tag_size ) ) = lp;
+				memcpy( pointer, tag, g_bsp.message_queue.send_tag_size);
+				memcpy( pointer + sizeof(int) + g_bsp.message_queue.send_tag_size, payload, payload_nbytes);
+			}
 		}
-		
-		void bsp_qsize (int * , size_t * );
-		void bsp_get_tag (int * , void * );
-		void bsp_move (void *, size_t);
-		void bsp_set_tagsize (size_t *);
-		int bsp_hpmove (void **, void **);
+
+		/** unbuffered send. do not touch tag or payload after this call.  */
+		inline void bsp_hpsend (int pid, 
+			const void *tag, const void *payload, size_t payload_nbytes) {
+			int n = mapper->global_to_node(pid);
+			int lp = mapper->global_to_local(pid);
+
+			if (n == g_bsp.rank) {
+				TSLOCK();
+				((ContextImpl*)mapper->get_context(lp).get_impl())->localDeliveries.hpsend (
+					tag, payload, payload_nbytes
+				);
+			} else {
+				/** remote delivery */
+				DelivElement element;
+				char * RESTRICT pointer;
+				element.size = (unsigned int )payload_nbytes + g_bsp.message_queue.send_tag_size + sizeof(int);
+				element.info.send.payload_size = (unsigned int )payload_nbytes + sizeof(int);
+
+				TSLOCK();
+				pointer = (char *)deliveryTable_push(&g_bsp.delivery_table, pid, &element, it_send);
+
+				// we prepend the target local pid to the data
+				*((int*) (pointer + g_bsp.message_queue.send_tag_size ) ) = lp;
+				memcpy( pointer, tag, g_bsp.message_queue.send_tag_size);
+				memcpy( pointer + sizeof(int) + g_bsp.message_queue.send_tag_size, payload, payload_nbytes);
+			}
+		}
+
+		/** BSMP message queue size */
+		inline void bsp_qsize (int * messages, size_t * accum_bytes) {
+			*messages = localDeliveries.bsmp_qsize();
+			*accum_bytes = localDeliveries.bsmp_move_bytes();
+		}
+
+		/** Get tag and payload size */
+		inline void bsp_get_tag (int * status, void * tag) {
+			if (localDeliveries.bsmp_qsize() > 0) {
+				*status = (int) localDeliveries.bsmp_top_size();
+				memcpy (tag, localDeliveries.bsmp_top_tag(), 
+					g_bsp.message_queue.recv_tag_size);
+			} else {
+				*status = -1;
+			}
+		}
+
+		/** move data from the top of the message queue */
+		inline void bsp_move (void * target, size_t nbytes) {
+			if (localDeliveries.bsmp_qsize() > 0) {
+				ASSERT (nbytes < localDeliveries.bsmp_top_size());
+				memcpy (target, localDeliveries.bsmp_top_message(), nbytes);
+				localDeliveries.bsmp_advance();
+			}
+		}
+
+		/** the tag size is managed by bspx */
+		inline void bsp_set_tagsize (size_t * t) {
+			bspx_set_tagsize(&g_bsp, t);
+		}
+
+		/** Here, we might again win something. When messages 
+		 *  are sent and received using hp operations, not memcpy
+		 *  is necessary at all.
+		 */
+		int bsp_hpmove (void **tag_ptr, void **payload_ptr) {
+			if (localDeliveries.bsmp_qsize() > 0) {
+				*tag_ptr = (void*) localDeliveries.bsmp_top_tag();
+				*payload_ptr = (void*) localDeliveries.bsmp_top_message();
+				int size = (int) localDeliveries.bsmp_top_size();
+				localDeliveries.bsmp_advance();
+				return size;
+			} else {
+				return -1;
+			}
+		}
 
 	private:
 
@@ -227,16 +314,19 @@ namespace bsp {
 		/** remember the task mapper */
 		TaskMapper * mapper;
 
-		/** We reimplement BSPonMPI's registration mechanism here
-		 *  using C++ maps. 
-		 */
-
 		bool any_hp;
 
-		std::map<const void*, MemoryRegister> memory_register_map; /**< all valid memory registers, indexed by ptr 
-															     in this context */
+		/** We reimplement BSPonMPI's registration mechanism here
+		 *  using C++ maps. 
+		 *  
+		 *  TODO, this could probably be done faster somehow.
+		 */
+		
+		/** all valid memory registers, indexed by ptr */
+		std::map<const void*, MemoryRegister> memory_register_map; 
 
-		std::queue< MemoryRegister_Reg > reg_requests;	/**< new registrations are buffered here */
+		/** new registrations are buffered here */
+		std::queue< MemoryRegister_Reg > reg_requests;	
 
 		/** each context can do its node-local deliveries independently. */
 		LocalDeliveryQueue	localDeliveries;

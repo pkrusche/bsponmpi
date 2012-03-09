@@ -105,27 +105,26 @@ void bsp::Context::bsp_get (int pid, const void *src, long int offset, void *dst
 /** @name BSMP */
 /*@{*/
 void bsp::Context::bsp_send ( int pid, const void *tag, const void *payload, size_t payload_nbytes) {
-	TSLOCK();
 	BSP->bsp_send(pid, tag, payload, payload_nbytes);
 }
 
+void bsp::Context::bsp_hpsend (int pid, const void *tag, const void *payload, size_t payload_nbytes) {
+	BSP->bsp_hpsend(pid, tag, payload, payload_nbytes);
+}
+
 void bsp::Context::bsp_qsize (int * nmessages, size_t * accum_nbytes) {
-	TSLOCK();
 	BSP->bsp_qsize(nmessages, accum_nbytes);
 }
 
 void bsp::Context::bsp_get_tag (int * status , void * tag) {
-	TSLOCK();
 	BSP->bsp_get_tag(status, tag);
 }
 
 void bsp::Context::bsp_move (void *payload, size_t reception_nbytes) {
-	TSLOCK();
 	BSP->bsp_move(payload, reception_nbytes);
 }
 
 void bsp::Context::bsp_set_tagsize (size_t * tag_nbytes) {
-	TSLOCK();
 	BSP->bsp_set_tagsize(tag_nbytes);
 }
 
@@ -142,7 +141,6 @@ void bsp::Context::bsp_hpget (int pid, const void * src, long int offset, void *
 }
 
 int bsp::Context::bsp_hpmove (void ** tag_ptr, void ** payload_ptr) {
-	TSLOCK();
 	BSP->bsp_hpmove(tag_ptr, payload_ptr);
 	return 0;
 }

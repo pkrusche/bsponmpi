@@ -46,7 +46,8 @@ void bspmv(int p, int s, int n, int nz, int nrows, int ncols,
        u[k] is the k'th local component of u, 0 <= k < nu.
     */
 
-    int i, j, k, tagsz, status, nsums, nbytes, *pinc;
+    int i, j, k, status, nsums, nbytes, *pinc;
+	size_t tagsz;
     double sum, *psum, *pa, *vloc, *pvloc, *pvloc_end;
 
     /****** Superstep 0. Initialize and register ******/

@@ -320,7 +320,26 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 
 		/** execute put operations */
 		deliveryTable_execute(&g_bsp.delivery_received_table, 
-			&g_bsp.memory_register, &g_bsp.message_queue, g_bsp.rank);			
+			&g_bsp.memory_register, &g_bsp.message_queue, g_bsp.rank);
+
+		/** split message queue */
+		int bytes;
+		void * tag, * message;
+		bytes = bspx_hpmove(&g_bsp, &tag, &message);
+		while (bytes >= 0) {
+			// all messages sent through ContextImpl's (hp)send functions
+			// will include an integer at the beginning of the message that
+			// specifies the local processor to send to
+			ASSERT (bytes >= sizeof(int));
+			int lp = *((int*)message);
+			ASSERT (lp>=0);
+			ASSERT (lp < mapper->procs_this_node());
+
+			ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(lp).get_impl());
+			cimpl->localDeliveries.hpsend(tag, ((int*)message)+1, bytes);
+
+			bytes = bspx_hpmove(&g_bsp, &tag, &message);
+		}
 	}
 
 	/* clear the buffers */			
@@ -330,13 +349,6 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 	/* pack the memoryRegister */
 	memoryRegister_pack(&g_bsp.memory_register);
 }
-
-void bsp::ContextImpl::bsp_reset_buffers() {
-	localDeliveries.reset_buffers();
-	TSLOCK();
-	bspx_resetbuffers(&g_bsp);
-}
-
 
 /** Push register implementation which distinguishes between local and 
  *  remote locations.
@@ -375,25 +387,3 @@ void bsp::ContextImpl::bsp_pop_reg(const void * ident) {
 	r.push   = false;
 	reg_requests.push( r );
 }
-
-void bsp::ContextImpl::bsp_qsize (int * , size_t * ) {
-
-}
-
-void bsp::ContextImpl::bsp_get_tag (int * , void * ) {
-
-}
-
-void bsp::ContextImpl::bsp_move (void *, size_t) {
-
-}
-
-/** set tag size globally */
-void bsp::ContextImpl::bsp_set_tagsize (size_t * size) {
-	bspx_set_tagsize(&g_bsp, size);
-}
-
-int bsp::ContextImpl::bsp_hpmove (void **, void **) {
-	return 0;
-}
-
