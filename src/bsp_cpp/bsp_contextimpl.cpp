@@ -40,7 +40,7 @@ information.
 #include "bsp_cpp/TaskMapper.h"
 #include "bsp_cpp/Context.h"
 
-// #define _DEBUGSUPERSTEPS
+//#define _DEBUGSUPERSTEPS
 
 BSPObject bsp::ContextImpl::g_bsp; ///< node-level bsp object
 int bsp::ContextImpl::g_bsp_refcount = 0; ///< node level BSP object reference count
@@ -68,12 +68,15 @@ bsp::ContextImpl::ContextImpl(bsp::TaskMapper * tm, int lpid)
 	} else {
 		g_bsp_refcount++;
 	}
+	global_pid = tm->local_to_global_pid(lpid);
+	memoryRegister_initialize( &memory_register, mapper->nprocs(), 1, global_pid );
 }
 
 /** 
  * Destructor. Destroy local BSP object 
  */
 bsp::ContextImpl::~ContextImpl() {
+	memoryRegister_destruct(&memory_register);
 	g_bsp_refcount--;
 	if (g_bsp_refcount <= 0) {
 		bspx_destroy_bspobject(&g_bsp);
@@ -104,7 +107,6 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 				throw std::runtime_error("bsp_sync(): mismatched number of registration requests.");
 			}
 		}
-		cimpl->localDeliveries.bsmp_messagequeue_sync();
 		any_hp |= cimpl->any_hp;
 	}
 	
@@ -169,7 +171,7 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 		for (int p = 0; p < g_bsp.nprocs; ++p) {
 			s << p << ":(M" << g_bsp.send_index[3 * p + CM_MESSAGE_COUNT] << ",R"
 				<<	    g_bsp.send_index[3 * p + CM_REQUEST_COUNT] << ",F"
-				<<	    g_bsp.send_index[3 * p + CM_REQUEST_COUNT] << ") ";
+				<<	    g_bsp.send_index[3 * p + CM_FLAGS] << ") ";
 		}
 		s << std::endl;
 		s << "step " << nstep << " - " << "P" << g_bsp.rank << " got: ";
@@ -178,7 +180,7 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 		for (int p = 0; p < g_bsp.nprocs; ++p) {
 			s << p << ":(M" << g_bsp.recv_index[3 * p + CM_MESSAGE_COUNT] << ",R"
 			  <<	    g_bsp.recv_index[3 * p + CM_REQUEST_COUNT] << ",F"
-			  <<	    g_bsp.recv_index[3 * p + CM_REQUEST_COUNT] << ") ";
+			  <<	    g_bsp.recv_index[3 * p + CM_FLAGS] << ") ";
 			if (g_bsp.recv_index[3 * p + CM_FLAGS] & CM_FLAG_MESSAGES) {
 				_any_messages = true;
 			}
@@ -334,20 +336,35 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 			int lp = *((int*)message);
 			ASSERT (lp>=0);
 			ASSERT (lp < mapper->procs_this_node());
-
+#ifdef _DEBUGSUPERSTEPS
+			std::cout << "step " << nstep << " - " << "P" << g_bsp.rank << " Received message with tag " << 
+					*((int*)tag) << 
+					" for lp " << *((int*)message) << std::endl;
+				std::cout.flush();
+#endif
 			ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(lp).get_impl());
-			cimpl->localDeliveries.hpsend(tag, ((int*)message)+1, bytes);
+			cimpl->localDeliveries.hpsend(tag, ((int*)message)+1, bytes-sizeof(int));
 
 			bytes = bspx_hpmove(&g_bsp, &tag, &message);
-		}
+		}		
+	}
+
+	for (int lp = 0; lp < mapper->procs_this_node(); ++lp) {
+		ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(lp).get_impl());
+		cimpl->localDeliveries.bsmp_messagequeue_sync();			
 	}
 
 	/* clear the buffers */			
 	deliveryTable_reset(&g_bsp.delivery_table);
 	requestTable_reset(&g_bsp.request_table);
 
-	/* pack the memoryRegister */
+	/* pack the memoryRegister 
+	
+	not necessary, we are managing memory registers on a 
+	local process basis.
+	
 	memoryRegister_pack(&g_bsp.memory_register);
+	*/
 }
 
 /** Push register implementation which distinguishes between local and 
@@ -363,7 +380,7 @@ void bsp::ContextImpl::bsp_push_reg(const void * ident, size_t nbytes) {
 	MemoryRegister_Reg r;
 	r.data   = ident;
 	r.size   = nbytes;
-	r.serial = memory_register_map.size() + reg_requests.size();
+	r.serial = memory_register.used_slot_count[global_pid] + reg_requests.size();
 	r.push   = true;
 	reg_requests.push( r );
 }

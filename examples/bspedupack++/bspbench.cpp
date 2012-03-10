@@ -131,7 +131,7 @@ public:
 			for (int iter=0; iter < NITERS; iter++) {
 				BSP_BEGIN();
 				for (int i=0; i < h; i++)
-					bsp_put(destproc[i],&src[i],dest,destindex[i]*SZDBL,SZDBL);
+					bsp_hpput(destproc[i],&src[i],dest,destindex[i]*SZDBL,SZDBL);
 				BSP_END();
 			}
 			BSP_BEGIN();

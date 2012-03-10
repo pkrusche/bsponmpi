@@ -198,7 +198,7 @@ namespace bsp {
 		}
 
 		/** switch message buffers */
-		void bsmp_messagequeue_sync() {
+		inline void bsmp_messagequeue_sync() {
 			using namespace std;
 			swap (message_send_queue, message_move_queue);
 			swap (message_send_buffer, message_move_buffer);

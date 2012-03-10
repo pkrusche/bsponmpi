@@ -121,16 +121,24 @@ void bsp::ContextImpl::process_memoryreg_ops(TaskMapper * mapper, int reg_req_si
 				if (cimpl->memory_register_map.find(my_r.data) != cimpl->memory_register_map.end()) {
 					throw std::runtime_error("bsp_sync(): detected duplicate pushreg for the same address.");
 				}
-				cimpl->memory_register_map[my_r.data] = reg;
+				cimpl->memory_register_map[my_r.data] = reg; 
+				for (int gp = 0; gp < mapper->nprocs(); ++gp) {
+					memoryRegister_push(&cimpl->memory_register, gp, (const char*)reg.pointers[gp]);
+				}
 			} else {
+				memoryRegister_pop(&cimpl->memory_register, cimpl->global_pid, (const char*) my_r.data);
 				std::map<const void *, MemoryRegister>::iterator it = 
 					cimpl->memory_register_map.find(my_r.data);
-
+				
 				if (it == cimpl->memory_register_map.end()) {
 					throw std::runtime_error("bsp_sync(): mismatched popreg.");
 				}
 				cimpl->memory_register_map.erase(it);
 			}
 		}
+	}
+	for (int llp = 0; llp < mapper->procs_this_node(); ++llp) {
+		ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(llp).get_impl());
+		memoryRegister_pack(&cimpl->memory_register);
 	}
 }

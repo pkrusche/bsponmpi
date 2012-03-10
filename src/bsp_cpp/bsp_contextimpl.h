@@ -105,13 +105,15 @@ namespace bsp {
 			if (g_bsp.rank == n) {
 				localDeliveries.put(
 					(char *)src, 
-					((char*)memory_register_map[dst].pointers[pid]) + offset, 
+					memoryRegister_find ( &memory_register, global_pid, pid, (const char *)dst)
+//					(char*)memory_register_map[dst].pointers[pid])
+					 + offset, 
 					nbytes);
 			} else {
 				char * pointer;
 				DelivElement element;
 				element.size = (unsigned int) nbytes;
-				element.info.put.dst = ((char*)memory_register_map[dst].pointers[pid]) + offset;
+				element.info.put.dst = memoryRegister_find ( &memory_register, global_pid, pid, (const char *)dst) + offset;
 				{ 
 					TSLOCK();
 					pointer = (char*)deliveryTable_push(&g_bsp.delivery_table, n, &element, it_put);
@@ -126,12 +128,13 @@ namespace bsp {
 		inline void bsp_get (int pid, const void * src, long int offset, void * dst, size_t nbytes) {
 			int n = mapper->global_to_node(pid);
 			if (g_bsp.rank == n) {
-				localDeliveries.hpput (((char*)memory_register_map[src].pointers[pid]) + offset, 
+				localDeliveries.hpput (memoryRegister_find ( &memory_register, global_pid, pid, (const char*)src) + offset, 
 					(char*) dst, nbytes);
 			} else {
 				ReqElement elem;
 				elem.size = (unsigned int )nbytes;
-				elem.src = ((char*)memory_register_map[src].pointers[pid]);
+				elem.src = memoryRegister_find ( &memory_register, global_pid, pid, (const char*)src);
+					// ((char*)memory_register_map[src].pointers[pid]);
 				elem.dst = (char* )dst;
 				elem.offset = offset;
 				{
@@ -149,7 +152,7 @@ namespace bsp {
 
 			if (n == g_bsp.rank) {
 				// we have the data here on the same node, and can do the transfer now.
-				char * destination = ((char*)memory_register_map[dst].pointers[pid]) + offset;
+				char * destination = memoryRegister_find ( &memory_register, global_pid, pid, (const char*)dst) + offset;
 				memcpy(destination, src, nbytes);
 			} else {
 				// TODO we could technically also move this bit into 
@@ -162,7 +165,8 @@ namespace bsp {
 				char * RESTRICT pointer;
 				DelivElement element;
 				element.size = (unsigned int) nbytes;
-				element.info.put.dst = ((char*)memory_register_map[dst].pointers[pid]) + offset;
+				element.info.put.dst = memoryRegister_find ( &memory_register, global_pid, pid, (const char*)dst) + offset;
+					//((char*)memory_register_map[dst].pointers[pid]) + offset;
 				{
 					TSLOCK();
 					pointer = (char*)deliveryTable_push(&g_bsp.delivery_table, n, &element, it_put);
@@ -177,12 +181,13 @@ namespace bsp {
 			int n = mapper->global_to_node(pid);
 
 			if (n == g_bsp.rank) {
-				char * source = ((char*)memory_register_map[src].pointers[pid]) + offset;
+				char * source = memoryRegister_find ( &memory_register, global_pid, pid, (const char*)src) + offset;
 				memcpy(dst, source, nbytes);
 			} else {
 				ReqElement elem;
 				elem.size = (unsigned int )nbytes;
-				elem.src = ((char*)memory_register_map[src].pointers[pid]);
+				elem.src = memoryRegister_find ( &memory_register, global_pid, pid, (const char*)src);
+					//((char*)memory_register_map[src].pointers[pid]);
 				elem.dst = (char* )dst;
 				elem.offset = offset;
 
@@ -212,7 +217,7 @@ namespace bsp {
 				element.info.send.payload_size = (unsigned int )payload_nbytes + sizeof(int);
 
 				TSLOCK();
-				pointer = (char *)deliveryTable_push(&g_bsp.delivery_table, pid, &element, it_send);
+				pointer = (char *)deliveryTable_push(&g_bsp.delivery_table, n, &element, it_send);
 
 				// we prepend the target local pid to the data
 				*((int*) (pointer + g_bsp.message_queue.send_tag_size ) ) = lp;
@@ -258,6 +263,7 @@ namespace bsp {
 		/** Get tag and payload size */
 		inline void bsp_get_tag (int * status, void * tag) {
 			if (localDeliveries.bsmp_qsize() > 0) {
+				TSLOCK();
 				*status = (int) localDeliveries.bsmp_top_size();
 				memcpy (tag, localDeliveries.bsmp_top_tag(), 
 					g_bsp.message_queue.recv_tag_size);
@@ -269,6 +275,7 @@ namespace bsp {
 		/** move data from the top of the message queue */
 		inline void bsp_move (void * target, size_t nbytes) {
 			if (localDeliveries.bsmp_qsize() > 0) {
+				TSLOCK();
 				ASSERT (nbytes < localDeliveries.bsmp_top_size());
 				memcpy (target, localDeliveries.bsmp_top_message(), nbytes);
 				localDeliveries.bsmp_advance();
@@ -277,6 +284,7 @@ namespace bsp {
 
 		/** the tag size is managed by bspx */
 		inline void bsp_set_tagsize (size_t * t) {
+			TSLOCK();
 			bspx_set_tagsize(&g_bsp, t);
 		}
 
@@ -286,6 +294,7 @@ namespace bsp {
 		 */
 		int bsp_hpmove (void **tag_ptr, void **payload_ptr) {
 			if (localDeliveries.bsmp_qsize() > 0) {
+				TSLOCK();
 				*tag_ptr = (void*) localDeliveries.bsmp_top_tag();
 				*payload_ptr = (void*) localDeliveries.bsmp_top_message();
 				int size = (int) localDeliveries.bsmp_top_size();
@@ -309,6 +318,7 @@ namespace bsp {
 
 		static void process_memoryreg_ops(TaskMapper *, int reg_req_size);
 
+		int global_pid; ///< global pid
 		int local_pid; ///< local pid 
 
 		/** remember the task mapper */
@@ -323,7 +333,9 @@ namespace bsp {
 		 */
 		
 		/** all valid memory registers, indexed by ptr */
-		std::map<const void*, MemoryRegister> memory_register_map; 
+		std::map<const void*, MemoryRegister> memory_register_map;
+		/** the same for quick access */
+		ExpandableTable memory_register; 
 
 		/** new registrations are buffered here */
 		std::queue< MemoryRegister_Reg > reg_requests;	
