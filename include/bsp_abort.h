@@ -61,8 +61,12 @@
  * @param file the file name  
  * @param line the line number 
  */
+#ifdef __cplusplus
+extern "C"
+#endif
 void 
 bsp_intern_abort (const int err_number, const char *func, 
                   const char *file, int line);
+
 
 #endif

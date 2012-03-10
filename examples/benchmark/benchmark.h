@@ -39,6 +39,7 @@ from a set of samples.
 #include <algorithm>
 #include <cmath>
 
+#include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp> 
 
 namespace benchmark {
@@ -62,21 +63,25 @@ namespace benchmark {
 		}
 
 		/** output a table of rates and errors. */
-		inline void void ratetable ( std::ostream & output ) {
+		inline void ratetable ( std::ostream & output ) {
 			std::map <int, psize_info > sample_map;
-			collect(sample_map, c);
+			collect( sample_map );
 
-			std::list<int> ns;
+			std::vector<int> ns;
 			for (std::map<int, psize_info>::iterator it = sample_map.begin(), it_end = sample_map.end();
 				it != it_end; ++it) {
-				ns.push_back(*it);
+				ns.push_back( it->first );
 			}
 			std::sort (ns.begin(), ns.end());
-			output << "n\tmean\tmin\tmax\ttavg\tmedian\terr\tsamples" << std::endl;
-			for (std::list<int> :: iterator it = ns.begin(), it_end = ns.end(); it != it_end; ++it) {
+			output << "n\tmean\tmin\tmax\terr" << std::endl;
+			for (std::vector<int> :: iterator it = ns.begin(), it_end = ns.end(); it != it_end; ++it) {
 				psize_info & p = sample_map[*it];
-				output	<< p.n << "\t" << p.tmin<< "\t" << p.tmax << << "\t" 
-						<< p.tavg << "\t" << p.tmerr << "\t" << p.tmed << std::endl;
+				output
+					<< p.n << "\t" 
+					<< p.tavg << "\t" 
+					<< p.tmin << "\t" 
+					<< p.tmax << "\t" 
+					<< p.err << std::endl;
 			}
 		}
 
@@ -87,7 +92,6 @@ namespace benchmark {
 			double tmin;
 			double tmax;
 			double tavg;
-			double tmed;
 			int samples;
 			double err;
 			std::list<double> _samples;
@@ -110,24 +114,23 @@ namespace benchmark {
 				pr._samples.push_back(it->rate);
 			}
 
+			using namespace boost;
 			using namespace boost::accumulators;
 
 			for (std::map<int, psize_info>::iterator it = sample_map.begin(), it_end = sample_map.end();
 				it != it_end; ++it) {
-				accumulator_set<double, 
-					stats<tag::min, tag::max, tag::mean, tag::median, tag::error_of<tag::mean> > > acc1;
+				accumulator_set<double, stats<	tag::min, tag::max, tag::mean, tag::error_of<tag::mean> > > acc1;
 
 				for (std::list<double>::iterator it2 = it->second._samples.begin(), it2_end = it->second._samples.end(); 
 					 it2 != it2_end; ++it2) {
 					acc1( *it2 );
 				}
 
-				psize_info.tmin = min (acc1);
-				psize_info.tmax = max(acc1);
-				psize_info.tmed = median(acc1);
-				psize_info.tavg = mean(acc1);
-				psize_info.samples = it2->second._samples.size();
-				psize_info.err = error_of<tag::mean> (acc1);
+				it->second.tmin = min(acc1);
+				it->second.tmax = max(acc1);
+				it->second.tavg = mean(acc1);
+				it->second.err = error_of<tag::mean> (acc1); 
+				it->second.samples = it->second._samples.size();
 			}
 		}
 

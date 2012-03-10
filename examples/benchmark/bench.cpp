@@ -43,9 +43,11 @@ int main(int argc, char **argv) {
 	// You'll have as many processes as there are
 	// available via MPI.
 	int processors = 2;
-	int nmin = 1;
+	int nmin = 4;
 	int nmax = 512;
+	int step = 4;
 	double warmuptime = 2.0;
+	string bn = "daxpy";
 
 	/** This is how we read and parse command line options */
 	try {
@@ -56,10 +58,14 @@ int main(int argc, char **argv) {
 			("help", "produce a help message")
 			("procs,p", value<int>()->default_value(2), 
 			"How many processors to recursively create.")
-			("nmin,l", value<int>()->default_value(1), 
+			("nmin,l", value<int>()->default_value(4), 
 			"Minimum value of n.")
 			("nmax,r", value<int>()->default_value(512), 
+			"Maximum value of n.")
+			("nstep,s", value<int>()->default_value(4), 
 			"Minimum value of n.")
+			("benchmark,b", value<string>()->default_value("daxpy"), 
+			"Which benchmark to run (daxpy/matmul).")
 			("warmup,w", value<double>()->default_value(2.0),
 			"How much time to warm up. (default: 2s)"
 			)
@@ -71,7 +77,15 @@ int main(int argc, char **argv) {
 		processors = vm["procs"].as<int>();
 		nmin = vm["nmin"].as<int>();
 		nmax = vm["nmax"].as<int>();
+		step = vm["nstep"].as<int>();
+		bn = vm["benchmark"].as<string>();
 		warmuptime = vm["warmup"].as<double>();
+		
+		if (nmin > nmax
+		|| nmin < 1 || step < 1
+		) {
+			throw std::runtime_error ("Invalid parameters.");
+		}
 	} catch (std::runtime_error e) {
 		string s = e.what();
 		s+= "\n";
@@ -79,8 +93,20 @@ int main(int argc, char **argv) {
 	}
 
 	bsp_warmup ( warmuptime );
-	benchmark::CompilerDAXPYs p;
-	benchmark::Benchmark b = p.run(processors, nmin, nmax);
+	
+	benchmark::Benchmark b;
+	if (bn == "daxpy") {
+		benchmark::CompilerDAXPYs p;
+		b = p.run(processors, nmin, nmax, step);		
+	} else 	if (bn == "bdaxpy") {
+			benchmark::uBLASDAXPYs p;
+			b = p.run(processors, nmin, nmax, step);
+	} else if (bn == "matmul") {
+		benchmark::CompilerMatMult p;
+		b = p.run(processors, nmin, nmax, step);		
+	} else {
+		bsp_abort ("Unknown benchmark %s", bn.c_str());
+	}
 
 	if (bsp_pid() == 0) {
 		b.ratetable(std::cout);

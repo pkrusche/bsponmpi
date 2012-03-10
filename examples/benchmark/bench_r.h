@@ -31,14 +31,38 @@ Benchmarking declarations for computation rate estimation functions.
 #ifndef __bench_r_H__
 #define __bench_r_H__
 
-#include "bsp_cpp\bsp_cpp.h"
+#include "bsp_cpp/bsp_cpp.h"
 #include "benchmark.h"
 
 namespace benchmark {
 
 	class CompilerDAXPYs : public bsp::Context {
 	public:
-		Benchmark & run(int p, int nmin, int nmax);
+		Benchmark & run(int p, int nmin, int nmax, int step);
+
+	private:
+		Benchmark b;
+		double * p_rates;
+
+		// n counter
+		static int n;
+	};
+
+	class uBLASDAXPYs : public bsp::Context {
+	public:
+		Benchmark & run(int p, int nmin, int nmax, int step);
+
+	private:
+		Benchmark b;
+		double * p_rates;
+
+		// n counter
+		static int n;
+	};
+
+	class CompilerMatMult : public bsp::Context {
+	public:
+		Benchmark & run(int p, int nmin, int nmax, int step);
 
 	private:
 		Benchmark b;
