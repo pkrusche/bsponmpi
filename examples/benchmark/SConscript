@@ -1,3 +1,6 @@
 Import ("bsp")
 
-bsp.Program('bench', ['bench.cpp', 'bench_r.cpp'])
+bsp_cb = bsp.Clone()
+bsp_cb.Append(LIBS='libcblas')
+
+bsp_cb.Program('bench', ['bench.cpp', 'bench_r.cpp', 'benchmark.cpp'] )

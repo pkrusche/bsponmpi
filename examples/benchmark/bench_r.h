@@ -36,40 +36,24 @@ Benchmarking declarations for computation rate estimation functions.
 
 namespace benchmark {
 
-	class CompilerDAXPYs : public bsp::Context {
+	class CompilerDAXPYs : public SingleBenchmark {
 	public:
-		Benchmark & run(int p, int nmin, int nmax, int step);
-
-	private:
-		Benchmark b;
-		double * p_rates;
-
-		// n counter
-		static int n;
+		double run(int );
 	};
 
-	class uBLASDAXPYs : public bsp::Context {
+	class uBLASDAXPYs : public SingleBenchmark {
 	public:
-		Benchmark & run(int p, int nmin, int nmax, int step);
-
-	private:
-		Benchmark b;
-		double * p_rates;
-
-		// n counter
-		static int n;
+		double run(int );
 	};
 
-	class CompilerMatMult : public bsp::Context {
+	class CBLASDAXPYs : public SingleBenchmark {
 	public:
-		Benchmark & run(int p, int nmin, int nmax, int step);
+		double run(int );
+	};
 
-	private:
-		Benchmark b;
-		double * p_rates;
-
-		// n counter
-		static int n;
+	class CompilerMatMult : public SingleBenchmark {
+	public:
+		double run(int );
 	};
 
 }

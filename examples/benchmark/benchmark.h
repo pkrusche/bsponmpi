@@ -39,6 +39,8 @@ from a set of samples.
 #include <algorithm>
 #include <cmath>
 
+#include "bsp_cpp/bsp_cpp.h"
+
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp> 
 
@@ -135,6 +137,28 @@ namespace benchmark {
 		}
 
 		std::vector<Sample> samples;
+	};
+	
+	class SingleBenchmark {
+	public:
+		virtual double run (int n) = 0;		
+	};
+
+	/** class to run a benchmark for various values of n */
+	class BenchmarkRunner : public bsp::Context {
+	public:
+		public:
+			void init ();
+			
+			Benchmark & run (SingleBenchmark * b, int p, int nmin, int nmax, int step);
+		private:
+			SingleBenchmark * bm;
+			Benchmark b;
+			double * p_rates;
+
+			// n counter
+			static int n;
+		
 	};
 
 ;}

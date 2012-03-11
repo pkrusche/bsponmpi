@@ -94,20 +94,23 @@ int main(int argc, char **argv) {
 
 	bsp_warmup ( warmuptime );
 	
-	benchmark::Benchmark b;
+	benchmark::BenchmarkRunner r;
+	benchmark::SingleBenchmark * which = NULL;
 	if (bn == "daxpy") {
-		benchmark::CompilerDAXPYs p;
-		b = p.run(processors, nmin, nmax, step);		
-	} else 	if (bn == "bdaxpy") {
-			benchmark::uBLASDAXPYs p;
-			b = p.run(processors, nmin, nmax, step);
+		which = new benchmark::CompilerDAXPYs;
+	} else 	if (bn == "udaxpy") {
+		which = new benchmark::uBLASDAXPYs;
+	} else 	if (bn == "cdaxpy") {
+		which = new benchmark::CBLASDAXPYs;
 	} else if (bn == "matmul") {
-		benchmark::CompilerMatMult p;
-		b = p.run(processors, nmin, nmax, step);		
+		which = new benchmark::CompilerMatMult;		
 	} else {
 		bsp_abort ("Unknown benchmark %s", bn.c_str());
 	}
+	benchmark::Benchmark & b = r.run(which, processors, nmin, nmax, step);
 
+	delete which;
+	
 	if (bsp_pid() == 0) {
 		b.ratetable(std::cout);
 	}

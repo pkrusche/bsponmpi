@@ -39,6 +39,10 @@ and on the daxpy flop measurements from BSPEdupack.
 
 #include <boost/numeric/ublas/vector.hpp>
 
+extern "C" {
+#include <cblas.h>	
+};
+
 #include "bsp_alloc.h"
 #include "bsp_cpp/bsp_cpp.h"
 #include "bench_r.h"
@@ -166,6 +170,7 @@ double measure_matmul_mflops(int n) {
 		(2*S_MAT_OVERSAMPLE*n*n*n) / time_clockB) * 1e-6;
 }
 
+/** measure dot product rate with ublas */
 template <class _t>
 double measure_axpy_rate_ublas(int n) {
 	double time0, time1;
@@ -190,106 +195,59 @@ double measure_axpy_rate_ublas(int n) {
 	return ((double)S_DOT_OVERSAMPLE*n) / time1 * 1e-6;
 }
 
-int benchmark::CompilerDAXPYs::n; 
-int benchmark::CompilerMatMult::n; 
-int benchmark::uBLASDAXPYs::n;
+/** measure dot product rate with cblas */
+double measure_daxpy_rate_cblas(int n) {
+	int i,j, dummy=0;
+	double time_clockA, time_clockB;
+	double dot_product1 = 0;
+	double *vecA;
+	double *vecB;
 
-/** run a benchmark on compiler daxpy operations on vectors sized nmin to nmax */
-benchmark::Benchmark & benchmark::CompilerDAXPYs::run(int processors, int nmin, int nmax, int step) {
-	BSP_SCOPE(CompilerDAXPYs, (*this), processors);
-	
-	BSP_BEGIN();
-	p_rates = new double [bsp_nprocs()];
-	bsp_push_reg(p_rates, sizeof(double) * bsp_nprocs());
-	BSP_END();
-	
-	for (n = nmin; n < nmax; n+= step) {
-		BSP_BEGIN();
-		
-		double f = measure_axpy_rate<double> ( n );
+	vecA = (double *)bsp_calloc( n, sizeof(double) );
+	vecB = (double *)bsp_calloc( n, sizeof(double) );
 
-		bsp_put(0, &f, p_rates, sizeof(double) * bsp_pid(), sizeof(double));
-
-		BSP_SYNC();
-
-		if (bsp_pid() == 0) {
-			for (int p = 0; p< bsp_nprocs(); ++p) {
-				((CompilerDAXPYs*)get_parent_context())->b.add_sample(n, p_rates[p]);
-			}
-			std::cerr << ".";
-		}
-		BSP_END();
-	}
-	if (bsp_pid() == 0) {
-		std::cerr << std::endl;
+	if (vecA==NULL || vecB==NULL) {
+		throw std::runtime_error("Failed to allocate vector for dot product used in S");
 	}
 
-	return b;
+	for (i=0; i < n; i++) {
+		vecA[i] = positive_random_number <double> ( n );
+		vecB[i] = positive_random_number <double> ( n );
+	}
+
+	time_clockA = bsp_time();
+	for (i=0;i<S_DOT_OVERSAMPLE;i++) {
+		dot_product1+= cblas_ddot(n, vecA, 1,vecB, 1);
+	}
+	time_clockB = bsp_time();
+
+	if ( dot_product1 > 0 ) {
+		/* Need this conditional, otherwise the optimiser might remove the
+		dot-product as it isn't used in the code from here on */
+		time_clockB = time_clockB - time_clockA;
+	} else {
+		throw std::runtime_error("Dot product computation gave an incorrect result.");
+	}
+
+	bsp_free(vecA);
+	bsp_free(vecB);
+
+	/* 2 flops * over_sample * scale factor * dot_product_size */
+	return (double) (S_DOT_OVERSAMPLE*n) / time_clockB * 1e-6;	
 }
 
-/** run a benchmark on compiler daxpy operations on vectors sized nmin to nmax */
-benchmark::Benchmark & benchmark::CompilerMatMult::run(int processors, int nmin, int nmax, int step) {
-	BSP_SCOPE(CompilerMatMult, (*this), processors);
-	
-	BSP_BEGIN();
-	p_rates = new double [bsp_nprocs()];
-	bsp_push_reg(p_rates, sizeof(double) * bsp_nprocs());
-	BSP_END();
-	
-	for (n = nmin; n < nmax; n+= step) {
-		BSP_BEGIN();
-		
-		double f = measure_matmul_mflops<double> ( n );
-
-		bsp_put(0, &f, p_rates, sizeof(double) * bsp_pid(), sizeof(double));
-
-		BSP_SYNC();
-
-		if (bsp_pid() == 0) {
-			for (int p = 0; p< bsp_nprocs(); ++p) {
-				((CompilerMatMult*)get_parent_context())->b.add_sample(n, p_rates[p]);
-			}
-			std::cerr << ".";
-		}
-		BSP_END();
-	}
-	if (bsp_pid() == 0) {
-		std::cerr << std::endl;
-	}
-
-	return b;
+double benchmark::CompilerDAXPYs::run(int n) {
+	return measure_axpy_rate<double>(n);
 }
 
-/** run a benchmark on compiler daxpy operations on vectors sized nmin to nmax */
-benchmark::Benchmark & benchmark::uBLASDAXPYs::run(int processors, int nmin, int nmax, int step) {
-	BSP_SCOPE(uBLASDAXPYs, (*this), processors);
-	
-	BSP_BEGIN();
-	p_rates = new double [bsp_nprocs()];
-	bsp_push_reg(p_rates, sizeof(double) * bsp_nprocs());
-	BSP_END();
-	
-	for (n = nmin; n < nmax; n+= step) {
-		BSP_BEGIN();
-		
-		double f = measure_axpy_rate_ublas<double> ( n );
-
-		bsp_put(0, &f, p_rates, sizeof(double) * bsp_pid(), sizeof(double));
-
-		BSP_SYNC();
-
-		if (bsp_pid() == 0) {
-			for (int p = 0; p< bsp_nprocs(); ++p) {
-				((uBLASDAXPYs*)get_parent_context())->b.add_sample(n, p_rates[p]);
-			}
-			std::cerr << ".";
-		}
-		BSP_END();
-	}
-	if (bsp_pid() == 0) {
-		std::cerr << std::endl;
-	}
-
-	return b;
+double benchmark::uBLASDAXPYs::run(int n) {
+	return measure_axpy_rate_ublas<double>(n);
 }
 
+double benchmark::CBLASDAXPYs::run(int n) {
+	return measure_daxpy_rate_cblas(n);
+}
+
+double benchmark::CompilerMatMult::run(int n) {
+	return measure_matmul_mflops<double>(n);
+}
