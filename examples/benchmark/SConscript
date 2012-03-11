@@ -1,6 +1,6 @@
 Import ("bsp")
 
 bsp_cb = bsp.Clone()
-bsp_cb.Append(LIBS='blas')
+bsp_cb.Append(LIBS=['cblas', 'atlas'])
 
 bsp_cb.Program('bench', ['bench.cpp', 'bench_r.cpp', 'benchmark.cpp'] )
