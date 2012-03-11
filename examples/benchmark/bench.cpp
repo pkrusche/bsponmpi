@@ -96,14 +96,20 @@ int main(int argc, char **argv) {
 	
 	benchmark::BenchmarkRunner r;
 	benchmark::SingleBenchmark * which = NULL;
-	if (bn == "daxpy") {
-		which = new benchmark::CompilerDAXPYs;
+	if (bn == "dot") {
+		which = new benchmark::Dot;
+	} else 	if (bn == "udot") {
+		which = new benchmark::DotUBLAS;
+	} else 	if (bn == "cdot") {
+		which = new benchmark::DotCBLAS;
+	} else	if (bn == "daxpy") {
+		which = new benchmark::Daxpy;
 	} else 	if (bn == "udaxpy") {
-		which = new benchmark::uBLASDAXPYs;
+		which = new benchmark::DaxpyUBLAS;
 	} else 	if (bn == "cdaxpy") {
-		which = new benchmark::CBLASDAXPYs;
+		which = new benchmark::DaxpyCBLAS;
 	} else if (bn == "matmul") {
-		which = new benchmark::CompilerMatMult;		
+		which = new benchmark::MatMult;		
 	} else {
 		bsp_abort ("Unknown benchmark %s", bn.c_str());
 	}

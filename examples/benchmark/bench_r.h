@@ -36,22 +36,37 @@ Benchmarking declarations for computation rate estimation functions.
 
 namespace benchmark {
 
-	class CompilerDAXPYs : public SingleBenchmark {
+	class Dot : public SingleBenchmark {
 	public:
 		double run(int );
 	};
 
-	class uBLASDAXPYs : public SingleBenchmark {
+	class DotUBLAS : public SingleBenchmark {
 	public:
 		double run(int );
 	};
 
-	class CBLASDAXPYs : public SingleBenchmark {
+	class DotCBLAS : public SingleBenchmark {
 	public:
 		double run(int );
 	};
 
-	class CompilerMatMult : public SingleBenchmark {
+	class Daxpy : public SingleBenchmark {
+	public:
+		double run(int );
+	};
+
+	class DaxpyUBLAS : public SingleBenchmark {
+	public:
+		double run(int );
+	};
+
+	class DaxpyCBLAS : public SingleBenchmark {
+	public:
+		double run(int );
+	};
+
+	class MatMult : public SingleBenchmark {
 	public:
 		double run(int );
 	};

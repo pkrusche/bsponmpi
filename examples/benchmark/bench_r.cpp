@@ -67,7 +67,7 @@ _t positive_random_number (int n) {
 
 /** measure the time for n axpy operations on type _t */
 template <class _t>
-double measure_axpy_rate(int n) {
+double measure_dot_rate(int n) {
 	int i,j, dummy=0;
 	double time_clockA, time_clockB;
 	_t dot_product1 = 0;
@@ -119,7 +119,7 @@ inline _t & matrix_el (int n, _t* m, int i, int j) {
 
 /** measure the flop rate of matrix multiplication for 2 nxn matrices */
 template <class _t>
-double measure_matmul_mflops(int n) {
+double measure_matmul_rate(int n) {
 	int i,j,k,o;
 	_t *matA, *matB, *matC, s,fool_optimiser;
 	double time_clockA, time_clockB;
@@ -170,15 +170,19 @@ double measure_matmul_mflops(int n) {
 		(2*S_MAT_OVERSAMPLE*n*n*n) / time_clockB) * 1e-6;
 }
 
+double benchmark::Dot::run(int n) {
+	return measure_dot_rate<double>(n);
+}
+
 /** measure dot product rate with ublas */
-template <class _t>
-double measure_axpy_rate_ublas(int n) {
+double benchmark::DotUBLAS::run(int n) {
 	double time0, time1;
-	boost::numeric::ublas::vector<_t> v1 (n), v2 (n);
-	_t dot_product1 = 0;
+	boost::numeric::ublas::vector<double> v1 (n), v2(n);
+	double dot_product1 = 0;
 	
 	for (int j = 0; j < n; ++j) {
-		v1 ( j ) = positive_random_number <_t> (n) ;
+		v1 ( j ) = positive_random_number <double> (n) ;
+		v2 ( j ) = positive_random_number <double> (n) ;
 	}
 	
 	time0 = bsp_time();
@@ -196,7 +200,7 @@ double measure_axpy_rate_ublas(int n) {
 }
 
 /** measure dot product rate with cblas */
-double measure_daxpy_rate_cblas(int n) {
+double benchmark::DotCBLAS::run(int n) {
 	int i,j, dummy=0;
 	double time_clockA, time_clockB;
 	double dot_product1 = 0;
@@ -236,18 +240,116 @@ double measure_daxpy_rate_cblas(int n) {
 	return (double) (S_DOT_OVERSAMPLE*n) / time_clockB * 1e-6;	
 }
 
-double benchmark::CompilerDAXPYs::run(int n) {
-	return measure_axpy_rate<double>(n);
+double benchmark::Daxpy::run(int n) {
+	int i,j, dummy=0;
+	double time_clockA, time_clockB;
+	double dot_product1 = 1.0;
+	double *vecA;
+	double *vecB;
+
+	vecA = (double *)bsp_calloc( n, sizeof(double) );
+	vecB = (double *)bsp_calloc( n, sizeof(double) );
+
+	if (vecA==NULL || vecB==NULL) {
+		throw std::runtime_error("Failed to allocate vector for dot product used in S");
+	}
+
+	for (i=0; i < n; i++) {
+		vecA[i] = positive_random_number <double> ( n );
+		vecB[i] = positive_random_number <double> ( n );
+	}
+
+	time_clockA = bsp_time();
+	for (i=0;i<S_DOT_OVERSAMPLE;i++) {
+		dot_product1+= vecA[0];
+		for (int j = 0; j < n; ++j) {
+			vecA[j]+= dot_product1*vecB[j];
+		}
+	}
+	time_clockB = bsp_time();
+
+	if ( dot_product1 > 0 ) {
+		/* Need this conditional, otherwise the optimiser might remove the
+		dot-product as it isn't used in the code from here on */
+		time_clockB = time_clockB - time_clockA;
+	} else {
+		throw std::runtime_error("Daxpy product computation gave an incorrect result.");
+	}
+
+	bsp_free(vecA);
+	bsp_free(vecB);
+
+	/* 2 flops * over_sample * scale factor * dot_product_size */
+	return (double) (S_DOT_OVERSAMPLE*n) / time_clockB * 1e-6;	
 }
 
-double benchmark::uBLASDAXPYs::run(int n) {
-	return measure_axpy_rate_ublas<double>(n);
+double benchmark::DaxpyUBLAS::run(int n) {
+	double time0, time1;
+	boost::numeric::ublas::vector<double> v1 (n), v2 (n);
+	double dot_product1 = 1;
+	
+	for (int j = 0; j < n; ++j) {
+		v1 ( j ) = positive_random_number <double> (n) ;
+		v2 ( j ) = positive_random_number <double> (n) ;
+	}
+	
+	time0 = bsp_time();
+	for ( int o = 0; o < S_DOT_OVERSAMPLE; o++) {
+		dot_product1 = v1(0);
+		v1+= dot_product1*v2;
+	}	
+	time1 = bsp_time();
+	
+	if (dot_product1 >= 0) {
+		time1-= time0;
+	} else {
+		throw std::runtime_error("Dot product computation gave an incorrect result.");		
+	}
+	return ((double)S_DOT_OVERSAMPLE*n) / time1 * 1e-6;
 }
 
-double benchmark::CBLASDAXPYs::run(int n) {
-	return measure_daxpy_rate_cblas(n);
+double benchmark::DaxpyCBLAS::run(int n) {
+	int i,j, dummy=0;
+	double time_clockA, time_clockB;
+	double dot_product1 = 1.0;
+	double *vecA;
+	double *vecB;
+
+	vecA = (double *)bsp_calloc( n, sizeof(double) );
+	vecB = (double *)bsp_calloc( n, sizeof(double) );
+
+	if (vecA==NULL || vecB==NULL) {
+		throw std::runtime_error("Failed to allocate vector for dot product used in S");
+	}
+
+	for (i=0; i < n; i++) {
+		vecA[i] = positive_random_number <double> ( n );
+		vecB[i] = positive_random_number <double> ( n );
+	}
+
+	time_clockA = bsp_time();
+	for (i=0;i<S_DOT_OVERSAMPLE;i++) {
+		dot_product1+= vecA[0];
+		cblas_daxpy(n, dot_product1, vecA, 1, vecB, 1);
+	}
+	time_clockB = bsp_time();
+
+	if ( dot_product1 > 0 ) {
+		/* Need this conditional, otherwise the optimiser might remove the
+		dot-product as it isn't used in the code from here on */
+		time_clockB = time_clockB - time_clockA;
+	} else {
+		throw std::runtime_error("Daxpy product computation gave an incorrect result.");
+	}
+
+	bsp_free(vecA);
+	bsp_free(vecB);
+
+	/* 2 flops * over_sample * scale factor * dot_product_size */
+	return (double) (S_DOT_OVERSAMPLE*n) / time_clockB * 1e-6;	
 }
 
-double benchmark::CompilerMatMult::run(int n) {
-	return measure_matmul_mflops<double>(n);
+
+double benchmark::MatMult::run(int n) {
+	return measure_matmul_rate<double>(n);
 }
