@@ -91,15 +91,15 @@ namespace bsp {
 			factory = ContextFactoryPtr (
 				new ContextFactory< bsp_context_t >
 				(this) );
-			mapper = new bsp::TaskMapper (processors, factory);
+			_context::set_task_mapper ( new bsp::TaskMapper (processors, factory) );
 		}
 
 		~Runner () {
-			delete mapper;
+			delete _context::get_mapper();
 		}
 
 		void run() {
-			parentcontext = this;
+			_context::parentcontext = this;
 			bsp_context_t::run();
 		}
 
@@ -110,7 +110,7 @@ namespace bsp {
 			ASSERT (bsp_is_node_level());
 
 			ComputationSpawnTask & root = *new( tbb::task::allocate_root() ) 
-				ComputationSpawnTask ( mapper );
+				ComputationSpawnTask ( _context::mapper );
 
 			tbb::task::spawn_root_and_wait (root);
 		}
