@@ -45,7 +45,7 @@ void bsp::ContextImpl::process_memoryreg_ops(TaskMapper * mapper, int reg_req_si
 	vr.resize(g_bsp.nprocs * reg_req_size * ppn);
 
 	for (int lp = 0; lp < mapper->procs_this_node(); ++lp) {
-		ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(lp).get_impl());
+		ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(lp)->get_impl());
 		int o = lp * reg_req_size;
 		int r = 0;
 		while (!cimpl->reg_requests.empty()) {
@@ -66,7 +66,7 @@ void bsp::ContextImpl::process_memoryreg_ops(TaskMapper * mapper, int reg_req_si
 		int push_or_pop = -1;
 
 		for (int llp = 0; llp < mapper->procs_this_node(); ++llp) {
-			ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(llp).get_impl());
+			ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(llp)->get_impl());
 			int my_local_pid = cimpl->local_pid;
 
 			MemoryRegister reg;
@@ -138,7 +138,7 @@ void bsp::ContextImpl::process_memoryreg_ops(TaskMapper * mapper, int reg_req_si
 		}
 	}
 	for (int llp = 0; llp < mapper->procs_this_node(); ++llp) {
-		ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(llp).get_impl());
+		ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(llp)->get_impl());
 		memoryRegister_pack(&cimpl->memory_register);
 	}
 }

@@ -45,6 +45,7 @@ namespace utilities {
 	public:
 		HeaderQueue() {
 			SpecInfo info;
+			info.req = ReqInfo();
 			fixedElSizeTable_initialize(
 				&tbl, 1, BSP_REQTAB_MIN_SIZE, sizeof(_header), info );
 			start = 0;

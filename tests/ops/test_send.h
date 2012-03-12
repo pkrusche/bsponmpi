@@ -42,10 +42,10 @@ public:
 		var3 = 0;
 	}
 
-	static void run( int processors ) {
+	void run( ) {
 		using namespace std;
 		TestSend c;
-		BSP_SCOPE(TestSend, c, processors);
+		BSP_SCOPE(TestSend);
 		BSP_BEGIN();
 
 		myval[0] = -1;

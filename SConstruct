@@ -277,10 +277,10 @@ Export(['root', 'bsp', 'sequential' , 'libsuffix', 'runtests'])
 
 SConscript('src/SConscript')
 
-#SConscript('tests/SConscript')
+SConscript('tests/SConscript')
 
 SConscript('examples/SConscript')
-#SConscript('examples/bspedupack/SConscript')
-#SConscript('examples/mpiedupack/SConscript')
-#SConscript('examples/bspedupack++/SConscript')
-#SConscript('examples/benchmark/SConscript')
+SConscript('examples/bspedupack/SConscript')
+SConscript('examples/mpiedupack/SConscript')
+SConscript('examples/bspedupack++/SConscript')
+SConscript('examples/benchmark/SConscript')

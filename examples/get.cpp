@@ -24,10 +24,9 @@ public:
 		myval3 = -1;
 	}
 
-	static void run( int processors ) {
+	void run( ) {
 		using namespace std;
-		MyContext r;
-		BSP_SCOPE(MyContext, r, processors);
+		BSP_SCOPE(MyContext);
 
 		BSP_BEGIN();
 
@@ -87,7 +86,7 @@ int main (int argc, char** argv) {
 	// Things from here on are node-level SPMD. 
 	// You'll have as many processes as there are
 	// available via MPI.
-	int recursive_processors = 2;
+	int processors = 2;
 
 	/** This is how we read and parse command line options */
 	try {
@@ -103,7 +102,7 @@ int main (int argc, char** argv) {
 
 		bsp_command_line(argc, argv, opts, vm);
 
-		recursive_processors = vm["procs"].as<int>();
+		processors = vm["procs"].as<int>();
 	} catch (std::exception e) {
 		string s = e.what();
 		s+= "\n";
@@ -113,9 +112,8 @@ int main (int argc, char** argv) {
 
 
 	try {
-		MyContext::run( recursive_processors );
-
-		bsp_end();
+		bsp::Runner<MyContext> r (processors);
+		r.run();
 
 	} catch (std::runtime_error e) {
 		string s = string ("BSP Application runtime error: ") + e.what();

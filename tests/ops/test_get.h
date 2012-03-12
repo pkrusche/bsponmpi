@@ -42,10 +42,9 @@ public:
 		var3 = 0;
 	}
 
-	static void run( int processors ) {
+	void run() {
 		using namespace std;
-		TestGet c;
-		BSP_SCOPE(TestGet, c, processors);
+		BSP_SCOPE(TestGet);
 		BSP_BEGIN();
 
 		bsp_push_reg(&var1, sizeof (int));

@@ -42,9 +42,6 @@ information.
 
 //#define _DEBUGSUPERSTEPS
 
-BSPObject bsp::ContextImpl::g_bsp; ///< node-level bsp object
-int bsp::ContextImpl::g_bsp_refcount = 0; ///< node level BSP object reference count
-
 #define	CM_REQUEST_COUNT	0
 #define	CM_MESSAGE_COUNT	1
 #define CM_FLAGS			2
@@ -57,18 +54,9 @@ int bsp::ContextImpl::g_bsp_refcount = 0; ///< node level BSP object reference c
  */
 bsp::ContextImpl::ContextImpl(bsp::TaskMapper * tm, int lpid) 
 	: mapper (tm), any_hp(false), local_pid(lpid) {
-	if (g_bsp_refcount <= 0) {
-		g_bsp_refcount = 1;
-		bspx_init_bspobject(&g_bsp, ::bsp_nprocs(), ::bsp_pid());
-
-		/* clear the buffers */			
-		deliveryTable_reset(&g_bsp.delivery_table);
-		deliveryTable_reset(&g_bsp.delivery_received_table);
-
-	} else {
-		g_bsp_refcount++;
-	}
 	global_pid = tm->local_to_global_pid(lpid);
+	deliveryTable_reset(&g_bsp.delivery_table);
+	deliveryTable_reset(&g_bsp.delivery_received_table);
 	memoryRegister_initialize( &memory_register, mapper->nprocs(), 1, global_pid );
 }
 
@@ -77,10 +65,6 @@ bsp::ContextImpl::ContextImpl(bsp::TaskMapper * tm, int lpid)
  */
 bsp::ContextImpl::~ContextImpl() {
 	memoryRegister_destruct(&memory_register);
-	g_bsp_refcount--;
-	if (g_bsp_refcount <= 0) {
-		bspx_destroy_bspobject(&g_bsp);
-	}
 }
 
 /**
@@ -95,7 +79,7 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 	/* Step 1. exchange communication matrix.                               */
 	/************************************************************************/
 	for (int lp = 0; lp < mapper->procs_this_node(); ++lp) {
-		ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(lp).get_impl());
+		ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(lp)->get_impl());
 
 		/* here we also carry out all local deliveries */
 		cimpl->localDeliveries.execute();
@@ -342,7 +326,7 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 					" for lp " << *((int*)message) << std::endl;
 				std::cout.flush();
 #endif
-			ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(lp).get_impl());
+			ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(lp)->get_impl());
 			cimpl->localDeliveries.hpsend(tag, ((int*)message)+1, bytes-sizeof(int));
 
 			bytes = bspx_hpmove(&g_bsp, &tag, &message);
@@ -350,7 +334,7 @@ void bsp::ContextImpl::bsp_sync( TaskMapper * mapper ) {
 	}
 
 	for (int lp = 0; lp < mapper->procs_this_node(); ++lp) {
-		ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(lp).get_impl());
+		ContextImpl * cimpl = (ContextImpl *)(mapper->get_context(lp)->get_impl());
 		cimpl->localDeliveries.bsmp_messagequeue_sync();			
 	}
 

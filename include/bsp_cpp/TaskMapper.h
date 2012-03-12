@@ -37,7 +37,7 @@ namespace bsp {
 		/**
 		 * create a context for a given bsp pid
 		 */
-		virtual Context * create ( TaskMapper & , int bsp_pid ) = 0;
+		virtual Context * create ( TaskMapper * , int bsp_pid ) = 0;
 
 		/**
 		 * destroy a context
@@ -64,7 +64,7 @@ namespace bsp {
 		TaskMapper (int _processors, 
 			ContextFactoryPtr factory
 		) : contextfactory(factory),
-			processors (_processors) {
+			processors (_processors), step(NULL) {
 			using namespace std;
 
 			where_is_node = new int [processors];
@@ -106,10 +106,9 @@ namespace bsp {
 			// but the context implementation must need to be called at least
 			// once on every node to create static stuff
 			using namespace std;
-			context_store.resize(max (1, procs_on_this_node));
-			jmpbuf_store.resize(max (1, procs_on_this_node));
+			context_store.resize( procs_on_this_node );
 			for (int i = 0, i_end = (int)context_store.size(); i < i_end; ++i ) {
-				context_store[i] = factory->create( *this, local_to_global_pid(i) );
+				context_store[i] = factory->create( this, local_to_global_pid(i) );
 			}
 		}
 
@@ -179,8 +178,8 @@ namespace bsp {
 		/**
 		 * Get the context for a local process
 		 */
-		inline Context & get_context(int local_pid) {
-			return *(context_store[local_pid]);
+		inline Context * get_context(int local_pid) {
+			return context_store[local_pid];
 		}
 
 		/** On which node is a given logical processor running */
@@ -193,13 +192,15 @@ namespace bsp {
 			return where_is_local[global_pid];
 		}
 
-		struct jump_buffer {
-			jmp_buf env;
-		};
+		/** Running helper */
+		typedef void (*CONTEXTRUNNER)(Context *);
 
-		/** we remember the location for continuing each local pid after bsp_sync */
-		inline boost::shared_ptr<jump_buffer> & jmp_buf(int local_pid) {
-			return jmpbuf_store[local_pid];
+		void set_next_step (CONTEXTRUNNER cr) {
+			step = cr;
+		}
+
+		CONTEXTRUNNER get_next_step () {
+			return step;
 		}
 
 	protected:
@@ -214,8 +215,9 @@ namespace bsp {
 		}
 
 	private:
+		CONTEXTRUNNER step;
+
 		std::vector<Context *> context_store;
-		std::vector< boost::shared_ptr < jump_buffer > > jmpbuf_store;
 		ContextFactoryPtr contextfactory;
 
 		int * where_is_node;		///< which node contains logical processor p

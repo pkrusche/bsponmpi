@@ -53,6 +53,8 @@ extern "C" {
 #include "bsp_reqtable.h"
 #include "bsp_delivtable.h"
 #include "bsp_memreg.h"
+
+extern BSPObject g_bsp;
 };
 namespace bsp {
 
@@ -71,7 +73,6 @@ namespace bsp {
 
 	class ContextImpl {
 	public:
-
 		enum {
 			MAX_REGISTER_REQS = 0xfffffff,	///< maximum number of memory register (de-)registrations per superstep
 		};
@@ -205,7 +206,7 @@ namespace bsp {
 
 			if (n == g_bsp.rank) {
 				TSLOCK();
-				((ContextImpl*)mapper->get_context(lp).get_impl())->localDeliveries.send(
+				((ContextImpl*)mapper->get_context(lp)->get_impl())->localDeliveries.send(
 					tag, g_bsp.message_queue.send_tag_size, 
 					payload, payload_nbytes
 				);
@@ -234,7 +235,7 @@ namespace bsp {
 
 			if (n == g_bsp.rank) {
 				TSLOCK();
-				((ContextImpl*)mapper->get_context(lp).get_impl())->localDeliveries.hpsend (
+				((ContextImpl*)mapper->get_context(lp)->get_impl())->localDeliveries.hpsend (
 					tag, payload, payload_nbytes
 				);
 			} else {
@@ -276,7 +277,7 @@ namespace bsp {
 		inline void bsp_move (void * target, size_t nbytes) {
 			if (localDeliveries.bsmp_qsize() > 0) {
 				TSLOCK();
-				ASSERT (nbytes < localDeliveries.bsmp_top_size());
+				ASSERT (nbytes <= localDeliveries.bsmp_top_size());
 				memcpy (target, localDeliveries.bsmp_top_message(), nbytes);
 				localDeliveries.bsmp_advance();
 			}
@@ -343,9 +344,6 @@ namespace bsp {
 		/** each context can do its node-local deliveries independently. */
 		LocalDeliveryQueue	localDeliveries;
 
-		/** we use our own bsp object */
-		static BSPObject g_bsp;
-		static int g_bsp_refcount;
 	};
 
 };

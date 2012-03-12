@@ -353,7 +353,7 @@ digraph G {
 
 /** Packed global variables for a single BSP object. 
  ** To keep it private it is not included in bsp.h */
-static BSPObject bsp;
+BSPObject g_bsp;
 
 /** @file bsp.c 
     Implements the BSPlib primitives.
@@ -399,13 +399,13 @@ void BSP_CALLING
 	bsp_init (int * argc, char **argv[])
 {
 	// init communication
-	_BSP_INIT(argc, argv, &bsp);
+	_BSP_INIT(argc, argv, &g_bsp);
 
 	// init thread safety
 	BSP_TS_INIT();
 
 	// initialize message buffers
-	bspx_init_bspobject(&bsp, bsp.nprocs, bsp.rank);
+	bspx_init_bspobject(&g_bsp, g_bsp.nprocs, g_bsp.rank);
 }
 
 
@@ -420,7 +420,7 @@ bsp_end ()
 	BSP_TS_EXIT();
 
 	/* clean up datastructures */
-	bspx_destroy_bspobject(&bsp);
+	bspx_destroy_bspobject(&g_bsp);
 
 	_BSP_EXIT();
 }
@@ -458,7 +458,7 @@ void BSP_CALLING
 int BSP_CALLING
 	bsp_nprocs ()
 {
-	return bsp.nprocs;
+	return g_bsp.nprocs;
 }
 
 /** Returns the rank of the processor 
@@ -467,7 +467,7 @@ int BSP_CALLING
 int BSP_CALLING
 	bsp_pid ()
 {
-	return bsp.rank;
+	return g_bsp.rank;
 }
 
 /*@}*/
@@ -480,14 +480,14 @@ void BSP_CALLING
 	bsp_sync ()
 {
 	BSP_TS_LOCK();
-	bspx_sync(&bsp, _BSP_COMM0, _BSP_COMM1);
+	bspx_sync(&g_bsp, _BSP_COMM0, _BSP_COMM1);
 	BSP_TS_UNLOCK();
 }
 
 /** Free message buffer memory */
 void BSP_CALLING bsp_reset_buffers() {
 	BSP_TS_LOCK();
-	bspx_resetbuffers(&bsp);
+	bspx_resetbuffers(&g_bsp);
 	BSP_TS_UNLOCK();
 }
 
@@ -506,7 +506,7 @@ void BSP_CALLING
 	bsp_push_reg (const void *ident, size_t size)
 {
 	BSP_TS_LOCK();
-	bspx_push_reg(&bsp, ident, size);
+	bspx_push_reg(&g_bsp, ident, size);
 	BSP_TS_UNLOCK();
 }
 
@@ -518,7 +518,7 @@ void BSP_CALLING
 	bsp_pop_reg (const void *ident)
 {
 	BSP_TS_LOCK();
-	bspx_pop_reg(&bsp, ident);
+	bspx_pop_reg(&g_bsp, ident);
 	BSP_TS_UNLOCK();
 }  
 
@@ -537,7 +537,7 @@ void BSP_CALLING
 	bsp_put (int pid, const void *src, void *dst, long int offset, size_t nbytes)
 {
 	BSP_TS_LOCK();
-	bspx_put(&bsp, pid, src, dst, offset, nbytes);
+	bspx_put(&g_bsp, pid, src, dst, offset, nbytes);
 	BSP_TS_UNLOCK();
 }
 
@@ -559,7 +559,7 @@ void BSP_CALLING
 	bsp_get (int pid, const void *src, long int offset, void *dst, size_t nbytes)
 {
 	BSP_TS_LOCK();
-	bspx_get(&bsp, pid, src, offset, dst, nbytes);
+	bspx_get(&g_bsp, pid, src, offset, dst, nbytes);
 	BSP_TS_UNLOCK();
 }
 /*@}*/
@@ -579,7 +579,7 @@ void BSP_CALLING
 	bsp_send (int pid, const void *tag, const void *payload, size_t payload_nbytes)
 {
 	BSP_TS_LOCK();
-	bspx_send(&bsp, pid, tag, payload, payload_nbytes);
+	bspx_send(&g_bsp, pid, tag, payload, payload_nbytes);
 	BSP_TS_UNLOCK();
 }
 
@@ -593,7 +593,7 @@ void BSP_CALLING
 	bsp_qsize (int * RESTRICT nmessages, size_t * RESTRICT accum_nbytes)
 {
 	BSP_TS_LOCK();
-	bspx_qsize(&bsp, nmessages, accum_nbytes);
+	bspx_qsize(&g_bsp, nmessages, accum_nbytes);
 	BSP_TS_UNLOCK();
 }
 
@@ -608,7 +608,7 @@ void BSP_CALLING
 bsp_get_tag (int * RESTRICT status , void * RESTRICT tag)
 {
 	BSP_TS_LOCK();
-	bspx_get_tag(&bsp, status, tag);
+	bspx_get_tag(&g_bsp, status, tag);
 	BSP_TS_UNLOCK();
 }
 
@@ -621,7 +621,7 @@ void BSP_CALLING
 	bsp_move (void *payload, size_t reception_nbytes)
 {
 	BSP_TS_LOCK();
-	bspx_move(&bsp, payload, reception_nbytes);
+	bspx_move(&g_bsp, payload, reception_nbytes);
 	BSP_TS_UNLOCK();
 }
 
@@ -633,7 +633,7 @@ void BSP_CALLING
 	bsp_set_tagsize (size_t *tag_nbytes)
 {
 	BSP_TS_LOCK();
-	bspx_set_tagsize(&bsp, tag_nbytes);
+	bspx_set_tagsize(&g_bsp, tag_nbytes);
 	BSP_TS_UNLOCK();
 }
 
@@ -655,7 +655,7 @@ int BSP_CALLING
 {
 	int rv;
 	BSP_TS_LOCK();
-	rv = bspx_hpmove(&bsp, tag_ptr, payload_ptr);
+	rv = bspx_hpmove(&g_bsp, tag_ptr, payload_ptr);
 	BSP_TS_UNLOCK();
 	return rv;
 }
@@ -673,7 +673,7 @@ int BSP_CALLING
 */
 void BSP_CALLING bsp_hpput (int pid, const void * src, void * dst, long int offset, size_t nbytes) {
 	BSP_TS_LOCK();
-	bspx_hpput(&bsp, pid, src, dst, offset, nbytes);
+	bspx_hpput(&g_bsp, pid, src, dst, offset, nbytes);
 	BSP_TS_UNLOCK();
 }
 
@@ -692,7 +692,7 @@ void BSP_CALLING bsp_hpput (int pid, const void * src, void * dst, long int offs
 */
 void BSP_CALLING bsp_hpget (int pid, const void * src, long int offset, void * dst, size_t nbytes) {
 	BSP_TS_LOCK();
-	bspx_hpget(&bsp, pid, src, offset, dst, nbytes);
+	bspx_hpget(&g_bsp, pid, src, offset, dst, nbytes);
 	BSP_TS_UNLOCK();
 }
 
@@ -703,35 +703,35 @@ void BSP_CALLING bsp_hpget (int pid, const void * src, long int offset, void * d
 
 bsp_global_handle_t BSP_CALLING bsp_global_alloc(size_t array_size) {
 	bsp_global_handle_t v;
-	v = bspx_global_alloc(&bsp, array_size);
+	v = bspx_global_alloc(&g_bsp, array_size);
 	return v;
 }
 
 void BSP_CALLING bsp_global_free(bsp_global_handle_t ptr) {
-	bspx_global_free(&bsp, ptr);
+	bspx_global_free(&g_bsp, ptr);
 }
 
 void BSP_CALLING bsp_global_get(bsp_global_handle_t src, size_t offset, void * dest, size_t size) {
 	BSP_TS_LOCK();
-	bspx_global_get(&bsp, src, offset, dest, size);
+	bspx_global_get(&g_bsp, src, offset, dest, size);
 	BSP_TS_UNLOCK();	
 }
 
 void BSP_CALLING bsp_global_put(const void * src, bsp_global_handle_t dest, size_t offset, size_t size) {
 	BSP_TS_LOCK();
-	bspx_global_put(&bsp, src, dest, offset, size);
+	bspx_global_put(&g_bsp, src, dest, offset, size);
 	BSP_TS_UNLOCK();	
 }
 
 void BSP_CALLING bsp_global_hpget(bsp_global_handle_t src, size_t offset, void * dest, size_t size) {
 	BSP_TS_LOCK();
-	bspx_global_hpget(&bsp, src, offset, dest, size);
+	bspx_global_hpget(&g_bsp, src, offset, dest, size);
 	BSP_TS_UNLOCK();	
 }
 
 void BSP_CALLING bsp_global_hpput(const void * src, bsp_global_handle_t dest, size_t offset, size_t size) {
 	BSP_TS_LOCK();
-	bspx_global_hpput(&bsp, src, dest, offset, size);
+	bspx_global_hpput(&g_bsp, src, dest, offset, size);
 	BSP_TS_UNLOCK();	
 }
 

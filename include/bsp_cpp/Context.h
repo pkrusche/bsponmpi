@@ -22,7 +22,8 @@ namespace bsp {
 	 */
 	class Context {
 	public:		
-		Context (TaskMapper * _mapper = NULL) : mapper(_mapper), impl (NULL) { }
+		Context (TaskMapper * _mapper = NULL) : mapper(_mapper), 
+			parentcontext (NULL), impl (NULL) { }
 
 		virtual ~Context() {}
 
@@ -113,74 +114,39 @@ namespace bsp {
 			return parentcontext;
 		}
 
-		/************************************************************************/
-		/* Helpers for context injection into a scope, and generic creation     */
-		/************************************************************************/
-
-		/** FUN is a function taking a Context* as its parameter */
-		typedef void (*FUN)(Context *);
-
-		/** Execute will run the runme function with this as it's argument */
-		inline void execute () {
-			runme (this);
+		/** returns true if execution is at task level */
+		inline bool bsp_is_task_level () {
+			return impl != NULL;
 		}
 
-		FUN runme;				/** We replace this when we want to run a derived 
-								    class's run method on data stored in this context.
-									Remember, you can't add any new data members in 
-									such derived classes, the mechanism here only
-									allows to inject data and inherited things upwards.
-
-									See below for declaration of run_as, which 
-									can be used to initialize runme using subclassed
-									objects.
-
-									*/
-
-		/** This function executes _runme in all contexts in our mapper */
-		inline void run_in_context ( Context::FUN _runme ) {
-			for (int j = 0;	j < mapper->procs_this_node(); ++j ) {
-				mapper->get_context (j).runme = _runme;
-			}
-			ComputationTask & root = *new( tbb::task::allocate_root() ) 
-				ComputationTask ( *mapper );
-			tbb::task::spawn_root_and_wait (root);
+		/** returns true if execution is at node level */
+		inline bool bsp_is_node_level () {
+			return impl == NULL;
 		}
 
-		/** impl helper */
+		inline void set_task_mapper (TaskMapper * _m) {
+			mapper = _m;
+		}
+
+		/************************************************************************/
+		/* Helpers for context running                                          */
+		/************************************************************************/
+
+		virtual void run () = 0;
+		
+		void execute_step () {
+			ASSERT (mapper->get_next_step());
+			mapper->get_next_step() (this);
+		}
+
+		TaskMapper * get_mapper() {
+			return mapper;
+		}
+
+		/************************************************************************/
+		/* Implementation helper                                                */
+		/************************************************************************/
 		inline void * get_impl() { return impl; }
-
-		inline void set_task_mapper(TaskMapper & _mapper) {
-			mapper = &_mapper;
-		}
-
-		/** TBB Task to run a context in a mapper */
-		class ComputationTask : public tbb::task {
-		public:
-			ComputationTask( TaskMapper & _mapper, int _pid = -1 ) : 
-			  mapper (_mapper), my_pid (_pid) {}
-
-			  tbb::task * execute() {
-				  if (my_pid < 0) {
-					  tbb::task_list tl;
-
-					  for (int t = 0, e=mapper.procs_this_node(); t < e; ++t) {
-						  ComputationTask & tsk = *new ( allocate_child() ) 
-							  ComputationTask ( mapper, t );
-						  tl.push_back(tsk);
-					  }
-					  set_ref_count( mapper.procs_this_node() + 1 );
-					  spawn_and_wait_for_all(tl);
-				  } else {
-					  mapper.get_context(my_pid).execute();
-				  }
-				  return NULL;
-			  }
-		private:
-			TaskMapper & mapper;
-			int my_pid;
-		};
-
 
 	protected:
 		Context * parentcontext;	///< this is the parent context 		
@@ -207,7 +173,7 @@ namespace bsp {
 		ContextFactory ( Context * _parent ) : 
 			parent (_parent) {}
 
-		inline Context * create ( TaskMapper & mapper, int bsp_pid ) {
+		inline Context * create ( TaskMapper * mapper, int bsp_pid ) {
 			Context * p = new runnablecontext ();
 			p->set_task_mapper(mapper);
 			p->initialize_context( bsp_pid, parent );

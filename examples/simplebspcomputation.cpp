@@ -12,7 +12,6 @@
 /** this is a helper to make sure output doesn't get garbled */
 tbb::spin_mutex output_mutex;
 
-
 static bsp_global_handle_t h;
 
 /** When declaring BSP computations, we first declare a 
@@ -37,42 +36,13 @@ public:
 		counter = ((MyContext*)get_parent_context())->counter;
 	}
 
-protected:
-
-	/**
-	 * We can make functions which are called from within the 
-	 * supersteps, but they need to be class member to get access
-	 * to the correct bsp_... functions.
-	 */
-	void print_info () {
-		using namespace std;
-		tbb::spin_mutex::scoped_lock l (output_mutex);
-		cout << "Hi, I am processor " << bsp_pid()+1 << " of " << bsp_nprocs() << endl;
-	}
-
-	/** Members must be public or protected, since BSP_BEGIN et al. 
-	 *  rely on them being accessible to subclasses */
-	int counter;
-};
-
-/** Once we have a context, we define a computation on that context */
-class MyComputation : public bsp::Computation<MyContext> {
-public:
-	MyComputation (int _processors) : processors (_processors) {}
-	
+	/** This is the overloaded run method. */
 	void run() {
 		using namespace std;
+		/** the first line of executed code MUST BE like this. */
+		BSP_SCOPE(MyContext);
 
-		/** we can still do stuff on node level here. like allocate 
-		 *  global memory. Note that bsp_pushreg doesn't fall into 
-		 *  this category, this, we want to do after BSP_BEGIN (if
-		 *  the memory should be local to tasks rather than nodes, 
-		 *  that is).
-		 */
-		h = bsp_global_alloc(processors * sizeof(int));
-		::bsp_sync();
-
-		BSP_BEGIN(processors)
+		BSP_BEGIN();
 
 		/** 
 		 * Things from here on are task-level SPMD. 
@@ -99,14 +69,26 @@ public:
 		}
 
 		BSP_END();
-
-		bsp_global_free(h);
 	}
-	
-private:
-	int processors;
-};
 
+
+protected:
+
+	/**
+	 * We can make functions which are called from within the 
+	 * supersteps, but they need to be class member to get access
+	 * to the correct bsp_... functions.
+	 */
+	void print_info () {
+		using namespace std;
+		tbb::spin_mutex::scoped_lock l (output_mutex);
+		cout << "Hi, I am processor " << bsp_pid()+1 << " of " << bsp_nprocs() << endl;
+	}
+
+	/** Members must be public or protected, since BSP_BEGIN et al. 
+	 *  rely on them being accessible to subclasses */
+	int counter;
+};
 
 /**
  * Main function
@@ -118,6 +100,7 @@ int main (int argc, char** argv) {
 	// Things from here on are node-level SPMD. 
 	// You'll have as many processes as there are
 	// available via MPI.
+
 	int processors = 2;
 
 	/** This is how we read and parse command line options */
@@ -141,8 +124,19 @@ int main (int argc, char** argv) {
 		bsp_abort(s.c_str());
 	}
 	
-	MyComputation comp(processors);
-	comp.run();
+	/** we can still do stuff on node level here. like allocate 
+	 *  global memory. Note that bsp_pushreg doesn't fall into 
+	 *  this category, this, we want to do after BSP_BEGIN (if
+	 *  the memory should be local to tasks rather than nodes, 
+	 *  that is).
+	 */
+	h = bsp_global_alloc(processors * sizeof(int));
+	::bsp_sync();
+
+	bsp::Runner<MyContext> r (processors);
+	r.run();
+
+	bsp_global_free(h);
 
 	bsp_end();
 }

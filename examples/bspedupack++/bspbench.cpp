@@ -31,18 +31,12 @@ public:
 
 	int destproc[MAXH], destindex[MAXH];
 
-	void init() {
+	void run( ) {
+		BSP_SCOPE( BSPBench );		
+		BSP_BEGIN();
 		/**** Determine p ****/
 		p= bsp_nprocs(); /* p = number of processors obtained */
 		s= bsp_pid();    /* s = processor number */
-	}
-
-	static void run( int processors ) {
-		BSPBench b;
-		b.init();
-		BSP_SCOPE(BSPBench, b, processors);
-		
-		BSP_BEGIN();
   
 		Time= new double [p]; bsp_push_reg(Time,p*SZDBL);
 		BSP_SYNC();
@@ -219,7 +213,7 @@ int main(int argc, char **argv) {
 	// Things from here on are node-level SPMD. 
 	// You'll have as many processes as there are
 	// available via MPI.
-	int recursive_processors = 2;
+	int processors = 2;
 	double warmuptime = 2.0;
 
 	/** This is how we read and parse command line options */
@@ -239,7 +233,7 @@ int main(int argc, char **argv) {
 
 		bsp_command_line(argc, argv, opts, vm);
 
-		recursive_processors = vm["procs"].as<int>();
+		processors = vm["procs"].as<int>();
 		warmuptime = vm["warmup"].as<double>();
 	} catch (std::runtime_error e) {
 		string s = e.what();
@@ -248,7 +242,7 @@ int main(int argc, char **argv) {
 	}
 
 	bsp_warmup ( warmuptime );
-	BSPBench :: run(recursive_processors);
+	bsp::Runner<BSPBench>(processors).run();
     
 	bsp_end();
 } /* end main */
