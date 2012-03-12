@@ -6,8 +6,10 @@
 #ifndef __Context_H__
 #define __Context_H__
 
-#include <tbb/task.h>
 #include <stdexcept>
+#include <list>
+
+#include <tbb/task.h>
 
 #include "TaskMapper.h"
 
@@ -19,8 +21,8 @@ namespace bsp {
 	 * Implementation in bsp_context.cpp
 	 */
 	class Context {
-	public:
-		Context (TaskMapper * _mapper = NULL) : mapper(_mapper), impl (NULL) {}
+	public:		
+		Context (TaskMapper * _mapper = NULL) : mapper(_mapper), impl (NULL) { }
 
 		virtual ~Context() {}
 
@@ -70,18 +72,12 @@ namespace bsp {
 
 		/** 
 		 *  When this object was created through the context factory, 
-		 *  bsp_sync() will throw an error, we need to use BSP_SYNC 
-		 *  to split tasks up.
-		 *  
-		 *  @param local this will determine whether we call a global or local synchronization
-		 *   
-		 *  If this is called with local == true, then we synchronize only 
-		 *  communication between context tasks.
-		 *  
-		 *  Otherwise, we assume that we are at node level and call 
-		 *  ::bsp_sync()
+		 *  bsp_sync() is not valid, since we need to split tasks up into
+		 *  individual supersteps ( only one thread should call ::bsp_sync()
+		 *  in a given superstep ).
+		 *  In debug mode, we check this using an assertion.
 		 */
-		void bsp_sync( bool local = false );
+		void bsp_sync();
 
 		void bsp_reset_buffers();
 
@@ -186,12 +182,14 @@ namespace bsp {
 		};
 
 
-	private:
-		Context * parentcontext;	///< this is the parent context 
+	protected:
+		Context * parentcontext;	///< this is the parent context 		
+		
 		TaskMapper*  mapper;		///< The process mapper object for this context
+				
 		int pid;		///< The global pid of this computation
 		int local_pid;	///< The local pid of this computation
-
+	private:
 		void * impl;    ///< Implementation specific stuff
 	};
 
@@ -204,6 +202,8 @@ namespace bsp {
 	template <class runnablecontext> 
 	class ContextFactory : public AbstractContextFactory {
 	public:
+		typedef runnablecontext context_t;
+		
 		ContextFactory ( Context * _parent ) : 
 			parent (_parent) {}
 
@@ -218,6 +218,8 @@ namespace bsp {
 			t->destroy_context();
 			delete (runnablecontext * ) t;
 		}
+		
+		inline Context * get_parent () { return parent; }
 
 	private:
 		Context * parent;

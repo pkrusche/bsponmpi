@@ -8,6 +8,8 @@
 #include <algorithm>
 #include <vector>
 
+#include <setjmp.h>
+
 #include <boost/shared_ptr.hpp>
 
 #include "bsp.h"
@@ -41,6 +43,11 @@ namespace bsp {
 		 * destroy a context
 		 */
 		virtual void destroy ( Context * t ) = 0;
+
+		/**
+		 * get the parent context associated with this factory
+		 */
+		virtual Context * get_parent () = 0;
 	};
 
 	/** Shortcut to shared pointer */
@@ -100,6 +107,7 @@ namespace bsp {
 			// once on every node to create static stuff
 			using namespace std;
 			context_store.resize(max (1, procs_on_this_node));
+			jmpbuf_store.resize(max (1, procs_on_this_node));
 			for (int i = 0, i_end = (int)context_store.size(); i < i_end; ++i ) {
 				context_store[i] = factory->create( *this, local_to_global_pid(i) );
 			}
@@ -185,6 +193,15 @@ namespace bsp {
 			return where_is_local[global_pid];
 		}
 
+		struct jump_buffer {
+			jmp_buf env;
+		};
+
+		/** we remember the location for continuing each local pid after bsp_sync */
+		inline boost::shared_ptr<jump_buffer> & jmp_buf(int local_pid) {
+			return jmpbuf_store[local_pid];
+		}
+
 	protected:
 		/** 
 		 * Find out where a given global processor context is held. 
@@ -198,6 +215,7 @@ namespace bsp {
 
 	private:
 		std::vector<Context *> context_store;
+		std::vector< boost::shared_ptr < jump_buffer > > jmpbuf_store;
 		ContextFactoryPtr contextfactory;
 
 		int * where_is_node;		///< which node contains logical processor p

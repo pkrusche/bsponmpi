@@ -21,6 +21,6 @@
 #include "bsp_commandline.h"
 #include "TaskMapper.h"
 #include "Context.h"
-#include "Superstep.h"
+#include "Computation.h"
 
 #endif
