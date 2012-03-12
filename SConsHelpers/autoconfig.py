@@ -77,15 +77,20 @@ def AutoConfig (root, crunner,customtests = {}):
 #include <cblas.h>
 
 int main(int argc, char ** argv) {
-
+	double * vecA, * vecB;
+	int n;
+	cblas_ddot(n, vecA, 1,vecB, 1)
 	return 0;
 }
 """, '.c')
 
 	if ret:
+		print "Found CBLAS"
 		autohdr.write("""
 #define _HAVE_CBLAS
 """)
+	else:
+		print "No CBLAS"
 
 	autohdr.write("""
 #endif /* __BSPCONFIG_H__ */

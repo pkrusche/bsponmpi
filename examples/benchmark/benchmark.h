@@ -67,20 +67,6 @@ namespace benchmark {
 		std::string description;
 	};
 
-	/** Benchmark registration helper */
-	template <class _b>
-	class BenchmarkInfoImpl : public BenchmarkInfo {
-	public:
-		BenchmarkInfoImpl(std::string const & name, std::string const & desc) {
-			description = desc;
-			BenchmarkFactory::reg (name, this);
-		}
-
-		AbstractBenchmark * create () {
-			return new _b;
-		}
-	};
-
 	/** A benchmark factory to list all possible benchmarks */
 	class BenchmarkFactory {
 	public:		
@@ -96,6 +82,20 @@ namespace benchmark {
 	private:		
 		static std::map<std::string, BenchmarkInfo * > 
 			factory_map;
+	};
+
+	/** Benchmark registration helper */
+	template <class _b>
+	class BenchmarkInfoImpl : public BenchmarkInfo {
+	public:
+		BenchmarkInfoImpl(std::string const & name, std::string const & desc) {
+			description = desc;
+			BenchmarkFactory::reg (name, this);
+		}
+
+		AbstractBenchmark * create () {
+			return new _b;
+		}
 	};
 		
 	/** This class handles benchmark data statistics */

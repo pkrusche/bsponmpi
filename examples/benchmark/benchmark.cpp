@@ -61,6 +61,8 @@ void benchmark::BenchmarkFactory::list (std::ostream & out) {
 	}
 }
 
+benchmark::BenchmarkData benchmark::BenchmarkRunner::b;
+
 /** implementation of benchmark runner */
 void benchmark::BenchmarkRunner::run() {
 	BSP_SCOPE(BenchmarkRunner);	

@@ -59,7 +59,7 @@ namespace bsp {
 		Shared (Shared const & t) : mine (false), init(t.init), data(t.data) {}
 		
 		/** operator= assigns and makes value 'mine'. */
-		_t & operator=(const _t & t) {
+		Shared<_t> & operator=(const _t & t) {
 #ifdef _DEBUG
 			if (!mine) {
 				std::cerr << "WARNING: Write access to shared variable in child context." << std::endl;
@@ -72,7 +72,7 @@ namespace bsp {
 		}
 
 		/** initialisation from Shared s makes this element dependent on s */
-		_t & operator=(const Shared<_t> & s) {
+		Shared<_t> & operator=(const Shared<_t> & s) {
 			inherit_shared_var (&s);
 			return *this;
 		}

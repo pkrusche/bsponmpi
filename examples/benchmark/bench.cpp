@@ -55,7 +55,7 @@ int main(int argc, char **argv) {
 		using namespace boost::program_options;
 		options_description opts;
 		opts.add_options()
-			("help", "produce a help message")
+			("help,h", "produce a help message")
 			("procs,p", value<int>()->default_value(2), 
 			"How many processors to recursively create.")
 			("nmin,l", value<int>()->default_value(4), 
@@ -85,6 +85,8 @@ int main(int argc, char **argv) {
 			cout << opts << endl;
 			cout << "Valid values for benchmark are: " << endl;
 			benchmark::BenchmarkFactory::list(cout);
+			bsp_end();
+			exit(0);
 		}
 
 		if (nmin > nmax
