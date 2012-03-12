@@ -37,6 +37,8 @@ public:
 		counter = ((MyContext*)get_parent_context())->counter;
 	}
 
+protected:
+
 	/**
 	 * We can make functions which are called from within the 
 	 * supersteps, but they need to be class member to get access
@@ -48,67 +50,18 @@ public:
 		cout << "Hi, I am processor " << bsp_pid()+1 << " of " << bsp_nprocs() << endl;
 	}
 
+	/** Members must be public or protected, since BSP_BEGIN et al. 
+	 *  rely on them being accessible to subclasses */
+	int counter;
+};
 
-	/**
-	 * Run function to start execution
-	 * 
-	 * Here are a few things to note.
-	 * 
-	 * - the code in this function does not have to be inside the class.
-	 *   Once MyContext is declared as a subclass of bsp::Context,
-	 *   BSP_SCOPE(...); BSP_BEGIN() works IN ANY SCOPE. 
-	 *   
-	 *   We do these things in a static member function to 
-	 *   
-	 *    a) make things look C++-ish
-	 *    b) allow static member handdown (see below)
-	 *   
-	 * - Debugging this is a little non-obvious. The code for each
-	 *   superstep is injected into local subclasses of MyContext, 
-	 *   and run on the MyContext objects belonging to each task. 
-	 *   Therefore, the scope after BSP_BEGIN is actually not the same
-	 *   scope as the one before. This is done as a workaround for until
-	 *   all C++ compilers support lambda functions/contexts.
-	 * - BSP_SYNC also creates a new scope, so you can't just do this
-	 *   within a BSP_BEGIN() block:
-	 *	 @code 
-	 *	 while ( j > 0 ) {
-	 *	    // do some BSP stuff
-	 *	    
-	 *	 	BSP_SYNC();
-	 *	 }
-	 *	 @endcode
-	 *	 
-	 *	 The right way to reproduce this behaviour is to end the block
-	 *	 first and do the loop at node level:
-	 *	 
-	 *	 @code 
-	 *	 BSP_END()
-	 *	 while ( j > 0 ) {
-	 *	    BSP_BEGIN()
-	 *	    // do some BSP stuff
-	 *	 
-	 *	    BSP_END()
-	 *	 }
-	 *	 BSP_BEGIN(MyContext, tm)
-	 *	 @endcode
-	 *  
-	 *   Things get tricky if you need variable j shown above inside the BSP_BEGIN() block.
-	 *   
-	 *   On new GCC you can hand it down by making it static within the block. Really, 
-	 *   we'd want to use a lambda function here (these allow for scope transfer), but
-	 *   not all compilers support these yet. So until they do, we're stuck with the 
-	 *   static approach (static class members always work, but have some pitfalls, 
-	 *   like multiple tasks being able to write to them).
-	 *  
-	 *   Needless to say, to minimize overhead, try avoiding this, or if you
-	 *   do it, put the while loop as far out as possible.
-	 *  
-	 */
-	static void run( int processors ) {
+/** Once we have a context, we define a computation on that context */
+class MyComputation : public bsp::Computation<MyContext> {
+public:
+	MyComputation (int _processors) : processors (_processors) {}
+	
+	void run() {
 		using namespace std;
-		MyContext c;
-		BSP_SCOPE (MyContext, c, processors);
 
 		/** we can still do stuff on node level here. like allocate 
 		 *  global memory. Note that bsp_pushreg doesn't fall into 
@@ -119,12 +72,15 @@ public:
 		h = bsp_global_alloc(processors * sizeof(int));
 		::bsp_sync();
 
-		BSP_BEGIN();
-		// Things from here on are task-level SPMD. 
-		// You'll have as many processes as allocated in the task mapper
-		// also, we inject all members of MyContext into the current
-		// scope
-		// 
+		BSP_BEGIN(processors)
+
+		/** 
+		 * Things from here on are task-level SPMD. 
+		 * You'll have as many processes as allocated in the task mapper
+		 * also, we inject all members of MyContext into the current
+		 * scope
+		 */
+
 		print_info();
 		counter = bsp_pid();
 
@@ -146,12 +102,9 @@ public:
 
 		bsp_global_free(h);
 	}
-
-
-protected:
-	/** Members must be public or protected, since BSP_BEGIN et al. 
-	 *  rely on them being accessible to subclasses */
-	int counter;
+	
+private:
+	int processors;
 };
 
 
@@ -165,7 +118,7 @@ int main (int argc, char** argv) {
 	// Things from here on are node-level SPMD. 
 	// You'll have as many processes as there are
 	// available via MPI.
-	int recursive_processors = 2;
+	int processors = 2;
 
 	/** This is how we read and parse command line options */
 	try {
@@ -181,13 +134,15 @@ int main (int argc, char** argv) {
 
 		bsp_command_line(argc, argv, opts, vm);
 
-		recursive_processors = vm["procs"].as<int>();
+		processors = vm["procs"].as<int>();
 	} catch (std::exception e) {
 		string s = e.what();
 		s+= "\n";
 		bsp_abort(s.c_str());
 	}
-	MyContext::run( recursive_processors );
+	
+	MyComputation comp(processors);
+	comp.run();
 
 	bsp_end();
 }

@@ -2,7 +2,7 @@
 Import("bsp", "libsuffix")
 
 bsp.Program('simplebspcomputation', ['simplebspcomputation.cpp'])
-bsp.Program('put', ['put.cpp'])
-bsp.Program('get', ['get.cpp'])
-bsp.Program('hpput', ['hpput.cpp'])
-bsp.Program('hpget', ['hpget.cpp'])
+#bsp.Program('put', ['put.cpp'])
+#bsp.Program('get', ['get.cpp'])
+#bsp.Program('hpput', ['hpput.cpp'])
+#bsp.Program('hpget', ['hpget.cpp'])

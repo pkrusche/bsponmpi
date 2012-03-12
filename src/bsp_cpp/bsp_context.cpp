@@ -43,11 +43,16 @@ extern "C" {
 
 void bsp::Context::initialize_context (int bsp_pid, Context * parent)  {
 	ASSERT (parent != NULL);
+	
 	parentcontext = parent;
 	local_pid = mapper->global_to_local_pid(bsp_pid);
 	pid = bsp_pid;
 	runme = NULL;	// this is initialized by the code in Runner.h
 	impl = new bsp::ContextImpl(mapper, local_pid);
+	
+	// update all shared variables from parent.
+	
+	
 	init ();
 }
 
@@ -58,18 +63,10 @@ void bsp::Context::destroy_context () {
 
 #define BSP ((ContextImpl*)impl)
 
-void bsp::Context::bsp_sync ( bool local ) {
-	if (impl != NULL) {
-		// mainly, this serves as a deterrent so programmers don't 
-		// get confused between node and task-level syncs.
-		throw std::runtime_error("When syncing in a Context, BSP_SYNC needs to be used rather than bsp_sync()");
-	} else {
-		if (local) {
-			ContextImpl::bsp_sync( mapper );
-		} else {
-			::bsp_sync();
-		}
-	}
+void bsp::Context::bsp_sync () {
+	ASSERT (!impl);	/// only the parent context can call bsp_sync.
+	ASSERT (mapper);/// we can only sync if we have a task mapper
+	ContextImpl::bsp_sync( mapper );
 }
 
 void bsp::Context::bsp_reset_buffers () {

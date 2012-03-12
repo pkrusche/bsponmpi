@@ -41,18 +41,58 @@ from a set of samples.
 
 #include "bsp_cpp/bsp_cpp.h"
 
+#include <boost/shared_ptr.hpp>
+
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp> 
 
 namespace benchmark {
-
-	class Benchmark {
+	
+	/** Abstract benchmark base class */
+	class AbstractBenchmark {
+	public:
+		/** Run on problem size n, return a rate of operations (complexity(n) / time(n)) */
+		virtual double run (int n) = 0;		
+	};
+	
+#define REGISTER_BENCHMARK(name, desc, benchmarkclass) namespace { static RegisterBenchmark g_benchreg##name<benchmarkclass> (name, desc); };
+	
+	/** A benchmark factory to list all possible benchmarks */
+	class BenchmarkFactory {
+	public:		
+		/** Create specific benchmark */
+		static Benchmark * create(std::string const & );
+		
+		/** register a new benchmark */
+		static void register (std::string const &, std::string const &, boost::shared_ptr<Benchmark>);		
+	private:
+		struct BenchmarkDesc {
+			boost::shared_ptr<Benchmark> benchmark;
+			std::string description;
+		};
+		
+		static std::map<std::string, BenchmarkDesc > 
+			factory_map;
+	};
+	
+	/** Benchmark registration helper */
+	template <class _b>
+	class RegisterBenchmark {
+	public:
+		RegisterBenchmark(std::string const & name, std::string const & desc) {
+			boost::shared_ptr<Benchmark> bmp (new _b);
+			BenchmarkFactory::register (name, desc, bmp);
+		}	
+	};
+	
+	/** This class handles benchmark data statistics */
+	class BenchmarkData {
 	public:
 		struct Sample {
 			int n;
 			double rate;
 		};
-
+		
 		/** 
 		 * Each sample has: a problem size (n), and a rate. 
 		 */
@@ -138,29 +178,24 @@ namespace benchmark {
 
 		std::vector<Sample> samples;
 	};
-	
-	class SingleBenchmark {
-	public:
-		virtual double run (int n) = 0;		
-	};
 
-	/** class to run a benchmark for various values of n */
+	/** class to run a benchmark for various values of n in a BSP context */
 	class BenchmarkRunner : public bsp::Context {
 	public:
 		public:
 			void init ();
 			
-			Benchmark & run (SingleBenchmark * b, int p, int nmin, int nmax, int step);
+			/** run a benchmark, add to benchmark data */
+			Benchmark & run (std::string const & , int p, int nmin, int nmax, int step);
 		private:
-			SingleBenchmark * bm;
-			Benchmark b;
+			static BenchmarkData b;
 			double * p_rates;
 
 			// n counter
 			static int n;
 		
 	};
-
+	
 ;}
 
 #endif // __benchmark_H__
