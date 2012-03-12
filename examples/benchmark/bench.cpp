@@ -65,7 +65,7 @@ int main(int argc, char **argv) {
 			("nstep,s", value<int>()->default_value(4), 
 			"Minimum value of n.")
 			("benchmark,b", value<string>()->default_value("daxpy"), 
-			"Which benchmark to run (daxpy/matmul).")
+			"Which benchmark to run.")
 			("warmup,w", value<double>()->default_value(2.0),
 			"How much time to warm up. (default: 2s)"
 			)
@@ -81,6 +81,12 @@ int main(int argc, char **argv) {
 		bn = vm["benchmark"].as<string>();
 		warmuptime = vm["warmup"].as<double>();
 		
+		if (vm.count ("help") > 0) {
+			cout << opts << endl;
+			cout << "Valid values for benchmark are: " << endl;
+			benchmark::BenchmarkFactory::list(cout);
+		}
+
 		if (nmin > nmax
 		|| nmin < 1 || step < 1
 		) {
@@ -94,28 +100,8 @@ int main(int argc, char **argv) {
 
 	bsp_warmup ( warmuptime );
 	
-	benchmark::BenchmarkRunner r;
-	benchmark::SingleBenchmark * which = NULL;
-	if (bn == "dot") {
-		which = new benchmark::Dot;
-	} else 	if (bn == "udot") {
-		which = new benchmark::DotUBLAS;
-	} else 	if (bn == "cdot") {
-		which = new benchmark::DotCBLAS;
-	} else	if (bn == "daxpy") {
-		which = new benchmark::Daxpy;
-	} else 	if (bn == "udaxpy") {
-		which = new benchmark::DaxpyUBLAS;
-	} else 	if (bn == "cdaxpy") {
-		which = new benchmark::DaxpyCBLAS;
-	} else if (bn == "matmul") {
-		which = new benchmark::MatMult;		
-	} else {
-		bsp_abort ("Unknown benchmark %s", bn.c_str());
-	}
-	benchmark::Benchmark & b = r.run(which, processors, nmin, nmax, step);
-
-	delete which;
+	bsp::Runner<benchmark::BenchmarkRunner> r(processors);	
+	benchmark::BenchmarkData & b = r.run_all(bn, nmin, nmax, step);
 	
 	if (bsp_pid() == 0) {
 		b.ratetable(std::cout);

@@ -55,36 +55,49 @@ namespace benchmark {
 		virtual double run (int n) = 0;		
 	};
 	
-#define REGISTER_BENCHMARK(name, desc, benchmarkclass) namespace { static RegisterBenchmark g_benchreg##name<benchmarkclass> (name, desc); };
+#define REGISTER_BENCHMARK(name, desc, benchmarkclass) void register_benchmark_##benchmarkclass() { \
+	static BenchmarkInfoImpl<benchmarkclass> benchreg##benchmarkclass (name, desc); };
 	
+	class BenchmarkInfo {
+	public:
+		virtual AbstractBenchmark * create () = 0;
+
+		std::string get_description() const { return description; }
+	protected:
+		std::string description;
+	};
+
+	/** Benchmark registration helper */
+	template <class _b>
+	class BenchmarkInfoImpl : public BenchmarkInfo {
+	public:
+		BenchmarkInfoImpl(std::string const & name, std::string const & desc) {
+			description = desc;
+			BenchmarkFactory::reg (name, this);
+		}
+
+		AbstractBenchmark * create () {
+			return new _b;
+		}
+	};
+
 	/** A benchmark factory to list all possible benchmarks */
 	class BenchmarkFactory {
 	public:		
 		/** Create specific benchmark */
-		static Benchmark * create(std::string const & );
+		static AbstractBenchmark * create(std::string const & );
 		
 		/** register a new benchmark */
-		static void register (std::string const &, std::string const &, boost::shared_ptr<Benchmark>);		
-	private:
-		struct BenchmarkDesc {
-			boost::shared_ptr<Benchmark> benchmark;
-			std::string description;
-		};
-		
-		static std::map<std::string, BenchmarkDesc > 
+		static void reg (std::string const &, BenchmarkInfo * );
+
+		/** List available benchmarks */
+		static void list (std::ostream & out);
+
+	private:		
+		static std::map<std::string, BenchmarkInfo * > 
 			factory_map;
 	};
-	
-	/** Benchmark registration helper */
-	template <class _b>
-	class RegisterBenchmark {
-	public:
-		RegisterBenchmark(std::string const & name, std::string const & desc) {
-			boost::shared_ptr<Benchmark> bmp (new _b);
-			BenchmarkFactory::register (name, desc, bmp);
-		}	
-	};
-	
+		
 	/** This class handles benchmark data statistics */
 	class BenchmarkData {
 	public:
@@ -172,7 +185,7 @@ namespace benchmark {
 				it->second.tmax = max(acc1);
 				it->second.tavg = mean(acc1);
 				it->second.err = error_of<tag::mean> (acc1); 
-				it->second.samples = it->second._samples.size();
+				it->second.samples = (int)it->second._samples.size();
 			}
 		}
 
@@ -183,18 +196,29 @@ namespace benchmark {
 	class BenchmarkRunner : public bsp::Context {
 	public:
 		public:
-			void init ();
-			
+			BenchmarkRunner() {
+				MAKE_SHARED(n);
+				MAKE_SHARED(nmin);
+				MAKE_SHARED(nmax);
+				MAKE_SHARED(bmname);
+				MAKE_SHARED(step);
+			}
+
+			void run();
+
 			/** run a benchmark, add to benchmark data */
-			Benchmark & run (std::string const & , int p, int nmin, int nmax, int step);
+			BenchmarkData & run_all (std::string const & , int , int , int );
 		private:
 			static BenchmarkData b;
 			double * p_rates;
 
 			// n counter
-			static int n;
-		
-	};
+			bsp::Shared<int> n;
+			bsp::Shared<int> nmin;
+			bsp::Shared<int> nmax;
+			bsp::Shared<std::string> bmname;
+			bsp::Shared<int> step;
+		};
 	
 ;}
 

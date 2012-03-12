@@ -39,9 +39,11 @@ and on the daxpy flop measurements from BSPEdupack.
 
 #include <boost/numeric/ublas/vector.hpp>
 
+#ifdef _HAVE_CBLAS
 extern "C" {
 #include <cblas.h>	
 };
+#endif
 
 #include "bsp_alloc.h"
 #include "bsp_cpp/bsp_cpp.h"
@@ -121,7 +123,7 @@ inline _t & matrix_el (int n, _t* m, int i, int j) {
 template <class _t>
 double measure_matmul_rate(int n) {
 	int i,j,k,o;
-	_t *matA, *matB, *matC, s,fool_optimiser;
+	_t *matA, *matB, *matC, s,fool_optimiser = 0;
 	double time_clockA, time_clockB;
 
 	matA = (_t*)bsp_calloc(n*n, sizeof(_t) );
@@ -145,7 +147,7 @@ double measure_matmul_rate(int n) {
 			for(j = 0; j < n; j++) {
 				s = 0;
 				for(k = 0; k < n ; k++) {
-					s += matrix_el(n, matA, i, j) * matrix_el(n, matB, j, k);
+					s += matrix_el(n, matA, i, j) * matrix_el(n, matB, k, j);
 				}
 				matrix_el(n, matC, i, k) = s;
 			}
@@ -199,6 +201,7 @@ double benchmark::DotUBLAS::run(int n) {
 	return ((double)S_DOT_OVERSAMPLE*n) / time1 * 1e-6;
 }
 
+#ifdef _HAVE_CBLAS
 /** measure dot product rate with cblas */
 double benchmark::DotCBLAS::run(int n) {
 	int i,j, dummy=0;
@@ -239,9 +242,10 @@ double benchmark::DotCBLAS::run(int n) {
 	/* 2 flops * over_sample * scale factor * dot_product_size */
 	return (double) (S_DOT_OVERSAMPLE*n) / time_clockB * 1e-6;	
 }
+#endif
 
 double benchmark::Daxpy::run(int n) {
-	int i,j, dummy=0;
+	int i, dummy=0;
 	double time_clockA, time_clockB;
 	double dot_product1 = 1.0;
 	double *vecA;
@@ -308,6 +312,7 @@ double benchmark::DaxpyUBLAS::run(int n) {
 	return ((double)S_DOT_OVERSAMPLE*n) / time1 * 1e-6;
 }
 
+#ifdef _HAVE_CBLAS
 double benchmark::DaxpyCBLAS::run(int n) {
 	int i,j, dummy=0;
 	double time_clockA, time_clockB;
@@ -348,7 +353,7 @@ double benchmark::DaxpyCBLAS::run(int n) {
 	/* 2 flops * over_sample * scale factor * dot_product_size */
 	return (double) (S_DOT_OVERSAMPLE*n) / time_clockB * 1e-6;	
 }
-
+#endif
 
 double benchmark::MatMult::run(int n) {
 	return measure_matmul_rate<double>(n);

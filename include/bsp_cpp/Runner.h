@@ -35,6 +35,8 @@ information.
 #include "TaskMapper.h"
 #include "Shared.h"
 
+#include <tbb/task.h>
+
 namespace bsp {
 
 	class ComputationTask : public tbb::task {

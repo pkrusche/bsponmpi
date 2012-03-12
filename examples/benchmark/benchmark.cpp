@@ -32,25 +32,50 @@ from a set of samples.
 #include "bsp_config.h"
 #include "benchmark.h"
 
-int benchmark::BenchmarkRunner::n;
+#include <iostream>
 
-void benchmark::BenchmarkRunner::init () {
-	bm = ((BenchmarkRunner*)get_parent_context())->bm;
+/** map of all benchmarks that have been registered */
+std::map<std::string, benchmark::BenchmarkInfo * > 
+	benchmark::BenchmarkFactory::factory_map;
+
+benchmark::AbstractBenchmark * benchmark::BenchmarkFactory::create(std::string const & bm) {
+	std::map<std::string, benchmark::BenchmarkInfo * >::iterator it;
+	it = factory_map.find (bm);
+	if (it == factory_map.end()) {
+		throw std::runtime_error(std::string ("Unknown benchmark: ") + bm);
+	}
+	return it->second->create();
 }
 
-benchmark::Benchmark & benchmark::BenchmarkRunner::run(benchmark::SingleBenchmark * _bm, int processors, int nmin, int nmax, int step) {
-	bm = _bm;
-	BSP_SCOPE(BenchmarkRunner, (*this), processors);
-	
+/** register a new benchmark */
+void benchmark::BenchmarkFactory::reg (std::string const & n, benchmark::BenchmarkInfo * b ) {
+	ASSERT (factory_map.find(n) == factory_map.end());
+	factory_map[n] = b;
+}
+
+void benchmark::BenchmarkFactory::list (std::ostream & out) {
+	std::map<std::string, benchmark::BenchmarkInfo * >::iterator it;
+
+	for (it = factory_map.begin(); it != factory_map.end(); ++it) {
+		out << "\t" << it->first << "\t" << it->second->get_description() << std::endl;
+	}
+}
+
+/** implementation of benchmark runner */
+void benchmark::BenchmarkRunner::run() {
+	BSP_SCOPE(BenchmarkRunner);	
 	BSP_BEGIN();
+
 	p_rates = new double [bsp_nprocs()];
 	bsp_push_reg(p_rates, sizeof(double) * bsp_nprocs());
 	BSP_END();
-	
-	for (n = nmin; n < nmax; n+= step) {
+
+	for (n = nmin; n < nmax; ((int&)n)+= step) {
 		BSP_BEGIN();
-		
+
+		AbstractBenchmark * bm = BenchmarkFactory::create(bmname);
 		double f = bm->run (n);
+		delete bm;
 
 		bsp_put(0, &f, p_rates, sizeof(double) * bsp_pid(), sizeof(double));
 
@@ -67,6 +92,14 @@ benchmark::Benchmark & benchmark::BenchmarkRunner::run(benchmark::SingleBenchmar
 	if (bsp_pid() == 0) {
 		std::cerr << std::endl;
 	}
+}
 
+/** Benchmark runner implementation */
+benchmark::BenchmarkData & benchmark::BenchmarkRunner::run_all(std::string const & _bm, int _nmin, int _nmax, int _step) {
+	nmin = _nmin;
+	nmax = _nmax;
+	step = _step;
+	bmname = _bm;
+	this->run();
 	return b;
 }

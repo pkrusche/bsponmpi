@@ -36,39 +36,50 @@ Benchmarking declarations for computation rate estimation functions.
 
 namespace benchmark {
 
-	class Dot : public SingleBenchmark {
+	class Dot : public AbstractBenchmark {
 	public:
+		double run(int );
+		REGISTER_BENCHMARK("dot", "Dot product via loop", Dot);
+	};
+
+	class DotUBLAS : public AbstractBenchmark {
+	public:
+		double run(int );
+		REGISTER_BENCHMARK("Udot", "Dot product via uBLAS", DotUBLAS);
+	};
+
+#ifdef _HAVE_CBLAS
+	class DotCBLAS : public AbstractBenchmark {
+	public:
+		double run(int );
+		REGISTER_BENCHMARK("Cdot", "Dot product via CBLAS", DotCBLAS);
+	};
+#endif
+
+	class Daxpy : public AbstractBenchmark {
+	public:
+		REGISTER_BENCHMARK("daxpy", "Vector addition via loop", Daxpy);
 		double run(int );
 	};
 
-	class DotUBLAS : public SingleBenchmark {
+	class DaxpyUBLAS : public AbstractBenchmark {
 	public:
+		REGISTER_BENCHMARK("Udaxpy", "Vector addition via uBLAS", DaxpyUBLAS);
 		double run(int );
 	};
 
-	class DotCBLAS : public SingleBenchmark {
+#ifdef _HAVE_CBLAS
+	class DaxpyCBLAS : public AbstractBenchmark {
 	public:
+		REGISTER_BENCHMARK("Cdaxpy", "Vector addition via CBLAS", DaxpyUBLAS);
 		double run(int );
 	};
+#endif
 
-	class Daxpy : public SingleBenchmark {
+	class MatMult : public AbstractBenchmark {
 	public:
 		double run(int );
-	};
-
-	class DaxpyUBLAS : public SingleBenchmark {
-	public:
-		double run(int );
-	};
-
-	class DaxpyCBLAS : public SingleBenchmark {
-	public:
-		double run(int );
-	};
-
-	class MatMult : public SingleBenchmark {
-	public:
-		double run(int );
+		REGISTER_BENCHMARK("Cdaxpy", "Matrix multiplication via IJK loop", MatMult);
 	};
 
 }

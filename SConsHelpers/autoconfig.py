@@ -73,6 +73,20 @@ def AutoConfig (root, crunner,customtests = {}):
 
 	crunner(conf, autohdr)
 
+	ret = conf.TryLink("""
+#include <cblas.h>
+
+int main(int argc, char ** argv) {
+
+	return 0;
+}
+""", '.c')
+
+	if ret:
+		autohdr.write("""
+#define _HAVE_CBLAS
+""")
+
 	autohdr.write("""
 #endif /* __BSPCONFIG_H__ */
 """)

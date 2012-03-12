@@ -36,8 +36,6 @@ Helper class to allow value sharing between contexts.
 
 #include <boost/shared_ptr.hpp>
 
-#include <tbb/spin_mutex.h>
-
 namespace bsp {
 	
 	/** this class is used to declare variables shared between 
@@ -70,19 +68,21 @@ namespace bsp {
 			mine = true;
 			init = true;
 			data = boost::shared_ptr<_t>(new _t(t));
+			return *this;
 		}
 
 		/** initialisation from Shared s makes this element dependent on s */
 		_t & operator=(const Shared<_t> & s) {
 			inherit_shared_var (&s);
+			return *this;
 		}
 		
 		void inherit_shared_var (const SharedVar * _s) {
-			ASSERT (s.init);
 			Shared<_t> const * s(dynamic_cast< Shared<_t> const * > (_s) );
+			ASSERT (s->init);
 			mine = false;
-			data = s.data;
-			init = s.init;
+			data = s->data;
+			init = s->init;
 		}
 		
 		/* convert to const _t & */
@@ -103,6 +103,25 @@ namespace bsp {
 		bool init;
 	};
 	
+	/** this class implements sharing of an equal number of variables. */
+	class SharedVariables {
+	public:
+		void operator() (SharedVar * v) {
+			svl.push_back(v);
+		}
+
+		void update(SharedVariables & vs) {
+			ASSERT (vs.svl.size() == svl.size());
+			
+			for (std::list<SharedVar*>::iterator it = svl.begin(), it2 = vs.svl.begin(); 
+					it != svl.end() && it2 != vs.svl.end(); ++it, ++it2) {
+				(*it)->inherit_shared_var( *it2 );
+			}
+		}
+	private:
+		std::list<SharedVar*> svl;
+	};
+
 };
 
 #endif

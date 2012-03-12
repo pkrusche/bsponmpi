@@ -9,9 +9,8 @@
 #include <stdexcept>
 #include <list>
 
-#include <tbb/task.h>
-
 #include "TaskMapper.h"
+#include "Shared.h"
 
 namespace bsp {
 
@@ -155,9 +154,14 @@ namespace bsp {
 				
 		int pid;		///< The global pid of this computation
 		int local_pid;	///< The local pid of this computation
+		SharedVariables context_sharing;
 	private:
+
 		void * impl;    ///< Implementation specific stuff
 	};
+
+/** Shortcut to share variables in a context constructor */
+#define MAKE_SHARED(var) do {this->context_sharing (&var);} while(0)
 
 	/**
 	 * Factory template which passes TaskMapper, pid and parent context 
