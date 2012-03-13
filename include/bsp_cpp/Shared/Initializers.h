@@ -61,6 +61,9 @@ namespace bsp {
 		std::vector<_var> & const vars;
 	};
 
+#include "init_dummy.inl"
+#include "init_assign.inl"
+
 }
 
 #endif // __initializers_H__
