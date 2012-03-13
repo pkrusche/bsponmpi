@@ -19,6 +19,7 @@ files = [
 	'bsp_cpp/bsp_context_ts.cpp',
 	'bsp_cpp/bsp_contextimpl.cpp',
 	'bsp_cpp/bsp_contextimpl_memreg.cpp',
+	'bsp_cpp/bsp_sharedvariableset.cpp',
 ]
 
 if not sequential:

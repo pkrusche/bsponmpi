@@ -21,10 +21,11 @@ information.
 */
 
 
-/** @file bsp_test_collectives.c
+/** @file bsp_test_cpp_collectives.cpp
 
 @author Peter Krusche
 */
+
 
 #include "bsp.h"
 #include "bsp_level1.h"
@@ -32,26 +33,32 @@ information.
 #include <stdio.h>
 #include <assert.h>
 
-#define MIN(l,r) (((l) < (r)) ? (l) : (r))
-#define MAX(l,r) (((l) < (r)) ? (r) : (l))
+#include <algorithm>
 
-void min_op (void * res, void *l, void * r, int* nbytes) {
-	assert (*nbytes == sizeof(int));
-	*((int*)res) = MIN(*((int*)l), *((int*)r));
-}
+struct min_op {
+	int operator() (int l, int r) {
+		using namespace std;
+		return min(l, r);
+	}
+};
 
-void max_op (void * res, void *l, void * r, int* nbytes) {
-	assert (*nbytes == sizeof(int));
-	*((int*)res) = MAX(*((int*)l), *((int*)r));
-}
+struct max_op {
+	int operator() (int l, int r) {
+		using namespace std;
+		return max(l, r);
+	}
+};
 
-void sum_op (void * res, void *l, void * r, int* nbytes) {
-	assert (*nbytes == sizeof(int));
-	*((int*)res) = (*((int*)l) + *((int*)r));
-}
+struct sum_op {
+	int operator() (int l, int r) {
+		using namespace std;
+		return l + r;
+	}
+};
 
 
 int main(int argc, char **argv) {
+	using namespace bsp;
 	int min = -1, max = -1, sum = -1;
 	int j, sj, l;
 	int q = 25;
@@ -63,22 +70,28 @@ int main(int argc, char **argv) {
 	/** 1. Test broadcast from every processor */
 	sj = 0;
 	for (l = 0; l < bsp_nprocs(); ++l) {
+		std::string s = "ABC";
 		q = 0;
 		sj+= l; // for later
 		if (j == l) {
+			s = "dabs";
 			q = -1;
 		}
 
-		bsp_broadcast(l, &q, sizeof(int));
+		bsp_broadcast (l, q);
+		bsp_broadcast (l, s);
+
+		printf ("%i %i %s\n", j, q, s.c_str());
 
 		assert (q == -1);
-	}
+		assert (s == "dabs");
+	}	
 
 	/** 2. Test fold. */
 
-	bsp_fold(min_op, &j, &min, sizeof(int));
-	bsp_fold(max_op, &j, &max, sizeof(int));
-	bsp_fold(sum_op, &j, &sum, sizeof(int));
+	bsp_fold<int, min_op> (j, min);
+	bsp_fold<int, max_op> (j, max);
+	bsp_fold<int, sum_op> (j, sum);
 
 	printf("%i %i %i %i %i\n", j, sj, min, max, sum);
 	fflush(stdout);
@@ -92,3 +105,4 @@ int main(int argc, char **argv) {
 	bsp_end();
 	return 0;
 }
+

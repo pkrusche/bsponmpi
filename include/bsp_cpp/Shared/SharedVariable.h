@@ -21,46 +21,43 @@ information.
 */
 
 
-/** @file initializers.h
+/** @file SharedVariable.h
 
 @author Peter Krusche
 */
-#ifndef __initializers_H__
-#define __initializers_H__
 
-#include <tbb/blocked_range.h>
+#ifndef __SharedVariable_H__
+#define __SharedVariable_H__
+
+#include <tbb/parallel_reduce.h>
+#include <tbb/parallel_for.h>
+
+#include "Shared.h"
+
+#include "Initializers.h"
+#include "Reducers.h"
 
 namespace bsp {
 
-	/** Generic initializer which is usable in tbb::parallel_for 
-	 * 
-	 * Takes a variable type and an initializer of this form:
-	 * 
-	 * @code
-	 * struct _init {
-	 *		void operator () (const var & input, _var & v) {
-	 *			// do something to v
-	 *		}
-	 * }
-	 * @end
-	 *
-	 */
-	template <class _var, class _init>
-	struct Initializer {
-		Initializer ( const _var & _input, 
-			std::vector<_var> & _vars ) : input(_input), vars(_vars) {} 
-
-		void operator()( const tbb::blocked_range<size_t>& r ) const { 
-			for( size_t i = r.begin(); i != r.end(); ++i ) {
-				i( input, vars[i] );
-			}
-		} 
-
-		static const _init i;
-		const _var & input;
-		std::vector<_var> & const vars;
+	/** Node-local shared variable implementation */
+	template <class _init, class _red>
+	class SharedVariable : public SharedInit {
+	public:
+		/** Run initializer in tbb parallel for */
+		bool initialize() {
+			Initializer<Shared*, _init> i (this, vars);
+			tbb::parallel_for( tbb::blocked_range<size_t> (0, vars.size() - 1), i );
+			return true;
+		}
+		
+		/** Run reducer in tbb parallel for */
+		bool reduce() {
+			Reducer<Shared*, _red> r (vars);
+			tbb::parallel_reduce( tbb::blocked_range<size_t> (0, vars.size() - 1), i );
+			return true;
+		}		
 	};
+};
 
-}
 
-#endif // __initializers_H__
+#endif // __SharedVariable_H__

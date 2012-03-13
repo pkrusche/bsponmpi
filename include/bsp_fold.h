@@ -27,6 +27,9 @@
 #include "bsp.h"
 #include "bsp_alloc.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 #ifdef _HAVE_MPI
 
 #ifdef __cplusplus
@@ -48,11 +51,14 @@ inline void bsp_fold( void (*op)(void*,void*,void*,int*),
 	int procs = bsp_nprocs();
 	
 	if (procs > 1) {
-		alldata = (char*)bsp_malloc(nbytes*procs, 1);
+		alldata = (char*)bsp_malloc(procs, nbytes);
 		MPI_Allgather(src, nbytes, MPI_BYTE, alldata, nbytes, MPI_BYTE, bsp_communicator);
 
-		for (j = 0; j < procs - 1; ++j) {
+		for (j = 0; j < procs-1; ++j) {
+			// the memcpy is making sure we are safe if op cannot have
+			// the same result and input
 			op (dst, alldata + nbytes*j, alldata + nbytes*(j+1), &nbytes);
+			memcpy(alldata + nbytes*(j+1), dst, nbytes);
 		}
 
 		bsp_free(alldata);		
@@ -73,19 +79,21 @@ static inline void bsp_fold( void (*op)(void*,void*,void*,int*),
 
 #ifdef __cplusplus
 
+namespace bsp {
+
 template<typename _t, typename _reduce>
-void bsp_fold( _t & src, _t & dst ) {
+void bsp_fold(_t & src, _t & dst ) {
 	struct Fop {
 		static void foldop (void * res, void * left, void * right, int *nbytes) {
 			ASSERT(*nbytes == sizeof(_t));
 			static _reduce r;
-			*((_t*) res) = r (  *((_t*) left), *((_t*) right) )
+			*((_t*) res) = r (  *((_t*) left), *((_t*) right) );
 		}
 	};
 	
-	bsp_fold (&Fop::foldop, &src, &dst, sizeof(t));
+	::bsp_fold (&Fop::foldop, &src, &dst, sizeof(_t));
 }
-
+};
 #endif
 
 #endif

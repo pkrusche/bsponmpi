@@ -33,7 +33,6 @@ information.
 
 #include "Context.h"
 #include "TaskMapper.h"
-#include "Shared.h"
 
 #include <tbb/task.h>
 
