@@ -27,6 +27,9 @@
 
 #include "bsp.h"
 
+#include <stdlib.h>
+#include <string.h>
+
 #ifdef _HAVE_MPI
 #include "mpi.h"
 
