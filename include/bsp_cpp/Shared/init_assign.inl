@@ -23,8 +23,12 @@
 #ifndef __BSP_INIT_ASSIGN_INL__
 #define __BSP_INIT_ASSIGN_INL__
 
+/** Initialisation by assignment */
+template <class _t>
 struct InitAssign {
-	
+	void operator() (const _t & in, _t & out) const  {
+		out = in;
+	}
 };
 
 #endif

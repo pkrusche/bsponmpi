@@ -61,6 +61,11 @@ namespace bsp {
 		::bsp_broadcast(source, &data, sizeof(_t));
 	}
 
+	template <typename _t>
+	inline void bsp_broadcast(int source, _t * data, size_t nelem) {
+		::bsp_broadcast(source, data, sizeof(_t) * nelem);
+	}
+
 	template <>
 	inline void bsp_broadcast<std::string>(int source, std::string & data) {
 		size_t len;

@@ -21,19 +21,34 @@ information.
 */
 
 
-/** @file initializers.h
+/** @file SharedSerialization.h
 
 @author Peter Krusche
 */
-#ifndef __initializers_H__
-#define __initializers_H__
 
-#include <tbb/blocked_range.h>
+#ifndef __SharedSerialization_H__
+#define __SharedSerialization_H__
 
 namespace bsp {
 
-#include "init_assign.inl"
+	/** byte array serialization. This is necessary to 
+	 *  be able to use C++ variables through MPI */
+	class ByteSerializable {
+	public:
+		virtual ~ByteSerializable() {}
 
-}
+		/**
+		 * For simple types, this will just be a memcpy. 
+		 * 
+		 * Provide specializations for more complex types.
+		 */
+		virtual void serialize (void * target, size_t nbytes) = 0;
 
-#endif // __initializers_H__
+		virtual void deserialize (void * source, size_t nbytes) = 0;
+
+		virtual size_t serialized_size () = 0;
+	};
+
+};
+
+#endif // __SharedSerialization_H__

@@ -23,40 +23,11 @@
 #define  __BSP_Reducers_h__
 
 #include <tbb/blocked_range.h>
+#include <algorithm>
 
 namespace bsp {
 
-
-	/** Generic reducer that takes a variable type and an operator of the form
-	 *
-	 * @code
-	 * struct _op {
-	 *		void operator (_var & l, _var const & r);
-	 * }
-	 * @end
-	 *
-	 * (l is merged with r (a'la foldl))
-	 *  
-	 * and makes it usable with tbb::parallel_reduce
-	 *  
-	 */
-	template <class _var, class _op>
-	struct Reducer {
-		Reducer ( _var & dst, std::vector<_var> & _vars ) : vars(_vars), mine(dst) {} 
-
-		Reducer ( Reducer & r, tbb::split ) : vars (r.vars), mine (r.mine) {}
-
-		void operator()( const tbb::blocked_range<size_t>& r ) { 
-
-			for( size_t i = r.begin(); i != r.end(); ++i ) {
-				r ( mine, vars[i] );
-			}
-		}
-
-		static const _op r;
-		std::vector<_var > & const vars;
-		_var & mine;
-	};
+#include "reduce_numeric.inl"
 
 };
 

@@ -33,6 +33,8 @@ Helper class to allow value sharing between contexts.
 
 #include <vector>
 
+#include "SharedSerialization.h"
+
 namespace bsp {
 	
 	class Context;
@@ -44,12 +46,17 @@ namespace bsp {
 		overloaded and will be used to initialize or combine values.
 
 	*/
-	class Shared {
+	class Shared : public ByteSerializable {
 	public: 
 
 		/** add variable as an input/output */
 		inline void add_child ( Shared * s ) {
 			vars.push_back(s);
+		}
+
+		/** remove all dependent variables */
+		inline void reset_children () {
+			vars.clear();
 		}
 
 		/** Initializer function 
@@ -64,13 +71,6 @@ namespace bsp {
 		 */
 		inline virtual bool reduce() { return false; }
 		
-
-		/** byte array serialization. This is necessary to 
-		 *  be able to use bsp_fold and bsp_broadcast on a 
-		 *  node level */
-		virtual void serialize (void * target, size_t nbytes) = 0;
-		virtual size_t serialized_size () = 0;
-
 	protected:
 		std::vector<Shared*> vars;
 	};

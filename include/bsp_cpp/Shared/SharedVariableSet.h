@@ -49,13 +49,35 @@ namespace bsp {
 	 */
 	class SharedVariableSet {
 	public:
+		~SharedVariableSet();
+
+		/** 
+		 * To be able to reduce on a node-level, we need an additional 
+		 * slot for reducing values from all other nodes. 
+		 * 
+		 * This function is used to initialize that slot.
+		 * 
+		 * @param id the slot id
+		 * @param v the value
+		 * 
+		 */
+		void init_reduce_slot (const char * id, Shared * v);
+
+		/** 
+		 * Get the reduce slot for a slot id.
+		 * 
+		 * @return the reduce slot for id, or NULL
+		 * 
+		 */
+		Shared * get_reduce_slot (const char * id);
+
 		/** Add a shared variable to a given slot id 
 		 *
 		 * Variables are connected by slot ids. All variables with the
 		 * same slot will be initialized and reduced together.
 		 *
 		 * @param id the slot id to attach the variable to
-		 * @param v the variable to attach
+		 * @param v the variable to attach (will be deleted upon destruction of this set)
 		 * @param init true if variable should be used when initializing
 		 * @param reduce true if variable should be used when reducing
 		 * 
@@ -71,20 +93,25 @@ namespace bsp {
 			All variables in vs which have a matching slot in this will be attached
 			to this.
 		 */
-		void add_inputs (SharedVariableSet & vs);
+		void add_as_children (SharedVariableSet & vs);
 		
 		/** run all initializers
 		 *  (node-level collective)
+		 *  
+		 *  @param master_node the node from which to broadcast values. -1 to use node-local values
+		 *  
 		 */
-		void initialize_all();
+		void initialize_all(int master_node);
 
 		/** run all reducers 
 		 *  (node-level collective)
+		 *  
 		 */
 		void reduce_all();
 
 	private:
 		std::map<std::string, Shared*> svl; ///< slot to variable mapping
+		std::map<std::string, Shared*> reduce_svl; ///< in each slot, we also have one additional variable for node-level reducing
 		std::set<std::string> initialize_list; ///< list of all slots that will be initialized
 		std::set<std::string> reduce_list; ///< list of all slots that will be reduced
 	};

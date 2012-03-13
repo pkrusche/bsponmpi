@@ -17,4 +17,5 @@ if runtests:
 	Test (bsp, 'bsp_test_global_drma', ['bsp_test_global_drma.c'])
 	Test (bsp, 'bsp_test_collectives', ['bsp_test_collectives.c'])
 	Test (bsp, 'bsp_test_cpp_collectives', ['bsp_test_cpp_collectives.cpp'])
+	Test (bsp, 'bsp_test_sharedvars', ['bsp_test_sharedvars.cpp'])
 	Test (bsp, 'bsp_test_ops', ['bsp_test_ops.cpp'])
