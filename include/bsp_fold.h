@@ -47,7 +47,7 @@ inline void bsp_fold( void (*op)(void*,void*,void*,int*),
 		MPI_Allgather(src, nbytes, alldata, nbytes, bsp_communicator);
 
 		for (int j = 0; j < procs - 1; ++j) {
-			op (dst, alldata + nbytes*j, alldata + nbytes*(j+1), nbytes);
+			op (dst, alldata + nbytes*j, alldata + nbytes*(j+1), &nbytes);
 		}
 
 		bsp_free(alldata);		
@@ -68,12 +68,17 @@ static inline void bsp_fold( void (*op)(void*,void*,void*,int*),
 
 #ifdef __cplusplus
 
-#include <tbb/blocked_range.h>
-
-/** in C++ we also accept TBB style reducers. */
-template<typename Range, typename Body>
-void bsp_fold( const Range& range, Body& body ) {
+template<typename _t, typename _reduce>
+void bsp_fold( _t & src, _t & dst ) {
+	struct Fop {
+		static void foldop (void * res, void * left, void * right, int *nbytes) {
+			ASSERT(*nbytes == sizeof(_t));
+			static _reduce r;
+			*((_t*) res) = r (  *((_t*) left), *((_t*) right) )
+		}
+	};
 	
+	bsp_fold (&Fop::foldop, &src, &dst, sizeof(t));
 }
 
 #endif
