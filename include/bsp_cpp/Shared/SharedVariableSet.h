@@ -58,10 +58,12 @@ namespace bsp {
 		 * This function is used to initialize that slot.
 		 * 
 		 * @param id the slot id
-		 * @param v the value
+		 * @param v the values (pointer to an array of bsp_nprocs() - 1 values)
+		 * 
+		 * @see __shr_init_reduce_slot
 		 * 
 		 */
-		void init_reduce_slot (const char * id, Shared * v);
+		void init_reduce_slot (const char * id, Shared ** v);
 
 		/** 
 		 * Get the reduce slot for a slot id.
@@ -69,7 +71,7 @@ namespace bsp {
 		 * @return the reduce slot for id, or NULL
 		 * 
 		 */
-		Shared * get_reduce_slot (const char * id);
+		Shared ** get_reduce_slot (const char * id);
 
 		/** Add a shared variable to a given slot id 
 		 *
@@ -111,7 +113,7 @@ namespace bsp {
 
 	private:
 		std::map<std::string, Shared*> svl; ///< slot to variable mapping
-		std::map<std::string, Shared*> reduce_svl; ///< in each slot, we also have one additional variable for node-level reducing
+		std::map<std::string, Shared**> reduce_svl; ///< in each slot, we also have one additional variable for node-level reducing
 		std::set<std::string> initialize_list; ///< list of all slots that will be initialized
 		std::set<std::string> reduce_list; ///< list of all slots that will be reduced
 	};

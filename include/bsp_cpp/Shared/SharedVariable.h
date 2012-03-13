@@ -192,16 +192,22 @@ namespace bsp {
 };
 
 
-/** helper macro to add a node reduction slot */
-#define __SHARE_VARIABLE_NODEREDUCE(set, init, reduce, var, ...)	\
-	if ( set.get_reduce_slot (#var) == NULL ) {					\
-		set.init_reduce_slot(#var, new bsp::SharedVariable< __VA_ARGS__, init, reduce >() );	\
+template <class _shared> 
+inline void __shr_init_reduce_slot (bsp::SharedVariableSet & set, const char * id ) {
+	if ( ::bsp_nprocs() > 1 ) {
+		bsp::Shared ** psp = new bsp::Shared * [::bsp_nprocs() - 1];
+		
+		for (int p = 0; p < ::bsp_nprocs() - 1; ++p) {
+			psp[p] = new _shared();
+		}
+
+		set.init_reduce_slot( id, psp );
 	}
-	
+}
 
 #define SHARE_VARIABLE_IR(set, init, reduce, var, ...) \
 	do { set.add_var(#var, new bsp::SharedVariable< __VA_ARGS__, init, reduce >(var), true, true ); \
-	__SHARE_VARIABLE_NODEREDUCE(set, init, reduce, var, __VA_ARGS__)		\
+	__shr_init_reduce_slot< bsp::SharedVariable< __VA_ARGS__, init, reduce > > (set, #var); \
 } while(0)
 
 #define SHARE_VARIABLE_I(set, init, reduce, var, ...) \
@@ -209,7 +215,7 @@ namespace bsp {
 
 #define SHARE_VARIABLE_R(set, init, reduce, var, ...) \
 	do { set.add_var(#var, new bsp::SharedVariable< __VA_ARGS__, init, reduce >(var), false, true ); \
-	__SHARE_VARIABLE_NODEREDUCE(set, init, reduce, var, __VA_ARGS__)		\
+	__shr_init_reduce_slot< bsp::SharedVariable< __VA_ARGS__, init, reduce > >  (set, #var);		\
 } while(0)
 
 #endif // __SharedVariable_H__
