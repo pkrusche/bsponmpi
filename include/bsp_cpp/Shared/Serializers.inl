@@ -26,8 +26,8 @@ information.
 @author Peter Krusche
 */
 
-#ifndef __Serializers_H__
-#define __Serializers_H__
+#ifndef __BSPVARSerializers_H__
+#define __BSPVARSerializers_H__
 
 /************************************************************************/
 /* std::string serializer                                               */
@@ -49,10 +49,10 @@ public:
 		*valadr = std::string ( (char*) ( ((size_t*)source) + 1), len);
 	}
 
-	void SharedVariable <std::string, _init, _red>  ::serialized_size() {
+	size_t SharedVariable <std::string, _init, _red>  ::serialized_size() {
 		return sizeof(size_t) + valadr->size();
 	}
 };
 
 
-#endif // __Serializers_H__
+#endif // __BSPVARSerializers_H__
