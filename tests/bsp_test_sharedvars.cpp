@@ -25,3 +25,10 @@
 #include "bsp_cpp/bsp_cpp.h"
 #include "bsp_cpp/Shared/SharedVariableSet.h"
 
+int main (int argc, char ** argv) {
+	bsp_init (&argc, &argv);
+	
+	
+	
+	return 0;
+}
