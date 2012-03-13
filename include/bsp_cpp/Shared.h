@@ -33,95 +33,92 @@ Helper class to allow value sharing between contexts.
 
 #include <iostream>
 #include <stdexcept>
+#include <vector>
 
 #include <boost/shared_ptr.hpp>
+#include <tbb/parallel_reduce.h>
+#include <tbb/parallel_for.h>
 
 namespace bsp {
 	
+	class Context;
+	
 	/** this class is used to declare variables shared between 
-	    parent and child contexts */
-	class SharedVar {
+	    parent and child contexts 
+		
+		The two functions initialize() and reduce() can be
+		overloaded and will be used to 
+	*/
+	class Shared {
 	public: 
-		virtual void inherit_shared_var (const SharedVar * s)  = 0;
-	};
-	
-	/** This class is used for data sharing between parent and child contexts. 
-	 *  Declaring member variables as bsp::Shared <_t> var will allow both parent
-	 *  and child contexts to access the same value.
-	 */
-	template <
-		class _t 			///< we wrap an object of type _t
-	>
-	class Shared : public SharedVar {
-	public:
-		Shared () : mine (true), init(false) { }
-		Shared (_t const & t) : mine (true), init(true), data(new _t(t)) {}
-		Shared (Shared const & t) : mine (false), init(t.init), data(t.data) {}
-		
-		/** operator= assigns and makes value 'mine'. */
-		Shared<_t> & operator=(const _t & t) {
-#ifdef _DEBUG
-			if (!mine) {
-				std::cerr << "WARNING: Write access to shared variable in child context." << std::endl;
-			}
-#endif
-			mine = true;
-			init = true;
-			data = boost::shared_ptr<_t>(new _t(t));
-			return *this;
+		void add_input ( const SharedVar * s ) {
+			vars.push_back(s);
 		}
 
-		/** initialisation from Shared s makes this element dependent on s */
-		Shared<_t> & operator=(const Shared<_t> & s) {
-			inherit_shared_var (&s);
-			return *this;
-		}
+		virtual void reduce() {}
+		virtual void initialize()  {}
 		
-		void inherit_shared_var (const SharedVar * _s) {
-			Shared<_t> const * s(dynamic_cast< Shared<_t> const * > (_s) );
-			ASSERT (s->init);
-			mine = false;
-			data = s->data;
-			init = s->init;
-		}
-		
-		/* convert to const _t & */
-		operator _t () const {
-			ASSERT(init);
-			return *data;
-		}
-
-		/* convert to _t & */
-		operator _t () {
-			ASSERT(init && mine);
-			return *data;			
-		}
-				
-	private:
-		boost::shared_ptr <_t> data;
-		bool mine;
-		bool init;
+	protected:
+		std::vector<SharedVar*> vars;
 	};
-	
+		
 	/** this class implements sharing of an equal number of variables. */
-	class SharedVariables {
+	class SharedVariableSet {
 	public:
-		void operator() (SharedVar * v) {
-			svl.push_back(v);
+		/** add a shared variable to a given id */
+		void add_var (const char * id, SharedVar * v) {
+			ASSERT (svl.find(std::string(id)) == svl.end());
+			svl[std::string(id)] = v;
 		}
 
-		void update(SharedVariables & vs) {
-			ASSERT (vs.svl.size() == svl.size());
-			
-			for (std::list<SharedVar*>::iterator it = svl.begin(), it2 = vs.svl.begin(); 
-					it != svl.end() && it2 != vs.svl.end(); ++it, ++it2) {
-				(*it)->inherit_shared_var( *it2 );
+		/** will add all variables in vs as inputs to all matching variables in 
+		    this set */
+		void add_inputs (SharedVariables & vs) {
+			for (std::map<std::string, Shared*>::iterator it = vs.svl.begin(); 
+			it != vs.svl.end(); ++it) {
+				std::map<std::string, Shared*>::iterator it2 = svl.find(it->first);
+				if (it2 != svl.end()) {
+					it2->second->add_input(it->second);
+				}
+			}
+		}
+		
+		/** run all initializers */
+		void initialize_all() {
+			for (std::map<std::string, Shared*>::iterator it = svl.begin(); 
+				it != svl.end(); ++it) {
+				it->second->initialize();
+			}			
+		}
+
+		/** run all reducers */
+		void reduce_all() {
+			for (std::map<std::string, Shared*>::iterator it = svl.begin(); 
+				it != svl.end(); ++it) {
+				it->second->reduce();
 			}
 		}
 	private:
-		std::list<SharedVar*> svl;
+		std::map<std::string, Shared*> svl;
 	};
 
+	/** Shared variable implementation */
+	template <class _init, class _red>
+	class SharedVariable {
+	public:
+		void initialize() {
+			_init i (vars);
+			tbb::parallel_for( tbb::blocked_range<int> (0, vars.size() - 1), i );
+		}
+		
+		void reduce() {
+			_red r (vars);
+			tbb::parallel_reduce( tbb::blocked_range<int> (0, vars.size() - 1), i );
+		}		
+	};
 };
+
+#include "Shared/Initializers.h"
+#include "Shared/Reducers.h"
 
 #endif

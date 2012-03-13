@@ -28,8 +28,16 @@
 #ifdef _HAVE_MPI
 #include "mpi.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+	extern 	MPI_Comm bsp_communicator;
+#ifdef __cplusplus
+}
+#endif
+
 static inline void bsp_broadcast(int source, void* source_data, size_t len) {
-	MPI_Bcast(source_data, (int)len, MPI_BYTE, source, MPI_COMM_WORLD);
+	MPI_Bcast(source_data, (int)len, MPI_BYTE, source, bsp_communicator);
 }
 #else
 static inline void bsp_broadcast(int source, void* source_data, size_t len) {

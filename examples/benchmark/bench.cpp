@@ -82,9 +82,11 @@ int main(int argc, char **argv) {
 		warmuptime = vm["warmup"].as<double>();
 		
 		if (vm.count ("help") > 0) {
-			cout << opts << endl;
-			cout << "Valid values for benchmark are: " << endl;
-			benchmark::BenchmarkFactory::list(cout);
+			if (bsp_pid() == 0) {
+				cout << opts << endl;
+				cout << "Valid values for benchmark are: " << endl;
+				benchmark::BenchmarkFactory::list(cout);				
+			}
 			bsp_end();
 			exit(0);
 		}

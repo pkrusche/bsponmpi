@@ -211,13 +211,10 @@ namespace benchmark {
 		private:
 			static BenchmarkData b;
 			double * p_rates;
-
+			
 			// n counter
-			bsp::Shared<int> n;
-			bsp::Shared<int> nmin;
-			bsp::Shared<int> nmax;
-			bsp::Shared<std::string> bmname;
-			bsp::Shared<int> step;
+			int n, nmin, nmax, step;
+			std::string bmname;
 		};
 	
 ;}

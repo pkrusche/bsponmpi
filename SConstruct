@@ -18,6 +18,7 @@ from SCons.Defaults import *
 ###############################################################################
 
 import SConsHelpers.mpi
+import SConsHelpers.blas
 import SConsHelpers.tbb
 import SConsHelpers.boost
 import SConsHelpers.autoconfig
@@ -83,6 +84,7 @@ else:
 SConsHelpers.mpi.MakeOptions(opts)
 SConsHelpers.boost.MakeOptions(opts)
 SConsHelpers.tbb.MakeOptions(opts)
+SConsHelpers.blas.MakeOptions(opts)
 
 root = Environment(
     tools = ttools,
@@ -141,6 +143,7 @@ PrepareEnv(root)
 SConsHelpers.tbb.MakeEnv(root)
 SConsHelpers.mpi.MakeEnv(root)
 SConsHelpers.boost.MakeEnv(root)
+SConsHelpers.blas.MakeEnv(root)
 
 ## additional flags not covered by any of the above
 root.Append ( 
@@ -200,11 +203,14 @@ extern "C" {
 
 	if not conf.CheckTBB(3):
 		print "I could not find Intel TBB version >= 3.0. Have a look at SConsHelpers/tbb.py"
+	if not conf.CheckBLAS:
+		print "No version of BLAS was found"
 
 SConsHelpers.autoconfig.AutoConfig ( root, ConfRunner, { 
 	'CheckBoost' : SConsHelpers.boost.Check,
 	'CheckMPI' : SConsHelpers.mpi.Check,
 	'CheckTBB' : SConsHelpers.tbb.Check,
+	'CheckBLAS' : SConsHelpers.blas.Check,
 	} )
 
 ###############################################################################
