@@ -79,5 +79,7 @@ int main (int argc, char ** argv) {
 
 	s_top.reduce_all();
 
+	bsp_end();
+
 	return 0;
 }

@@ -97,11 +97,11 @@ public:
 			data.data[nelem+1] = current_el;
 		}
 
-		if (data.exact_size() < sizeof(uint64_t)*(data_pos+1)) {
+		if (data.exact_size() < data_pos + 1) {
 			data.resize(data_pos + 1);
 		}
 
-		bsp_broadcast(master_node, data.data, sizeof(uint64_t)*(data_pos+1));
+		bsp_broadcast(master_node, data.data, data_pos + 1);
 
 		nelem = data.data[0];
 		data.data[0] = data[(int)nelem];
@@ -118,20 +118,16 @@ public:
 	/** next name */
 	std::string next_name () {
 		uint64_t len = data.data[data_pos];
-
-		char * c = new char[len+1];
-		c[len] = 0;
-		memcpy(c, data.data + data_pos + 1, len);
-		std::string s(c);
-
-		return s;
+		return std::string((char*)(data.data + data_pos + 1), len);
 	}
 
 	/** next element */
 	void get_elem (bsp::Shared * el) {
 		ASSERT (current_el < nelem);
 		uint64_t * start = data.data + offsets[current_el];
-		start += 1 + *start;
+		uint64_t idlen = *start;
+		start++;
+		start += ((idlen + 7) >> 3);
 		el->deserialize(start+1, *start );
 		++current_el;
 		data_pos = offsets[current_el];
