@@ -65,9 +65,9 @@ namespace bsp {
 			std::vector<Shared*> const & _vars ) : input(_input), vars(_vars) {} 
 
 		void operator()( const tbb::blocked_range<size_t>& r ) const { 
-			static const typename _init<typename _var :: value_type > init;
+			static _init<typename _var :: value_type > initer;
 			for( size_t i = r.begin(); i != r.end(); ++i ) {
-				init( (typename _var::value_type const & )(*input), (typename _var::value_type & ) (* ((_var*)vars[i])) );
+				initer ( (typename _var::value_type const & )(*input), (typename _var::value_type & ) (* ((_var*)vars[i])) );
 			}
 		} 
 
@@ -95,12 +95,12 @@ namespace bsp {
 		Reducer ( Reducer & r, tbb::split ) : vars (r.vars), mine (r.mine) {}
 
 		void join( const Reducer & y ) { 
-			static const typename _op< typename _var::value_type > red;
+			static _op< typename _var::value_type > red;
 			red ( (typename _var::value_type & ) *mine,  (typename _var::value_type const & ) (*y.mine) );
 		} 
 
 		void operator()( const tbb::blocked_range<size_t>& r ) { 
-			static const typename _op< typename _var::value_type > red;
+			static _op< typename _var::value_type > red;
 
 			for( size_t i = r.begin(); i != r.end(); ++i ) {
 				red ( (typename _var::value_type & ) *mine,  (typename _var::value_type const & ) (* ((_var*)vars[i])) );
@@ -113,7 +113,7 @@ namespace bsp {
 
 
 	/** Node-local shared variable implementation */
-	template <class _t, template<class> class _init = InitDummy, template<class> class _red = ReduceFirst>
+	template <class _t, template<class> class _init = InitAssign, template<class> class _red = ReduceFirst>
 	class SharedVariable : public Shared {
 	public:
 		typedef SharedVariable <_t, _init, _red> my_type;
