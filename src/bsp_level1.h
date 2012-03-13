@@ -21,44 +21,18 @@ information.
 */
 
 
-/** @file initializers.h
+/** @file bsp_level1.h
+
+Collection of all of BSPonMPI's BSP level 1 functionality.
 
 @author Peter Krusche
 */
-#ifndef __initializers_H__
-#define __initializers_H__
 
-#include <tbb/blocked_range.h>
+#ifndef __bsp_level1_H__
+#define __bsp_level1_H__
 
-namespace bsp {
+#include "bsp_broadcast.h"
+#include "bsp_fold.h"
 
-	/** Generic initializer which is usable in tbb::parallel_for 
-	 * 
-	 * Takes a variable type and an initializer of this form:
-	 * 
-	 * @code
-	 * struct _init {
-	 *		void operator () (_var & v) {
-	 *			// do something to v
-	 *		}
-	 * }
-	 * @end
-	 *
-	 */
-	template <class _var, class _init>
-	struct Initializer {
-		Initializer ( std::vector<_var> & _vars ) : vars(_vars) {} 
+#endif // __bsp_level1_H__
 
-		void operator()( const tbb::blocked_range<size_t>& r ) const { 
-			for( size_t i = r.begin(); i != r.end(); ++i ) {
-				i( vars[i] );
-			}
-		} 
-
-		static const _init i;
-		std::vector<_var> & const vars;
-	};
-
-}
-
-#endif // __initializers_H__

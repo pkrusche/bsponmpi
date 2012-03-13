@@ -24,6 +24,9 @@
 
 #include "bsp_config.h"
 
+#include "bsp.h"
+#include "bsp_alloc.h"
+
 #ifdef _HAVE_MPI
 
 #ifdef __cplusplus
@@ -40,13 +43,15 @@ see http://www.bsp-worldwide.org/implmnts/oxtool/man/bsp_fold.3.html
 */
 inline void bsp_fold( void (*op)(void*,void*,void*,int*),
     void *src, void *dst, int nbytes) {	
+	int j;
+	char * alldata;
 	int procs = bsp_nprocs();
 	
 	if (procs > 1) {
-		char * alldata = (char*)bsp_malloc(nbytes*procs);
-		MPI_Allgather(src, nbytes, alldata, nbytes, bsp_communicator);
+		alldata = (char*)bsp_malloc(nbytes*procs, 1);
+		MPI_Allgather(src, nbytes, MPI_BYTE, alldata, nbytes, MPI_BYTE, bsp_communicator);
 
-		for (int j = 0; j < procs - 1; ++j) {
+		for (j = 0; j < procs - 1; ++j) {
 			op (dst, alldata + nbytes*j, alldata + nbytes*(j+1), &nbytes);
 		}
 

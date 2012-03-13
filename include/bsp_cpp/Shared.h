@@ -51,7 +51,7 @@ namespace bsp {
 	*/
 	class Shared {
 	public: 
-		void add_input ( const SharedVar * s ) {
+		void add_input ( const Shared * s ) {
 			vars.push_back(s);
 		}
 
@@ -59,7 +59,7 @@ namespace bsp {
 		virtual void initialize()  {}
 		
 	protected:
-		std::vector<SharedVar*> vars;
+		std::vector<Shared*> vars;
 	};
 		
 	/** this class implements sharing of an equal number of variables. */
