@@ -59,13 +59,13 @@ namespace bsp {
 	 * @end
 	 *
 	 */
-	template <class _var, template<class> class _init>
+	template <class _var, typename _init>
 	struct Initializer {
 		Initializer ( const _var * _input, 
 			std::vector<Shared*> const & _vars ) : input(_input), vars(_vars) {} 
 
 		void operator()( const tbb::blocked_range<size_t>& r ) const { 
-			static _init<typename _var :: value_type > initer;
+			static _init initer;
 			for( size_t i = r.begin(); i != r.end(); ++i ) {
 				initer ( (typename _var::value_type const & )(*input), (typename _var::value_type & ) (* ((_var*)vars[i])) );
 			}
@@ -88,19 +88,19 @@ namespace bsp {
 	 * and makes it usable with tbb::parallel_reduce
 	 *  
 	 */
-	template <class _var, template<class> class _op>
+	template <class _var, typename _op>
 	struct Reducer {
 		Reducer ( _var * dst, std::vector<Shared*> & _vars ) : vars(_vars), mine(dst) {} 
 
 		Reducer ( Reducer & r, tbb::split ) : vars (r.vars), mine (r.mine) {}
 
 		void join( const Reducer & y ) { 
-			static _op< typename _var::value_type > red;
+			static _op red;
 			red ( (typename _var::value_type & ) *mine,  (typename _var::value_type const & ) (*y.mine) );
 		} 
 
 		void operator()( const tbb::blocked_range<size_t>& r ) { 
-			static _op< typename _var::value_type > red;
+			static _op red;
 
 			for( size_t i = r.begin(); i != r.end(); ++i ) {
 				red ( (typename _var::value_type & ) *mine,  (typename _var::value_type const & ) (* ((_var*)vars[i])) );
@@ -113,7 +113,7 @@ namespace bsp {
 
 
 	/** Node-local shared variable implementation */
-	template <class _t, template<class> class _init = InitAssign, template<class> class _red = ReduceFirst>
+	template <class _t, typename _init, typename _red>
 	class SharedVariable : public Shared {
 	public:
 		typedef SharedVariable <_t, _init, _red> my_type;
@@ -157,7 +157,7 @@ namespace bsp {
 		 * 
 		 * 
 		 * @code
-		 * template < template<class> class _init = InitDummy, template<class> class _red > 
+		 * template < typenam _init , typename _red > 
 		 * SharedVariable <yourtype, _init, red>::serialize/deserialize/...(void * target, size_t nbytes) {
 		 *		// your code here
 		 * }
@@ -165,9 +165,11 @@ namespace bsp {
 		 * 
 		 * we only allow the variants here to be used on scalar types.
 		 * 
+		 * @see SHARED_VARIABLE_SPECIALIZE
+		 * @see Serializers.inl
+		 * 
 		 */
 
-		/** default byte serialization */
 		void serialize(void * target, size_t nbytes) {
 			BOOST_STATIC_ASSERT(boost::is_scalar<_t>::value);
 			memcpy(target, valadr, sizeof(_t));
@@ -189,6 +191,8 @@ namespace bsp {
 		_t * valadr;
 		bool deleteme;
 	};
+
+	#include "Serializers.inl"
 };
 
 
@@ -206,16 +210,16 @@ inline void __shr_init_reduce_slot (bsp::SharedVariableSet & set, const char * i
 }
 
 #define SHARE_VARIABLE_IR(set, init, reduce, var, ...) \
-	do { set.add_var(#var, new bsp::SharedVariable< __VA_ARGS__, init, reduce >(var), true, true ); \
-	__shr_init_reduce_slot< bsp::SharedVariable< __VA_ARGS__, init, reduce > > (set, #var); \
+	do { set.add_var(#var, new bsp::SharedVariable< __VA_ARGS__, init<__VA_ARGS__>, reduce<__VA_ARGS__> >(var), true, true ); \
+	__shr_init_reduce_slot< bsp::SharedVariable< __VA_ARGS__, init<__VA_ARGS__>, reduce<__VA_ARGS__> > > (set, #var); \
 } while(0)
 
 #define SHARE_VARIABLE_I(set, init, reduce, var, ...) \
-	do { set.add_var(#var, new bsp::SharedVariable< __VA_ARGS__, init, reduce >(var), true, false ); } while(0)
+	do { set.add_var(#var, new bsp::SharedVariable< __VA_ARGS__, init<__VA_ARGS__>, reduce<__VA_ARGS__> >(var), true, false ); } while(0)
 
 #define SHARE_VARIABLE_R(set, init, reduce, var, ...) \
-	do { set.add_var(#var, new bsp::SharedVariable< __VA_ARGS__, init, reduce >(var), false, true ); \
-	__shr_init_reduce_slot< bsp::SharedVariable< __VA_ARGS__, init, reduce > >  (set, #var);		\
+	do { set.add_var(#var, new bsp::SharedVariable< __VA_ARGS__, init<__VA_ARGS__>, reduce<__VA_ARGS__> >(var), false, true ); \
+	__shr_init_reduce_slot< bsp::SharedVariable< __VA_ARGS__, init<__VA_ARGS__>, reduce<__VA_ARGS__> > >  (set, #var);		\
 } while(0)
 
 #endif // __SharedVariable_H__

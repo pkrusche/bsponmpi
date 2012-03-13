@@ -10,6 +10,8 @@
 #include <list>
 
 #include "TaskMapper.h"
+#include "Shared/SharedVariableSet.h"
+#include "Shared/SharedVariable.h"
 
 namespace bsp {
 
@@ -153,14 +155,24 @@ namespace bsp {
 				
 		int pid;		///< The global pid of this computation
 		int local_pid;	///< The local pid of this computation
-//		SharedVariables context_sharing;
+
+		SharedVariableSet context_sharing; ///< Context variable sharing set
 	private:
 
 		void * impl;    ///< Implementation specific stuff
 	};
 
 /** Shortcut to share variables in a context constructor */
-#define MAKE_SHARED(var) 
+#define CONTEXT_SHARED_INIT(var, ...)			\
+	SHARE_VARIABLE_I(context_sharing, bsp::InitAssign, bsp::ReduceFirst, var, __VA_ARGS__);
+
+/** Shortcut to share reduction variables in a context constructor */
+#define CONTEXT_SHARED_REDUCE(red, var, ...)			\
+	SHARE_VARIABLE_R(context_sharing, bsp::InitAssign, bsp :: red, var, __VA_ARGS__);
+
+/** Shortcut to share variables in a context constructor */
+#define CONTEXT_SHARED_BOTH(red, var, ...)			\
+	SHARE_VARIABLE_R(context_sharing, bsp::InitAssign, bsp :: red, var, __VA_ARGS__);
 
 	/**
 	 * Factory template which passes TaskMapper, pid and parent context 

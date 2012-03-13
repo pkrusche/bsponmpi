@@ -197,11 +197,11 @@ namespace benchmark {
 	public:
 		public:
 			BenchmarkRunner() {
-				MAKE_SHARED(n);
-				MAKE_SHARED(nmin);
-				MAKE_SHARED(nmax);
-				MAKE_SHARED(bmname);
-				MAKE_SHARED(step);
+				CONTEXT_SHARED_INIT(n, int);
+				CONTEXT_SHARED_INIT(nmin, int);
+				CONTEXT_SHARED_INIT(nmax, int);
+				CONTEXT_SHARED_INIT(bmname, std::string);
+				CONTEXT_SHARED_INIT(step, int);
 			}
 
 			void run();
