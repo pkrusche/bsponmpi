@@ -13,7 +13,7 @@ import re
 def Check(context):       
 	context.Message('Checking CBLAS')
 	ret = context.TryLink("""
-	#include <cblas.h>
+	#include "helpers/cblas.h"
 
 	int main(int argc, char ** argv) {
 		double * vecA, * vecB;
@@ -32,7 +32,7 @@ def Check(context):
 def MakeOptions (opts):
 	arch   = platform.uname()[0]
 	opts.AddVariables(
-		('cblas', 'Which version of CBLAS to use. Allowed values: none|blas|atlas.', 'none'),
+		('cblas', 'Which version of CBLAS to use. Allowed values: none|blas|atlas|openblas|accelerate (MacOS X only)', 'none'),
 	)
 
 ###############################################################################
@@ -46,5 +46,10 @@ def MakeEnv (root):
 	
 	if cblas == 'blas':
 		root.Append(LIBS='blas')
-	elif cblas == 'blas':
+	elif cblas == 'atlas':
 		root.Append(LIBS=[ 'cblas', 'atlas' ])
+	elif cblas == 'openblas':
+		root.Append(LIBS=[ 'openblas' ])
+	elif cblas == 'accelerate':
+		root.Prepend(LINKFLAGS = '-framework Accelerate')
+
