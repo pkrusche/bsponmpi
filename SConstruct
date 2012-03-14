@@ -205,6 +205,12 @@ extern "C" {
 		print "I could not find Intel TBB version >= 3.0. Have a look at SConsHelpers/tbb.py"
 	if not conf.CheckBLAS():
 		print "No version of BLAS was found"
+	else:
+		print "BLAS Support enabled"
+                autohdr.write("""
+#define _HAVE_CBLAS
+""")
+
 
 SConsHelpers.autoconfig.AutoConfig ( root, ConfRunner, { 
 	'CheckBoost' : SConsHelpers.boost.Check,

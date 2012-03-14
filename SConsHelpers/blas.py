@@ -13,22 +13,15 @@ import re
 def Check(context):       
 	context.Message('Checking CBLAS')
 	ret = context.TryLink("""
-#include "helpers/cblas.h"
+#include "../include/helpers/cblas.h"
 
 int main(int argc, char ** argv) {
 	double * vecA, * vecB;
 	int n;
-	cblas_ddot(n, vecA, 1,vecB, 1)
+	cblas_ddot(n, vecA, 1,vecB, 1);
 	return 0;
 }
 """, '.c')
-
-	if ret:
-		autohdr.write("""
-#define _HAVE_CBLAS
-""")
-	else:
-		print "CBLAS wasn't found, our test code failed to compile."
 	return ret
 
 def MakeOptions (opts):
