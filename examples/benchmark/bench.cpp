@@ -88,6 +88,7 @@ int main(int argc, char **argv) {
 				cout << "Valid values for benchmark are: " << endl;
 				benchmark::BenchmarkFactory::get_instance().list(cout);
 			}
+			bsp_sync();
 			bsp_end();
 			exit(0);
 		}

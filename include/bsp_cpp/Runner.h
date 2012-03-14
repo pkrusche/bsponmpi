@@ -78,9 +78,14 @@ namespace bsp {
 	};
 
 
-	/** BSP Computation base class.
+	/** BSP Computation runner.
 	 * 
-	 * When defining BSP computations, 
+	 * Given a BSP computation defined in class _context, this runner will set
+	 * up a task manager and run the computation.
+	 * 
+	 * Optionally, the runner can choose a (presumably) optimal number of processors,
+	 * by default, this is assumed to be the number of MPI processes times TBB's 
+	 * default number of threads.
 	 * 
 	 */
 	template <class _context>
@@ -88,24 +93,41 @@ namespace bsp {
 	public:
 		typedef _context bsp_context_t;
 
-		Runner (int processors)  {
+		/** Create a runner
+		 * 
+		 * @param processors The number of processors (optional)
+		 */
+		Runner (int processors = -1)  {
+			// automatic number of processors
+			if (processors < 0) {
+				processors = tbb::task_scheduler_init::default_num_threads() * ::bsp_nprocs();
+			}
+
 			factory = ContextFactoryPtr (
 				new ContextFactory< bsp_context_t >
 				(this) );
 			_context::set_task_mapper ( new bsp::TaskMapper (processors, factory) );
 		}
 
+		/** Destructor: destroy task mapper */
 		~Runner () {
 			delete _context::get_mapper();
 		}
 
-		void run() {
+		/** Run a computation, preceded by variable initialisation,
+		 *  followed by variable reducing */
+		void run( int master_node = 0 ) {
+			ASSERT (bsp_is_node_level());
 			_context::parentcontext = this;
+			this->initialize_shared ( master_node );
+			
 			bsp_context_t::run();
+
+			this->reduce_shared ();
 		}
 
 		/**
-		 * Run a computation 
+		 * Run a computation's superstep
 		 */ 
 		void execute () {
 			ASSERT (bsp_is_node_level());

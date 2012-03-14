@@ -124,9 +124,39 @@ namespace bsp {
 			return impl == NULL;
 		}
 
-		inline void set_task_mapper (TaskMapper * _m) {
-			mapper = _m;
+		/************************************************************************/
+		/* Context variable sharing collective functions                        */
+		/************************************************************************/
+
+		/** @name Context Sharing */
+		/*@{*/
+		/** Shortcut to share variables in a context constructor */
+#define CONTEXT_SHARED_INIT(var, ...)			\
+	SHARE_VARIABLE_I(context_sharing, var, __VA_ARGS__);
+
+		/** Shortcut to share reduction variables in a context constructor */
+#define CONTEXT_SHARED_REDUCE(red, neutral, var, ...)				\
+	SHARE_VARIABLE_R(context_sharing, bsp :: red, neutral, var, __VA_ARGS__);
+
+		/** Shortcut to share variables in a context constructor */
+#define CONTEXT_SHARED_BOTH(red, neutral, var, ...)			\
+	SHARE_VARIABLE_IR(context_sharing, bsp :: red, neutral, var, __VA_ARGS__);
+
+
+		/** Initialize all variables that were shared with CONTEXT_SHARED_INIT or 
+		 *  CONTEXT_SHARED_BOTH */
+		inline void initialize_shared (int master_node) {
+			ASSERT (bsp_is_node_level());
+			context_sharing.initialize_all(master_node);
 		}
+
+		/** Reduce all context variables which were shared with CONTEXT_SHARED_REDUCE
+		 *  or CONTEXT_SHARED_BOTH */
+		inline void reduce_shared () {
+			ASSERT (bsp_is_node_level());
+			context_sharing.reduce_all();			
+		}
+		/*@}*/
 
 		/************************************************************************/
 		/* Helpers for context running                                          */
@@ -134,12 +164,16 @@ namespace bsp {
 
 		virtual void run () = 0;
 		
-		void execute_step () {
+		inline void execute_step () {
 			ASSERT (mapper->get_next_step());
 			mapper->get_next_step() (this);
 		}
 
-		TaskMapper * get_mapper() {
+		inline void set_task_mapper (TaskMapper * _m) {
+			mapper = _m;
+		}
+
+		inline TaskMapper * get_mapper() {
 			return mapper;
 		}
 
@@ -161,18 +195,6 @@ namespace bsp {
 
 		void * impl;    ///< Implementation specific stuff
 	};
-
-/** Shortcut to share variables in a context constructor */
-#define CONTEXT_SHARED_INIT(var, ...)			\
-	SHARE_VARIABLE_I(context_sharing, var, __VA_ARGS__);
-
-/** Shortcut to share reduction variables in a context constructor */
-#define CONTEXT_SHARED_REDUCE(red, neutral, var, ...)				\
-	SHARE_VARIABLE_R(context_sharing, bsp :: red, neutral, var, __VA_ARGS__);
-
-/** Shortcut to share variables in a context constructor */
-#define CONTEXT_SHARED_BOTH(red, neutral, var, ...)			\
-	SHARE_VARIABLE_IR(context_sharing, bsp :: red, neutral, var, __VA_ARGS__);
 
 	/**
 	 * Factory template which passes TaskMapper, pid and parent context 
