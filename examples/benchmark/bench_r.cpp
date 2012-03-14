@@ -40,9 +40,15 @@ and on the daxpy flop measurements from BSPEdupack.
 #include <boost/numeric/ublas/vector.hpp>
 #include <boost/bind.hpp>
 
+#ifdef _HAVE_MKL
+#include "mkl.h"
+#include "mkl_boost_ublas_matrix_prod.hpp"
+#endif
+
+
 #ifdef _HAVE_CBLAS
 extern "C" {
-#include <cblas.h>	
+#include <helpers/cblas.h>	
 };
 #endif
 

@@ -96,7 +96,28 @@ namespace bsp {
 			to this.
 		 */
 		void add_as_children (SharedVariableSet & vs);
-		
+
+		/**
+		 * Clear all child connections
+		 */
+		void clear_all_children ();
+
+		/**
+		 * Initialize a single slot variable
+		 * 
+		 * @param slot the slot
+		 * @param master_node the node to initialize from
+		 */
+		void initialize(const char * slot, int master_node);
+
+		/**
+		 * Reduce a single slot variable
+		 * 
+		 * @param slot the slot
+		 * @param global true when reducing between all nodes
+		 */
+		void reduce(const char * slot, bool global);
+
 		/** run all initializers
 		 *  (node-level collective)
 		 *  
@@ -112,6 +133,10 @@ namespace bsp {
 		void reduce_all();
 
 	private:
+
+		/** Reduction implementation */
+		void reduce_impl(std::set<std::string> const & );
+
 		std::map<std::string, Shared*> svl; ///< slot to variable mapping
 		std::map<std::string, Shared**> reduce_svl; ///< in each slot, we also have one additional variable for node-level reducing
 		std::set<std::string> initialize_list; ///< list of all slots that will be initialized

@@ -33,6 +33,7 @@ Helper class to allow value sharing between contexts.
 
 #include <vector>
 
+#include "bsp_level1.h"
 #include "SharedSerialization.h"
 
 namespace bsp {
@@ -82,6 +83,22 @@ namespace bsp {
 	protected:
 		std::vector<Shared*> vars;
 	};
+
+	/** Specialize broadcast for pointers to shared values */
+	template <> 
+	inline void bsp_broadcast<Shared*>(int source, Shared* & data) {
+		size_t size = data->serialized_size();
+		bsp_broadcast(source, size);
+		char * sdata = new char [size];
+		if (bsp_pid() == source) {
+			data->serialize(sdata, size);
+		}
+		::bsp_broadcast(source, sdata, size);
+		if (bsp_pid() != source) {
+			data->deserialize(sdata, size);
+		}
+	}
+
 };
 
 #endif

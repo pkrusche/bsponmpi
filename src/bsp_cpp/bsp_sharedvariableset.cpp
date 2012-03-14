@@ -108,12 +108,47 @@ void bsp::SharedVariableSet::add_as_children (bsp::SharedVariableSet & vs) {
 		}
 	}
 }
-		
+
+/** Clear all child variable connections */
+void bsp::SharedVariableSet::clear_all_children () {
+	for (std::map<std::string, Shared*>::iterator it = svl.begin(); 
+		it != svl.end(); ++it) {
+			it->second->reset_children();
+	}
+}
+
+/** initialize a single slot */
+void bsp::SharedVariableSet::initialize(const char * slot, int master_node) {
+	std::map<std::string, Shared*>::iterator it = svl.find(slot);
+	ASSERT(it != svl.end());
+	
+	/** if we initialize from a node, we need to broadcast 
+	 *  all data first */
+	if (bsp_nprocs() > 1 && master_node >= 0) {
+		bsp::bsp_broadcast(master_node, it->second);
+	}
+	
+	it->second->initialize();
+}
+
+/** reduce a single slot */
+void bsp::SharedVariableSet::reduce(const char * slot, bool global) {
+	if ( ::bsp_nprocs() > 1 && global ) {
+		std::set<std::string> s;
+		s.insert(slot);
+		reduce_impl(s);
+	} else {
+		std::map<std::string, Shared*>::iterator it = svl.find(slot);
+		ASSERT(it != svl.end());
+
+		it->second->reduce();
+	}
+}
+
 /** run all initializers */
 void bsp::SharedVariableSet::initialize_all( int master_node ) {
 	/** if we initialize from a node, we need to broadcast 
 	 *  all data first */
-#ifdef _HAVE_MPI
 	if (bsp_nprocs() > 1 && master_node >= 0) {
 		SerializedDataset dataset ((int)initialize_list.size());
 
@@ -144,7 +179,6 @@ void bsp::SharedVariableSet::initialize_all( int master_node ) {
 			}
 		}
 	}
-#endif
 
 	// then, initialize everything locally
 	for (std::set<std::string>::iterator it = initialize_list.begin(); 
@@ -155,13 +189,18 @@ void bsp::SharedVariableSet::initialize_all( int master_node ) {
 
 /** run all reducers */
 void bsp::SharedVariableSet::reduce_all() {
-	SerializedDataset sds ((int)reduce_list.size());
+	reduce_impl(reduce_list);
+}
 
-	for (std::set<std::string>::iterator it = reduce_list.begin(); 
-		it != reduce_list.end(); ++it) {
-		bsp::Shared * p = svl[*it];
-		p->reduce();
-		sds.add_elem(*it, p);
+/** Reduction implementation */
+void bsp::SharedVariableSet::reduce_impl(std::set<std::string> const & _reduce_list) {
+	SerializedDataset sds ((int)_reduce_list.size());
+
+	for (std::set<std::string>::const_iterator it = _reduce_list.cbegin(); 
+		it != _reduce_list.cend(); ++it) {
+			bsp::Shared * p = svl[*it];
+			p->reduce();
+			sds.add_elem(*it, p);
 	}
 
 #ifdef _HAVE_MPI
@@ -182,7 +221,7 @@ void bsp::SharedVariableSet::reduce_all() {
 			sizes[p] = elems[2*p+1];
 			size+= elems[2*p+1];
 		}
-		
+
 		char * target = (char*)bsp_malloc(size, 1);
 
 		MPI_Allgatherv(sds.get_data(), myelems[1], MPI_BYTE, target, sizes, offsets, MPI_BYTE, bsp_communicator);
@@ -193,7 +232,7 @@ void bsp::SharedVariableSet::reduce_all() {
 				continue;
 			SerializedDataset other_ds(target + offsets[p], elems[2*p], sizes[p]);
 			other_ds.restart();
-			
+
 			for(int k = 0; k < other_ds.elements(); ++k ) {
 				std::string name = other_ds.next_name();
 				std::map<std::string, bsp::Shared*>::iterator it  = svl.find(name);
@@ -217,12 +256,13 @@ void bsp::SharedVariableSet::reduce_all() {
 	}
 #endif
 
-	for (std::set<std::string>::iterator it = reduce_list.begin(); 
-		it != reduce_list.end(); ++it) {
-		bsp::Shared ** p = reduce_svl[*it];
-		p[0]->make_neutral();
-		p[0]->reduce();
-		p[0]->initialize();
+	for (std::set<std::string>::const_iterator it = _reduce_list.cbegin(); 
+		it != _reduce_list.cend(); ++it) {
+			bsp::Shared ** p = reduce_svl[*it];
+			p[0]->make_neutral();
+			p[0]->reduce();
+			p[0]->initialize();
 	}
 
 }
+

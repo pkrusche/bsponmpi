@@ -49,8 +49,9 @@ void bsp::Context::initialize_context (int bsp_pid, Context * parent)  {
 	pid = bsp_pid;
 	impl = new bsp::ContextImpl(mapper, local_pid);
 	
-	// update all shared variables from parent.
-//	context_sharing.update(parent->context_sharing);
+	// Connect our shared variables to the parent
+	parent->context_sharing.add_as_children( context_sharing );
+
 	init ();
 }
 

@@ -118,12 +118,17 @@ namespace bsp {
 		 *  followed by variable reducing */
 		void run( int master_node = 0 ) {
 			ASSERT (bsp_is_node_level());
-			_context::parentcontext = this;
-			this->initialize_shared ( master_node );
-			
-			bsp_context_t::run();
 
-			this->reduce_shared ();
+			try {
+				_context::parentcontext = this;
+				this->initialize_shared ( master_node );
+
+				bsp_context_t::run();
+
+				this->reduce_shared ();
+			} catch ( tbb::captured_exception e ) {
+				throw std::runtime_error (e.what());
+			}
 		}
 
 		/**

@@ -50,36 +50,42 @@ namespace benchmark {
 			b_factory factory;
 		};
 
+		/** Get factory instance */
 	    static BenchmarkFactory & get_instance() {
 			static BenchmarkFactory f;
 			return f;
 		}
 			
+		/** Register a new benchmark type */
 		inline void reg (const char * name, const char * desc, b_factory f) {
 			description mbd;
 			mbd.desc = std::string (desc);
 			mbd.factory = f;
-			map[std::string(name)] = mbd;
+			map[index(name)] = mbd;
 		}
 
+		/** Remove a benchmark type */
 		inline void remove (const char * name) {
-			map.erase (map.find(name));
+			map.erase (map.find(index(name)));
 		}
 	
+		/** Create a benchmark */
 		inline AbstractBenchmark* create (const char * name) {
-			if (map.find(name) == map.end()) {
-				throw std::runtime_error ("Unknown benchmark type.");
+			if (map.find(index(name)) == map.end()) {
+				throw std::runtime_error (std::string ( "Unknown benchmark type: '") + index(name) + "'");
 			}
-			return map[name].factory();
+			return map[index(name)].factory();
 		}
 
+		/** Get the description for a benchmark */
 		inline std::string describe (const char * name) {
-			if (map.find(name) == map.end()) {
-				throw std::runtime_error ("Unknown benchmark type.");
+			if (map.find(index(name)) == map.end()) {
+				throw std::runtime_error (std::string ( "Unknown benchmark type: '") + index(name) + "'");
 			}
-			return map[name].desc;
+			return map[index(name)].desc;
 		}
 	
+		/** List all benchmark types to output stream */
 		inline void list(std::ostream & out) {
 			for (std::map<std::string, description>::iterator it = map.begin(), it_end = map.end();
 					it != it_end; ++it) {
@@ -88,6 +94,13 @@ namespace benchmark {
 		}
 	
 	private:
+
+		inline std::string index (const char * name ) {
+			std::string xname(name);
+			std::transform(xname.begin(), xname.end(), xname.begin(), ::tolower);
+			return xname;
+		}
+
 	    BenchmarkFactory() {}
 
 	    std::map<std::string, description> map;

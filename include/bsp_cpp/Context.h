@@ -142,6 +142,30 @@ namespace bsp {
 #define CONTEXT_SHARED_BOTH(red, neutral, var, ...)			\
 	SHARE_VARIABLE_IR(context_sharing, bsp :: red, neutral, var, __VA_ARGS__);
 
+		/** Shortcut for initializing variables between supersteps */
+#define BSP_BROADCAST(var, mn) do {				\
+		ASSERT (bsp_is_node_level());			\
+		context_sharing.initialize(#var, mn);	\
+	} while (0);
+
+		/** Shortcut to fold variables between supersteps */
+#define BSP_FOLD(var) do {					\
+	ASSERT (bsp_is_node_level());			\
+	context_sharing.reduce(#var, true);		\
+		} while (0);
+
+		/** Shortcut to initialize single variables node-locally */
+#define BSP_BROADCAST_LOCAL(var) do {		\
+	ASSERT (bsp_is_node_level());			\
+	context_sharing.initialize(#var, -1);	\
+		} while (0);
+
+		/** Shortcut to fold variables between supersteps node-locally */
+#define BSP_FOLD_LOCAL(var) do {			\
+	ASSERT (bsp_is_node_level());			\
+	context_sharing.reduce(#var, false);	\
+		} while (0);
+
 
 		/** Initialize all variables that were shared with CONTEXT_SHARED_INIT or 
 		 *  CONTEXT_SHARED_BOTH */

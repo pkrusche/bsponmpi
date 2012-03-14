@@ -64,12 +64,12 @@ void benchmark::BenchmarkRunner::run() {
 	bsp_push_reg(p_rates, sizeof(double) * bsp_nprocs());
 	BSP_END();
 
-	for (n = nmin; n < nmax; ((int&)n)+= step) {
+	for (n = nmin; n < nmax; n += step) {
+		BSP_BROADCAST_LOCAL(n);
 		BSP_BEGIN();
 
 		AbstractBenchmark * bm = benchmark::BenchmarkFactory::get_instance().create(bmname.c_str());
 		double f = bm->run (n);
-		delete bm;
 
 		bsp_put(0, &f, p_rates, sizeof(double) * bsp_pid(), sizeof(double));
 
