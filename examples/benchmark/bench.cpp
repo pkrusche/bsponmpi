@@ -43,12 +43,12 @@ int main(int argc, char **argv) {
 	// Things from here on are node-level SPMD. 
 	// You'll have as many processes as there are
 	// available via MPI.
-	int processors = 2;
-	int nmin = 4;
-	int nmax = 512;
-	int step = 4;
-	double warmuptime = 2.0;
-	string bn = "daxpy";
+	int processors;
+	int nmin;
+	int nmax;
+	int step;
+	double warmuptime;
+	string bn;
 
 	/** This is how we read and parse command line options */
 	try {
@@ -57,7 +57,7 @@ int main(int argc, char **argv) {
 		options_description opts;
 		opts.add_options()
 			("help,h", "produce a help message")
-			("procs,p", value<int>()->default_value(2), 
+			("procs,p", value<int>()->default_value(-1), 
 			"How many processors to recursively create.")
 			("nmin,l", value<int>()->default_value(4), 
 			"Minimum value of n.")
@@ -98,19 +98,22 @@ int main(int argc, char **argv) {
 		) {
 			throw std::runtime_error ("Invalid parameters.");
 		}
+
+		bsp_warmup ( warmuptime );
+	
+		bsp::Runner<benchmark::BenchmarkRunner> r(processors);	
+		r.set_parameters(bn, nmin, nmax, step);
+		r.run();
+		benchmark::BenchmarkData & b = r.get_result();
+
+		if (bsp_pid() == 0) {
+			b.ratetable(std::cout);
+		}
+
 	} catch (std::runtime_error e) {
 		string s = e.what();
 		s+= "\n";
 		bsp_abort(s.c_str());
-	}
-
-	bsp_warmup ( warmuptime );
-	
-	bsp::Runner<benchmark::BenchmarkRunner> r(processors);	
-	benchmark::BenchmarkData & b = r.run_all(bn, nmin, nmax, step);
-	
-	if (bsp_pid() == 0) {
-		b.ratetable(std::cout);
 	}
 
 	bsp_end();

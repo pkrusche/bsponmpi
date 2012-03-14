@@ -35,7 +35,25 @@ from a set of samples.
 
 #include <iostream>
 
+/** Declaration of the benchmark object */
 benchmark::BenchmarkData benchmark::BenchmarkRunner::b;
+
+/** Benchmark runner implementation 
+ * 
+ * @param _bm benchmark name
+ * @param _nmin start problem size
+ * @param _nmax end problem size
+ * @param _step step size
+ * 
+ */
+void benchmark::BenchmarkRunner::set_parameters(
+		std::string const & _bm, int _nmin, int _nmax, int _step) {
+	nmin = _nmin;
+	nmax = _nmax;
+	step = _step;
+	bmname = _bm;
+}
+
 
 /** implementation of benchmark runner */
 void benchmark::BenchmarkRunner::run() {
@@ -70,12 +88,8 @@ void benchmark::BenchmarkRunner::run() {
 	}
 }
 
-/** Benchmark runner implementation */
-benchmark::BenchmarkData & benchmark::BenchmarkRunner::run_all(std::string const & _bm, int _nmin, int _nmax, int _step) {
-	nmin = _nmin;
-	nmax = _nmax;
-	step = _step;
-	bmname = _bm;
-	this->run();
+/** Get the results */
+benchmark::BenchmarkData & benchmark::BenchmarkRunner::get_result () {
 	return b;
 }
+

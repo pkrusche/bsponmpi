@@ -32,17 +32,17 @@ from a set of samples.
 #ifndef __benchmark_H__
 #define __benchmark_H__
 
-#include <boost/function.hpp>
-
 #include "bsp_cpp/bsp_cpp.h"
 #include "benchmarkdata.h"
 
 namespace benchmark {
 	
-	/** class to run a benchmark for various values of n in a BSP context */
+	/** Class to run a benchmark for various values of n in a BSP context */
 	class BenchmarkRunner : public bsp::Context {
 	public:
 		public:
+
+			/** Set up input parameter sharing */
 			BenchmarkRunner() {
 				CONTEXT_SHARED_INIT(n, int);
 				CONTEXT_SHARED_INIT(nmin, int);
@@ -51,10 +51,18 @@ namespace benchmark {
 				CONTEXT_SHARED_INIT(step, int);
 			}
 
+			/** Set up parameters */
+			void set_parameters (std::string const & , int , int , int );
+
+			/** Get the results */
+			BenchmarkData & get_result ();
+		
+		protected:
+		
+			/** Run the benchmark (called by Runner) */ 
 			void run();
 
-			/** run a benchmark, add to benchmark data */
-			BenchmarkData & run_all (std::string const & , int , int , int );
+	
 		private:
 			static BenchmarkData b;
 			double * p_rates;
