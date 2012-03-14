@@ -203,7 +203,7 @@ extern "C" {
 
 	if not conf.CheckTBB(3):
 		print "I could not find Intel TBB version >= 3.0. Have a look at SConsHelpers/tbb.py"
-	if not conf.CheckBLAS:
+	if not conf.CheckBLAS():
 		print "No version of BLAS was found"
 
 SConsHelpers.autoconfig.AutoConfig ( root, ConfRunner, { 
