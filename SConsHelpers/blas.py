@@ -13,15 +13,15 @@ import re
 def Check(context):       
 	context.Message('Checking CBLAS')
 	ret = context.TryLink("""
-	#include "helpers/cblas.h"
+#include "helpers/cblas.h"
 
-	int main(int argc, char ** argv) {
-		double * vecA, * vecB;
-		int n;
-		cblas_ddot(n, vecA, 1,vecB, 1)
-		return 0;
-	}
-	""", '.c')
+int main(int argc, char ** argv) {
+	double * vecA, * vecB;
+	int n;
+	cblas_ddot(n, vecA, 1,vecB, 1)
+	return 0;
+}
+""", '.c')
 
 	if ret:
 		autohdr.write("""
