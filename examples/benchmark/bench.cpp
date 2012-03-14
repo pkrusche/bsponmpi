@@ -32,6 +32,7 @@ Measures computation rate r, communication rate g, and latency l.
 
 #include "bsp_cpp/bsp_cpp.h"
 
+#include "benchmark.h"
 #include "bench_r.h"
 
 int main(int argc, char **argv) {
@@ -85,7 +86,7 @@ int main(int argc, char **argv) {
 			if (bsp_pid() == 0) {
 				cout << opts << endl;
 				cout << "Valid values for benchmark are: " << endl;
-				benchmark::BenchmarkFactory::list(cout);				
+				benchmark::BenchmarkFactory::get_instance().list(cout);
 			}
 			bsp_end();
 			exit(0);

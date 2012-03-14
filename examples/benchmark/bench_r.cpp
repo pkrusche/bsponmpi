@@ -38,6 +38,7 @@ and on the daxpy flop measurements from BSPEdupack.
 #include <stdexcept>
 
 #include <boost/numeric/ublas/vector.hpp>
+#include <boost/bind.hpp>
 
 #ifdef _HAVE_CBLAS
 extern "C" {
@@ -58,9 +59,6 @@ using namespace std;
 #ifndef S_MAT_OVERSAMPLE
 #define S_MAT_OVERSAMPLE 5
 #endif
-
-#define REGISTER_BENCHMARK(name, desc, benchmarkclass) \
-	static benchmark::BenchmarkInfoImpl< benchmark::benchmarkclass > _br##benchmarkclass (name, desc); 
 
 REGISTER_BENCHMARK("dot", "Dot product via loop", Dot);
 REGISTER_BENCHMARK("Udot", "Dot product via uBLAS", DotUBLAS);

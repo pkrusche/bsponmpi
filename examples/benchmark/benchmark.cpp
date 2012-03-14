@@ -31,35 +31,9 @@ from a set of samples.
 
 #include "bsp_config.h"
 #include "benchmark.h"
+#include "benchmarkfactory.h"
 
 #include <iostream>
-
-/** map of all benchmarks that have been registered */
-std::map<std::string, benchmark::BenchmarkInfo * > 
-	benchmark::BenchmarkFactory::factory_map;
-
-benchmark::AbstractBenchmark * benchmark::BenchmarkFactory::create(const char * bm) {
-	std::map<std::string, benchmark::BenchmarkInfo * >::iterator it;
-	it = factory_map.find (bm);
-	if (it == factory_map.end()) {
-		throw std::runtime_error(std::string ("Unknown benchmark: ") + bm);
-	}
-	return it->second->create();
-}
-
-/** register a new benchmark */
-void benchmark::BenchmarkFactory::reg (const char * n, benchmark::BenchmarkInfo * b ) {
-	ASSERT (factory_map.find(n) == factory_map.end());
-	factory_map[n] = b;
-}
-
-void benchmark::BenchmarkFactory::list (std::ostream & out) {
-	std::map<std::string, benchmark::BenchmarkInfo * >::iterator it;
-
-	for (it = factory_map.begin(); it != factory_map.end(); ++it) {
-		out << "\t" << it->first << "\t" << it->second->get_description() << std::endl;
-	}
-}
 
 benchmark::BenchmarkData benchmark::BenchmarkRunner::b;
 
@@ -75,7 +49,7 @@ void benchmark::BenchmarkRunner::run() {
 	for (n = nmin; n < nmax; ((int&)n)+= step) {
 		BSP_BEGIN();
 
-		AbstractBenchmark * bm = BenchmarkFactory::create(bmname.c_str());
+		AbstractBenchmark * bm = benchmark::BenchmarkFactory::get_instance().create(bmname.c_str());
 		double f = bm->run (n);
 		delete bm;
 

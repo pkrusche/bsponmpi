@@ -32,7 +32,7 @@ Benchmarking declarations for computation rate estimation functions.
 #define __bench_r_H__
 
 #include "bsp_cpp/bsp_cpp.h"
-#include "benchmark.h"
+#include "benchmarkfactory.h"
 
 namespace benchmark {
 
