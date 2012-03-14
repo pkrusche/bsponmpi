@@ -189,13 +189,15 @@ namespace benchmark {
 /* Make benchmark data serializable                                     */
 /************************************************************************/
 
+namespace bsp {
+
 template <> 
-inline size_t bsp::SharedSerializable<benchmark::BenchmarkData>::serialized_size() {
+inline size_t SharedSerializable<benchmark::BenchmarkData>::serialized_size() {
 	return sizeof(size_t) + sizeof(benchmark::BenchmarkData::Sample) * valadr->get_samples().size();
 }
 
 template <> 
-inline void bsp::SharedSerializable<benchmark::BenchmarkData>::serialize (void * target, size_t nbytes) {
+inline void SharedSerializable<benchmark::BenchmarkData>::serialize (void * target, size_t nbytes) {
 	ASSERT (nbytes >= serialized_size());
 	*((size_t *) target) = valadr->get_samples().size();
 	
@@ -207,7 +209,7 @@ inline void bsp::SharedSerializable<benchmark::BenchmarkData>::serialize (void *
 }
 
 template <> 
-inline void bsp::SharedSerializable<benchmark::BenchmarkData>::deserialize(void * source, size_t nbytes) {
+inline void SharedSerializable<benchmark::BenchmarkData>::deserialize(void * source, size_t nbytes) {
 	ASSERT (nbytes >= sizeof(size_t) );
 	size_t len = *((size_t*)source);
 	ASSERT (nbytes >= sizeof(size_t) + len*sizeof(benchmark::BenchmarkData::Sample) );
@@ -221,6 +223,6 @@ inline void bsp::SharedSerializable<benchmark::BenchmarkData>::deserialize(void 
 	}
 }
 
-
+};
 
 #endif
