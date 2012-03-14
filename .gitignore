@@ -1,5 +1,4 @@
 # git ignore file
 *.suo
 *.opensdf
-,sconf_temp
-,sconf_temp/*
+.sconf_temp
