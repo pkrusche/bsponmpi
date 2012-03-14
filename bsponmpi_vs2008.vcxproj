@@ -1,0 +1,369 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug Seq|Win32">
+      <Configuration>Debug Seq</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug Seq|x64">
+      <Configuration>Debug Seq</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release Seq|Win32">
+      <Configuration>Release Seq</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release Seq|x64">
+      <Configuration>Release Seq</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{BCE04070-B4F0-47A6-9840-325F544A275D}</ProjectGuid>
+    <RootNamespace>bsponmpi_vs2008</RootNamespace>
+    <Keyword>MakeFileProj</Keyword>
+    <ProjectName>bsponmpi</ProjectName>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Seq|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Seq|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release Seq|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Seq|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>10.0.40219.1</_ProjectFileVersion>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Debug\</IntDir>
+    <NMakeBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">scons -Q mode=debug</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">scons -Q mode=debug -c &amp;&amp; scons -Q mode=debug</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">scons -Q mode=debug -c</NMakeCleanCommandLine>
+    <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">tests\bsp_test_exptable.exe</NMakeOutput>
+    <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">src;include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
+    <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
+    <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <NMakeBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">scons -Q mode=debug $(NMakeOutput)</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">scons -Q mode=debug -c &amp;&amp; scons -Q mode=debug</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">scons -Q mode=debug -c</NMakeCleanCommandLine>
+    <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">examples\put.exe</NMakeOutput>
+    <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WIN32;_DEBUG;$(NMakePreprocessorDefinitions);_HAVE_MPI</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\peter\Documents\Code\tbb40_20120201oss\include;src;C:\Boost\include\boost-1_48;C:\Users\peter\workspace\bsponmpi\include;C:\Program Files\Microsoft Compute Cluster Pack\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
+    <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
+    <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Release\</IntDir>
+    <NMakeBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">scons -Q mode=release</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">scons -Q mode=release -c &amp;&amp; scons -Q mode=release</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">scons -Q mode=release -c</NMakeCleanCommandLine>
+    <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" />
+    <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">src;include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
+    <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
+    <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <NMakeBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Release|x64'">scons -Q mode=release</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Release|x64'">scons -Q mode=release -c &amp;&amp; scons -Q mode=release</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='Release|x64'">scons -Q mode=release -c</NMakeCleanCommandLine>
+    <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
+    <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\peter\Documents\Code\tbb40_20120201oss\include;src;C:\Boost\include\boost-1_48;C:\Users\peter\workspace\bsponmpi\include;C:\Program Files\Microsoft Compute Cluster Pack\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
+    <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
+    <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug Seq|Win32'">$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug Seq|Win32'">$(Configuration)\</IntDir>
+    <NMakeBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug Seq|Win32'">scons -Q mode=debug sequential=1</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug Seq|Win32'">scons -Q mode=debug sequential=1 -c &amp;&amp; scons -Q sequential=1 mode=debug</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug Seq|Win32'">scons -Q mode=debug sequential=1 -c</NMakeCleanCommandLine>
+    <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='Debug Seq|Win32'">$(ProjectDir)\tests\bsp_test_exptable.exe</NMakeOutput>
+    <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug Seq|Win32'">WIN32;_DEBUG;_SEQUENTIAL;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Debug Seq|Win32'">src;include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='Debug Seq|Win32'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
+    <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='Debug Seq|Win32'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
+    <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug Seq|Win32'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <NMakeBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">scons -Q mode=debug sequential=1</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">scons -Q mode=debug sequential=1 -c &amp;&amp; scons -Q sequential=1 mode=debug</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">scons -Q mode=debug sequential=1 -c</NMakeCleanCommandLine>
+    <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">$(ProjectDir)\tests\bsp_test_exptable.exe</NMakeOutput>
+    <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">WIN32;_DEBUG;_SEQUENTIAL;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">C:\Users\peter\Documents\Code\tbb40_20120201oss\include;src;C:\Boost\include\boost-1_48;C:\Users\peter\workspace\bsponmpi\include;C:\Program Files\Microsoft Compute Cluster Pack\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
+    <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
+    <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release Seq|Win32'">$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release Seq|Win32'">$(Configuration)\</IntDir>
+    <NMakeBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Release Seq|Win32'">scons -Q mode=release sequential=1</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Release Seq|Win32'">scons -Q mode=release sequential=1 -c &amp;&amp; scons -Q mode=release sequential=1</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='Release Seq|Win32'">scons -Q mode=release sequential=1 -c</NMakeCleanCommandLine>
+    <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='Release Seq|Win32'" />
+    <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release Seq|Win32'">WIN32;NDEBUG;_SEQUENTIAL;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Release Seq|Win32'">src;include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='Release Seq|Win32'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
+    <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='Release Seq|Win32'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
+    <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='Release Seq|Win32'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
+    <OutDir Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">$(Platform)\$(Configuration)\</OutDir>
+    <IntDir Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">$(Platform)\$(Configuration)\</IntDir>
+    <NMakeBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">scons -Q mode=release sequential=1</NMakeBuildCommandLine>
+    <NMakeReBuildCommandLine Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">scons -Q mode=release sequential=1 -c &amp;&amp; scons -Q mode=release sequential=1</NMakeReBuildCommandLine>
+    <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">scons -Q mode=release sequential=1 -c</NMakeCleanCommandLine>
+    <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'" />
+    <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">WIN32;NDEBUG;_SEQUENTIAL;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">C:\Users\peter\Documents\Code\tbb40_20120201oss\include;src;C:\Boost\include\boost-1_48;C:\Users\peter\workspace\bsponmpi\include;C:\Program Files\Microsoft Compute Cluster Pack\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
+    <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
+    <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="examples\benchmark\benchmarkdata.h" />
+    <ClInclude Include="examples\benchmark\benchmarkfactory.h" />
+    <ClInclude Include="examples\benchmark\bench_r.h" />
+    <ClInclude Include="examples\bspedupack\bspedupack.h" />
+    <ClInclude Include="examples\mpiedupack\mpiedupack.h" />
+    <ClInclude Include="examples\benchmark\benchmark.h" />
+    <ClInclude Include="include\bsp_cpp\Runner.h" />
+    <ClInclude Include="include\bsp_cpp\Shared\Shared.h" />
+    <ClInclude Include="include\bsp_cpp\Shared\SharedSerialization.h" />
+    <ClInclude Include="include\bsp_cpp\Shared\SharedVariable.h" />
+    <ClInclude Include="include\bsp_cpp\Shared\SharedVariableSet.h" />
+    <ClInclude Include="include\bsp_cpp\shared\initializers.h" />
+    <ClInclude Include="include\bsp_cpp\shared\reducers.h" />
+    <ClInclude Include="include\bsp_fold.h" />
+    <ClInclude Include="include\helpers\cblas.h" />
+    <ClInclude Include="src\bsp_cpp\HeaderQueue.h" />
+    <ClInclude Include="include\bsp_tools\MessageBuffer.h" />
+    <ClInclude Include="src\bspx.h" />
+    <ClInclude Include="src\bspx_comm.h" />
+    <ClInclude Include="src\bspx_comm_seq.h" />
+    <ClInclude Include="include\bsp_tools\Avector.h" />
+    <ClInclude Include="include\bsp_cpp\bsp_commandline.h" />
+    <ClInclude Include="include\bsp_cpp\bsp_cpp.h" />
+    <ClInclude Include="include\bsp_cpp\Context.h" />
+    <ClInclude Include="include\bsp_cpp\TaskMapper.h" />
+    <ClInclude Include="src\bspx_comm_mpi.h" />
+    <ClInclude Include="src\bsp_cpp\bsp_context_ts.h" />
+    <ClInclude Include="src\bsp_cpp\bsp_localdelivery.h" />
+    <ClInclude Include="src\bsp_cpp\SerializedDataset.h" />
+    <ClInclude Include="src\bsp_level1.h" />
+    <ClInclude Include="src\bsp_threadsafe.h" />
+    <ClInclude Include="include\bsp_tools\aligned_allocator.h" />
+    <ClInclude Include="include\bsp_tools\aligned_malloc.h" />
+    <ClInclude Include="include\bsp.h" />
+    <ClInclude Include="include\bsp_abort.h" />
+    <ClInclude Include="include\bsp_alloc.h" />
+    <ClInclude Include="include\bsp_broadcast.h" />
+    <ClInclude Include="src\bsp_delivtable.h" />
+    <ClInclude Include="src\bsp_exptable.h" />
+    <ClInclude Include="src\bsp_memreg.h" />
+    <ClInclude Include="src\bsp_mesgqueue.h" />
+    <ClInclude Include="src\bsp_private.h" />
+    <ClInclude Include="src\bsp_reqtable.h" />
+    <ClInclude Include="include\tools\mutex.h" />
+    <ClInclude Include="include\bsp_tools\spawn.h" />
+    <ClInclude Include="include\bsp_tools\utilities.h" />
+    <ClInclude Include="src\bsp_cpp\bsp_contextimpl.h" />
+    <ClInclude Include="tests\bsp_test.h" />
+    <ClInclude Include="tests\ops\test_get.h" />
+    <ClInclude Include="tests\ops\test_hpget.h" />
+    <ClInclude Include="tests\ops\test_hpput.h" />
+    <ClInclude Include="tests\ops\test_put.h" />
+    <ClInclude Include="tests\ops\test_send.h" />
+    <ClInclude Include="tests\unittest.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="examples\benchmark\bench.cpp" />
+    <ClCompile Include="examples\benchmark\benchmark.cpp" />
+    <ClCompile Include="examples\benchmark\bench_r.cpp" />
+    <ClCompile Include="examples\benchmark\bench_g.cpp" />
+    <ClCompile Include="examples\benchmark\bench_l.cpp" />
+    <ClCompile Include="examples\bspedupack++\bspbench.cpp" />
+    <ClCompile Include="examples\bspedupack\bspbench.c" />
+    <ClCompile Include="examples\bspedupack\bspedupack.c" />
+    <ClCompile Include="examples\bspedupack\bspfft.c" />
+    <ClCompile Include="examples\bspedupack\bspfft_test.c" />
+    <ClCompile Include="examples\bspedupack\bspinprod.c" />
+    <ClCompile Include="examples\bspedupack\bsplu.c" />
+    <ClCompile Include="examples\bspedupack\bsplu_test.c" />
+    <ClCompile Include="examples\bspedupack\bspmv.c" />
+    <ClCompile Include="examples\bspedupack\bspmv_test.c" />
+    <ClCompile Include="examples\get.cpp" />
+    <ClCompile Include="examples\hpget.cpp" />
+    <ClCompile Include="examples\hpput.cpp" />
+    <ClCompile Include="examples\mpiedupack\mpibench.c" />
+    <ClCompile Include="examples\mpiedupack\mpiedupack.c" />
+    <ClCompile Include="examples\mpiedupack\mpifft.c" />
+    <ClCompile Include="examples\mpiedupack\mpifft_test.c" />
+    <ClCompile Include="examples\mpiedupack\mpiinprod.c" />
+    <ClCompile Include="examples\mpiedupack\mpilu.c" />
+    <ClCompile Include="examples\mpiedupack\mpilu_test.c" />
+    <ClCompile Include="examples\mpiedupack\mpimv.c" />
+    <ClCompile Include="examples\mpiedupack\mpimv_test.c" />
+    <ClCompile Include="examples\put.cpp" />
+    <ClCompile Include="src\bspx.c" />
+    <ClCompile Include="src\bsp_abort.c" />
+    <ClCompile Include="src\bsp_cpp\bsp_commandline.cpp" />
+    <ClCompile Include="src\bsp_cpp\bsp_context.cpp" />
+    <ClCompile Include="src\bsp_cpp\bsp_contextimpl_memreg.cpp" />
+    <ClCompile Include="src\bsp_cpp\bsp_context_ts.cpp" />
+    <ClCompile Include="src\bsp_cpp\bsp_sharedvariableset.cpp" />
+    <ClCompile Include="src\bsp_delivtable.c" />
+    <ClCompile Include="src\bsp_exptable.c" />
+    <ClCompile Include="src\bsp_global_drma.c" />
+    <ClCompile Include="src\bsp_memreg.c" />
+    <ClCompile Include="src\bsp_comm_mpi.c" />
+    <ClCompile Include="src\bsp_reqtable.c" />
+    <ClCompile Include="src\bsp_www.c" />
+    <ClCompile Include="src\bsp_cpp\bsp_contextimpl.cpp" />
+    <ClCompile Include="tests\bsp_test.c" />
+    <ClCompile Include="tests\bsp_test_collectives.c" />
+    <ClCompile Include="tests\bsp_test_cpp_collectives.cpp" />
+    <ClCompile Include="tests\bsp_test_delivtable.c" />
+    <ClCompile Include="tests\bsp_test_exptable.c" />
+    <ClCompile Include="tests\bsp_test_fixtable.c" />
+    <ClCompile Include="tests\bsp_test_get.c" />
+    <ClCompile Include="tests\bsp_test_global_drma.c" />
+    <ClCompile Include="tests\bsp_test_memreg.c" />
+    <ClCompile Include="tests\bsp_test_ops.cpp" />
+    <ClCompile Include="tests\bsp_test_put.c" />
+    <ClCompile Include="tests\bsp_test_reqtable.c" />
+    <ClCompile Include="tests\bsp_test_send.c" />
+    <ClCompile Include="src\bsp_time.c" />
+    <ClCompile Include="src\bsp_mutex.c" />
+    <ClCompile Include="src\bsp_comm_seq.c" />
+    <ClCompile Include="examples\simplebspcomputation.cpp" />
+    <ClCompile Include="tests\bsp_test_sharedvars.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="AUTHORS" />
+    <None Include="debug\BuildLog.htm" />
+    <None Include="examples\benchmark\SConscript" />
+    <None Include="examples\bspedupack++\SConscript" />
+    <None Include="examples\bspedupack\SConscript" />
+    <None Include="examples\mpiedupack\SConscript" />
+    <None Include="examples\SConscript" />
+    <None Include="FILEHEADER" />
+    <None Include="include\bsp_cpp\Shared\init_assign.inl" />
+    <None Include="include\bsp_cpp\Shared\reduce_numeric.inl" />
+    <None Include="include\bsp_cpp\Shared\Serializers.inl" />
+    <None Include="INSTALL" />
+    <None Include="Makefile" />
+    <None Include="My Amplifier Results\r000hs\r000hs.ampl" />
+    <None Include="My Amplifier Results\r001lw\r001lw.ampl" />
+    <None Include="My Amplifier Results\r002hs\r002hs.ampl" />
+    <None Include="My Amplifier Results\r003hs\r003hs.ampl" />
+    <None Include="My Amplifier Results\r004hs\r004hs.ampl" />
+    <None Include="My Amplifier Results\r005hs\r005hs.ampl" />
+    <None Include="My Amplifier Results\r006hs\r006hs.ampl" />
+    <None Include="My Amplifier Results\r007hs\r007hs.ampl" />
+    <None Include="My Amplifier Results\r008hs\r008hs.ampl" />
+    <None Include="My Amplifier Results\r009hs\r009hs.ampl" />
+    <None Include="My Inspector Results\r000mi4\r000mi4.insp" />
+    <None Include="My Inspector Results\r001mi4\r001mi4.insp" />
+    <None Include="My Inspector Results\r002ti3\r002ti3.insp" />
+    <None Include="My Inspector Results\r003ti3\r003ti3.insp" />
+    <None Include="My Inspector Results\r004mi4\r004mi4.insp" />
+    <None Include="My Inspector Results\r005mi4\r005mi4.insp" />
+    <None Include="My Inspector Results\r006mi4\r006mi4.insp" />
+    <None Include="My Inspector Results\r007mi4\r007mi4.insp" />
+    <None Include="My Inspector Results\r008mi4\r008mi4.insp" />
+    <None Include="NEWS" />
+    <None Include="opts.py" />
+    <None Include="opts_naphta.cov.warwick.ac.uk_Darwin_i386.py" />
+    <None Include="opts_settembrini_Windows_AMD64.py" />
+    <None Include="opts_voland_Linux_x86_64.py" />
+    <None Include="opts_wsbc.cov.warwick.ac.uk_Darwin_i386.py" />
+    <None Include="README" />
+    <None Include="SConsHelpers\autoconfig.py" />
+    <None Include="SConsHelpers\blas.py" />
+    <None Include="SConsHelpers\boost.py" />
+    <None Include="SConsHelpers\toolsets\gnu.py" />
+    <None Include="SConsHelpers\mpi.py" />
+    <None Include="SConsHelpers\toolsets\intel.py" />
+    <None Include="SConsHelpers\toolsets\intel_windows.py" />
+    <None Include="SConsHelpers\toolsets\msvc.py" />
+    <None Include="SConsHelpers\tbb.py" />
+    <None Include="SConsHelpers\__init__.py" />
+    <None Include="src\SConscript" />
+    <None Include="tests\SConscript" />
+    <None Include="SConstruct" />
+    <None Include="TODO" />
+  </ItemGroup>
+  <ItemGroup>
+    <Library Include="COPYING.LIB" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

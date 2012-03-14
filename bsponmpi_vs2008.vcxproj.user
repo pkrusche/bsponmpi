@@ -1,0 +1,27 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <ShowAllFiles>true</ShowAllFiles>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(NMakeOutput)</LocalDebuggerCommand>
+    <DebuggerFlavor Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">MpiClusterDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">-p 10</LocalDebuggerCommandArguments>
+    <MpiDebuggerDeploymentDirectory Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.</MpiDebuggerDeploymentDirectory>
+    <MpiDebuggerWorkingDirectory Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">.</MpiDebuggerWorkingDirectory>
+    <MpiDebuggerApplicationCommand Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\peter\workspace\bsponmpi\examples\benchmark\bench.exe</MpiDebuggerApplicationCommand>
+    <MpiDebuggerApplicationArguments Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    </MpiDebuggerApplicationArguments>
+    <MpiDebuggerShimLocation Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\Remote Debugger\x64\mpishim100.exe</MpiDebuggerShimLocation>
+    <MpiDebuggerMpiExecCommand Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Program Files\Microsoft HPC Pack 2008 R2\Bin\mpiexec.exe</MpiDebuggerMpiExecCommand>
+    <MpiDebuggerAdditionalMpiExecArguments Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    </MpiDebuggerAdditionalMpiExecArguments>
+    <MpiDebuggerSchedulerNode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">localhost/1</MpiDebuggerSchedulerNode>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='Release|x64'">examples\bspedupack++\bspbench.exe</LocalDebuggerCommand>
+    <DebuggerFlavor Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MpiClusterDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-p 2</LocalDebuggerCommandArguments>
+    <MpiDebuggerSchedulerNode Condition="'$(Configuration)|$(Platform)'=='Release|x64'">localhost/1</MpiDebuggerSchedulerNode>
+    <MpiDebuggerApplicationCommand Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\peter\workspace\bsponmpi\examples\simplebspcomputation.exe</MpiDebuggerApplicationCommand>
+    <MpiDebuggerApplicationArguments Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-p 2</MpiDebuggerApplicationArguments>
+    <MpiDebuggerShimLocation Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files (x86)\Microsoft Visual Studio 10.0\Common7\IDE\Remote Debugger\x64\mpishim100.exe</MpiDebuggerShimLocation>
+    <MpiDebuggerMpiExecCommand Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Program Files\Microsoft HPC Pack 2008 R2\Bin\mpiexec.exe</MpiDebuggerMpiExecCommand>
+  </PropertyGroup>
+</Project>
