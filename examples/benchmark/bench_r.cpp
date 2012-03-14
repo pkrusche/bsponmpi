@@ -59,6 +59,20 @@ using namespace std;
 #define S_MAT_OVERSAMPLE 5
 #endif
 
+#define REGISTER_BENCHMARK(name, desc, benchmarkclass) \
+	static benchmark::BenchmarkInfoImpl< benchmark::benchmarkclass > _br##benchmarkclass (name, desc); 
+
+REGISTER_BENCHMARK("dot", "Dot product via loop", Dot);
+REGISTER_BENCHMARK("Udot", "Dot product via uBLAS", DotUBLAS);
+REGISTER_BENCHMARK("daxpy", "Vector addition via loop", Daxpy);
+REGISTER_BENCHMARK("Udaxpy", "Vector addition via uBLAS", DaxpyUBLAS);
+REGISTER_BENCHMARK("MatMult", "Matrix multiplication via IJK loop", MatMult);
+
+#ifdef _HAVE_CBLAS
+REGISTER_BENCHMARK("Cdot", "Dot product via CBLAS", DotCBLAS);
+REGISTER_BENCHMARK("Cdaxpy", "Vector addition via CBLAS", DaxpyCBLAS);
+#endif
+
 /** random number helper. */
 template <class _t>
 _t positive_random_number (int n) {

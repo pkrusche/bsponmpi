@@ -33,26 +33,24 @@ information.
 /* std::string serializer                                               */
 /************************************************************************/
 
-template < typename _init, typename _red > 
-class SharedVariable <std::string, _init, _red> {
-public:
-	void serialize (void * target, size_t nbytes) {
-		ASSERT (nbytes >= sizeof(size_t) + valadr->size());
-		((size_t *) target) = valadr->size();
-		memcpy ( ((size_t *) target) + 1, valadr->c_str(), valadr->size() );
-	}
+template <> 
+inline void SharedSerializable<std::string>::serialize (void * target, size_t nbytes) {
+	ASSERT (nbytes >= sizeof(size_t) + valadr->size());
+	*((size_t *) target) = valadr->size();
+	memcpy ( ((size_t *) target) + 1, valadr->c_str(), valadr->size() );
+}
 
-	void deserialize(void * source, size_t nbytes) {
-		ASSERT (nbytes >= sizeof(size_t) );
-		size_t len = *((size_t*)source);
-		ASSERT (nbytes >= sizeof(size_t) + len );
-		*valadr = std::string ( (char*) ( ((size_t*)source) + 1), len);
-	}
+template <> 
+inline void SharedSerializable<std::string>::deserialize(void * source, size_t nbytes) {
+	ASSERT (nbytes >= sizeof(size_t) );
+	size_t len = *((size_t*)source);
+	ASSERT (nbytes >= sizeof(size_t) + len );
+	*valadr = std::string ( (char*) ( ((size_t*)source) + 1), len);
+}
 
-	size_t SharedVariable <std::string, _init, _red>  ::serialized_size() {
-		return sizeof(size_t) + valadr->size();
-	}
-};
-
+template <> 
+inline size_t SharedSerializable<std::string>::serialized_size() {
+	return sizeof(size_t) + valadr->size();
+}
 
 #endif // __BSPVARSerializers_H__

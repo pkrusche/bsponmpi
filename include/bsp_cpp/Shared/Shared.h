@@ -70,6 +70,14 @@ namespace bsp {
 		  @return true if any action was performed 
 		 */
 		inline virtual bool reduce() { return false; }
+
+		/** Neutral initializer
+		 * 
+		 * Reduce operations must have a neutral element.
+		 * This function assigns the neutral element to the
+		 * value inside this shared element.
+		 */
+		virtual void make_neutral() = 0;
 		
 	protected:
 		std::vector<Shared*> vars;

@@ -38,7 +38,7 @@ from a set of samples.
 std::map<std::string, benchmark::BenchmarkInfo * > 
 	benchmark::BenchmarkFactory::factory_map;
 
-benchmark::AbstractBenchmark * benchmark::BenchmarkFactory::create(std::string const & bm) {
+benchmark::AbstractBenchmark * benchmark::BenchmarkFactory::create(const char * bm) {
 	std::map<std::string, benchmark::BenchmarkInfo * >::iterator it;
 	it = factory_map.find (bm);
 	if (it == factory_map.end()) {
@@ -48,7 +48,7 @@ benchmark::AbstractBenchmark * benchmark::BenchmarkFactory::create(std::string c
 }
 
 /** register a new benchmark */
-void benchmark::BenchmarkFactory::reg (std::string const & n, benchmark::BenchmarkInfo * b ) {
+void benchmark::BenchmarkFactory::reg (const char * n, benchmark::BenchmarkInfo * b ) {
 	ASSERT (factory_map.find(n) == factory_map.end());
 	factory_map[n] = b;
 }
@@ -75,7 +75,7 @@ void benchmark::BenchmarkRunner::run() {
 	for (n = nmin; n < nmax; ((int&)n)+= step) {
 		BSP_BEGIN();
 
-		AbstractBenchmark * bm = BenchmarkFactory::create(bmname);
+		AbstractBenchmark * bm = BenchmarkFactory::create(bmname.c_str());
 		double f = bm->run (n);
 		delete bm;
 

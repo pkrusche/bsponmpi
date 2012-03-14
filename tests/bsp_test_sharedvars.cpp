@@ -22,6 +22,9 @@
 
 #include "bsp_config.h"
 
+#include <iostream>
+#include <climits>
+
 #include "bsp_cpp/bsp_cpp.h"
 #include "bsp_cpp/Shared/SharedVariable.h"
 
@@ -36,25 +39,30 @@ int main (int argc, char ** argv) {
 	SharedVariableSet s_top, s_locals[K];
 
 	int i_in = bsp_pid();
-	int j_in = bsp_pid();
+	int j_in = bsp_pid() + 1;
+	std::string k_in = "Initial value.";
 
 	int i[K], j[K];
+	std::string k [K];
 
 	memset (i, -1, sizeof(int) * K);
 	memset (j, -1, sizeof(int) * K);
 
 	/** 1. create variable maps */
 
-	SHARE_VARIABLE_IR (s_top, bsp::InitAssign, bsp::ReduceFirst, i_in, int);
-	SHARE_VARIABLE_R (s_top, bsp::InitAssign, bsp::ReduceMax, j_in, int);
+	SHARE_VARIABLE_IR (s_top, bsp::ReduceSum,       0, i_in, int);
+	SHARE_VARIABLE_R (s_top,  bsp::ReduceMax, INT_MIN, j_in, int);
+	SHARE_VARIABLE_I (s_top, k_in, std::string);
 
 	for (int p = 0; p < K; ++p) {
 		// trickery to map array elements to the same slot as i_in/j_in
 		int & i_in (i[p]);
 		int & j_in (j[p]);
+		std::string & k_in(k[p]);
 
-		SHARE_VARIABLE_IR (s_locals[p], bsp::InitAssign, bsp::ReduceFirst, i_in, int);
-		SHARE_VARIABLE_R (s_locals[p], bsp::InitAssign, bsp::ReduceMax, j_in, int);
+		SHARE_VARIABLE_IR (s_locals[p], bsp::ReduceSum, 0, i_in, int);
+		SHARE_VARIABLE_R (s_locals[p],  bsp::ReduceMax, INT_MIN, j_in,  int);
+		SHARE_VARIABLE_I (s_locals[p], k_in, std::string);
 	}
 
 	/** 2. connect variable maps */
@@ -68,16 +76,36 @@ int main (int argc, char ** argv) {
 	for (int p = 0; p < K; ++p) {
 		assert (i[p] == 0);
 		assert (j[p] == -1);
+		assert (k[p] == "Initial value.");
 	}
 	
-	int jmax = 0;
 	for (int p = 0; p < K; ++p) {
-		i[p] = rand();
-		j[p] = rand();
-		jmax = max(jmax, j[p]);
+		i[p] = 10 * bsp_pid() + p;
+		j[p] = rand() % 100;
 	}
 
+	/** validation... */
+	int isum = 0;
+	int jmax = 0;
+	for (int p = 0; p < bsp_nprocs(); ++p) {
+		for (int k = 0; k < K; ++k) {
+			isum += 10 * p + k;
+			jmax = max(jmax, j[k]);
+		}
+	}
+	
+	std::cout << bsp_pid() << ": " << i_in << " " << j_in << " " << isum << " " << jmax << std::endl;
+	
 	s_top.reduce_all();
+
+	std::cout << bsp_pid() << ": "  << i_in << " " << j_in << " " << isum << " " << jmax << std::endl;
+
+	std::cout.flush();
+	
+	bsp_sync();
+
+	assert (isum == i_in);
+	assert (jmax == j_in);
 
 	bsp_end();
 

@@ -45,7 +45,7 @@ information.
 bsp::SharedVariableSet::~SharedVariableSet() {
 	for (std::map<std::string, Shared**>::iterator it = reduce_svl.begin(); 
 		it != reduce_svl.end(); ++it) {
-		for (int p = 0; p < ::bsp_nprocs() - 1; ++p) {
+		for (int p = 0; p < ::bsp_nprocs() + 1; ++p) {
 			delete it->second[p];
 		}
 		delete [] it->second;
@@ -77,11 +77,9 @@ void bsp::SharedVariableSet::init_reduce_slot (const char * id, bsp::Shared ** v
 #endif
 	std::string n(id);
 	reduce_svl[ n ] = v;
-	for (int p = 0; p < bsp_nprocs() - 1; ++p) {
-		if ( p == bsp_pid() ) {
-			continue;
-		}
-		svl[ n ] -> add_child ( v[p] );
+	v[0]->add_child ( svl[ n ] );
+	for (int p = 1; p <= bsp_nprocs(); ++p) {
+		v[0] -> add_child ( v[p] );
 	}
 }
 
@@ -162,10 +160,8 @@ void bsp::SharedVariableSet::reduce_all() {
 	for (std::set<std::string>::iterator it = reduce_list.begin(); 
 		it != reduce_list.end(); ++it) {
 		bsp::Shared * p = svl[*it];
-
-		if (get_reduce_slot(it->c_str()) != NULL) {
-			sds.add_elem(*it, p);
-		}
+		p->reduce();
+		sds.add_elem(*it, p);
 	}
 
 #ifdef _HAVE_MPI
@@ -191,7 +187,7 @@ void bsp::SharedVariableSet::reduce_all() {
 
 		MPI_Allgatherv(sds.get_data(), myelems[1], MPI_BYTE, target, sizes, offsets, MPI_BYTE, bsp_communicator);
 
-		int q = 0;
+		int q = 1;
 		for (int p = 0; p < bsp_nprocs(); ++p) {
 			if (p == bsp_pid())
 				continue;
@@ -223,8 +219,10 @@ void bsp::SharedVariableSet::reduce_all() {
 
 	for (std::set<std::string>::iterator it = reduce_list.begin(); 
 		it != reduce_list.end(); ++it) {
-		bsp::Shared * p = svl[*it];
-		p->reduce();
+		bsp::Shared ** p = reduce_svl[*it];
+		p[0]->make_neutral();
+		p[0]->reduce();
+		p[0]->initialize();
 	}
 
 }

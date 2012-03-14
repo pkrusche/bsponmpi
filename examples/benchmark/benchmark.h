@@ -54,10 +54,7 @@ namespace benchmark {
 		/** Run on problem size n, return a rate of operations (complexity(n) / time(n)) */
 		virtual double run (int n) = 0;		
 	};
-	
-#define REGISTER_BENCHMARK(name, desc, benchmarkclass) void register_benchmark_##benchmarkclass() { \
-	static BenchmarkInfoImpl<benchmarkclass> benchreg##benchmarkclass (name, desc); };
-	
+		
 	class BenchmarkInfo {
 	public:
 		virtual AbstractBenchmark * create () = 0;
@@ -71,10 +68,10 @@ namespace benchmark {
 	class BenchmarkFactory {
 	public:		
 		/** Create specific benchmark */
-		static AbstractBenchmark * create(std::string const & );
+		static AbstractBenchmark * create(const char * );
 		
 		/** register a new benchmark */
-		static void reg (std::string const &, BenchmarkInfo * );
+		static void reg (const char *, BenchmarkInfo * );
 
 		/** List available benchmarks */
 		static void list (std::ostream & out);
@@ -88,7 +85,7 @@ namespace benchmark {
 	template <class _b>
 	class BenchmarkInfoImpl : public BenchmarkInfo {
 	public:
-		BenchmarkInfoImpl(std::string const & name, std::string const & desc) {
+		BenchmarkInfoImpl(const char * name, const char * desc) {
 			description = desc;
 			BenchmarkFactory::reg (name, this);
 		}
