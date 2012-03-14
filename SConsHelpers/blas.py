@@ -27,6 +27,8 @@ def Check(context):
 		autohdr.write("""
 #define _HAVE_CBLAS
 """)
+	else:
+		print "CBLAS wasn't found, our test code failed to compile."
 	return ret
 
 def MakeOptions (opts):
