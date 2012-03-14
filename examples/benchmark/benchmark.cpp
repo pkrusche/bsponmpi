@@ -35,9 +35,6 @@ from a set of samples.
 
 #include <iostream>
 
-/** Declaration of the benchmark object */
-benchmark::BenchmarkData benchmark::BenchmarkRunner::b;
-
 /** Benchmark runner implementation 
  * 
  * @param _bm benchmark name
@@ -60,32 +57,13 @@ void benchmark::BenchmarkRunner::run() {
 	BSP_SCOPE(BenchmarkRunner);	
 	BSP_BEGIN();
 
-	p_rates = new double [bsp_nprocs()];
-	bsp_push_reg(p_rates, sizeof(double) * bsp_nprocs());
-	BSP_END();
-
+	AbstractBenchmark * bm = benchmark::BenchmarkFactory::get_instance().create(bmname.c_str());
 	for (n = nmin; n < nmax; n += step) {
-		BSP_BROADCAST_LOCAL(n);
-		BSP_BEGIN();
-
-		AbstractBenchmark * bm = benchmark::BenchmarkFactory::get_instance().create(bmname.c_str());
-		double f = bm->run (n);
-
-		bsp_put(0, &f, p_rates, sizeof(double) * bsp_pid(), sizeof(double));
-
-		BSP_SYNC();
-
-		if (bsp_pid() == 0) {
-			for (int p = 0; p< bsp_nprocs(); ++p) {
-				((BenchmarkRunner*)get_parent_context())->b.add_sample(n, p_rates[p]);
-			}
-			std::cerr << ".";
-		}
-		BSP_END();
+		double r = bm->run (n);
+		b.add_sample(n, r);
 	}
-	if (bsp_pid() == 0) {
-		std::cerr << std::endl;
-	}
+
+	BSP_END();
 }
 
 /** Get the results */

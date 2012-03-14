@@ -42,11 +42,30 @@ from a set of samples.
 #include <boost/accumulators/accumulators.hpp>
 #include <boost/accumulators/statistics.hpp> 
 
+#include "bsp_cpp/Shared/SharedVariable.h"
+
 namespace benchmark {
 	
 	/** This class handles benchmark data statistics */
 	class BenchmarkData {
 	public:
+
+		BenchmarkData() {}
+
+		BenchmarkData(BenchmarkData const & rhs) {
+			add_samples(rhs);
+		}
+
+		/** operator = implementation */
+		BenchmarkData & operator=(BenchmarkData const & rhs) {
+			if (&rhs == this) {
+				return *this;
+			}
+			samples.clear();
+			add_samples(rhs);
+			return *this;
+		}
+
 		struct Sample {
 			int n;
 			double rate;
@@ -55,12 +74,27 @@ namespace benchmark {
 		/** 
 		 * Each sample has: a problem size (n), and a rate. 
 		 */
-
 		inline void add_sample (int n, double r) {
 			Sample s;
 			s.n = n;
 			s.rate = r;
 			samples.push_back(s);
+		}
+
+		/** 
+		 * Each sample has: a problem size (n), and a rate. 
+		 */
+		inline void add_samples (BenchmarkData const & d) {
+			for (size_t j = 0; j < d.samples.size(); ++j ) {
+				samples.push_back(d.samples[j]);
+			}
+		}
+
+		/**
+		 * Reset the list of samples
+		 */
+		inline void reset_samples() {
+			samples.clear();
 		}
 
 		/** output a table of rates and errors. */
@@ -85,6 +119,9 @@ namespace benchmark {
 					<< p.err << std::endl;
 			}
 		}
+
+		/** Get the list of samples */
+		std::vector<Sample> & get_samples() { return samples; }
 
 	private:
 
@@ -137,6 +174,53 @@ namespace benchmark {
 
 		std::vector<Sample> samples;
 	};
+
+	/** Combine two sets of results */
+	template <class _c>
+	struct BenchmarkCombine {
+		void operator () (BenchmarkData & b, BenchmarkData const & b_add) {
+			b.add_samples(b_add);
+		}
+	};
+
+};
+
+/************************************************************************/
+/* Make benchmark data serializable                                     */
+/************************************************************************/
+
+template <> 
+inline size_t bsp::SharedSerializable<benchmark::BenchmarkData>::serialized_size() {
+	return sizeof(size_t) + sizeof(benchmark::BenchmarkData::Sample) * valadr->get_samples().size();
 }
+
+template <> 
+inline void bsp::SharedSerializable<benchmark::BenchmarkData>::serialize (void * target, size_t nbytes) {
+	ASSERT (nbytes >= serialized_size());
+	*((size_t *) target) = valadr->get_samples().size();
+	
+	benchmark::BenchmarkData::Sample * sp = (benchmark::BenchmarkData::Sample *)(((size_t *) target) + 1);
+	for (size_t k = 0; k < valadr->get_samples().size(); ++k) {
+		memcpy ( sp, &(valadr->get_samples()[k]), sizeof (benchmark::BenchmarkData::Sample) );
+		++sp;
+	}	
+}
+
+template <> 
+inline void bsp::SharedSerializable<benchmark::BenchmarkData>::deserialize(void * source, size_t nbytes) {
+	ASSERT (nbytes >= sizeof(size_t) );
+	size_t len = *((size_t*)source);
+	ASSERT (nbytes >= sizeof(size_t) + len*sizeof(benchmark::BenchmarkData::Sample) );
+	
+	valadr->get_samples().resize(len);
+
+	benchmark::BenchmarkData::Sample * sp = (benchmark::BenchmarkData::Sample *)(((size_t *) source) + 1);
+	for (size_t k = 0; k < len; ++k) {
+		memcpy ( &(valadr->get_samples()[k]), sp, sizeof (benchmark::BenchmarkData::Sample) );
+		++sp;
+	}
+}
+
+
 
 #endif

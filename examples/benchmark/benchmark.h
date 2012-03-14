@@ -40,38 +40,37 @@ namespace benchmark {
 	/** Class to run a benchmark for various values of n in a BSP context */
 	class BenchmarkRunner : public bsp::Context {
 	public:
-		public:
 
-			/** Set up input parameter sharing */
-			BenchmarkRunner() {
-				CONTEXT_SHARED_INIT(n, int);
-				CONTEXT_SHARED_INIT(nmin, int);
-				CONTEXT_SHARED_INIT(nmax, int);
-				CONTEXT_SHARED_INIT(bmname, std::string);
-				CONTEXT_SHARED_INIT(step, int);
-			}
+		/** Set up input parameter sharing */
+		BenchmarkRunner() {
+			CONTEXT_SHARED_INIT(n, int);
+			CONTEXT_SHARED_INIT(nmin, int);
+			CONTEXT_SHARED_INIT(nmax, int);
+			CONTEXT_SHARED_INIT(bmname, std::string);
+			CONTEXT_SHARED_INIT(step, int);
+			CONTEXT_SHARED_REDUCE(BenchmarkCombine, BenchmarkData(), b, BenchmarkData);
+		}
 
-			/** Set up parameters */
-			void set_parameters (std::string const & , int , int , int );
+		/** Set up parameters */
+		void set_parameters (std::string const & , int , int , int );
 
-			/** Get the results */
-			BenchmarkData & get_result ();
+		/** Get the results */
+		BenchmarkData & get_result ();
 		
-		protected:
+	protected:
 		
-			/** Run the benchmark (called by Runner) */ 
-			void run();
+		/** Run the benchmark (called by Runner) */ 
+		void run();
 
 	
-		private:
-			static BenchmarkData b;
-			double * p_rates;
-			
-			// n counter
-			int n, nmin, nmax, step;
-			std::string bmname;
-		};
-	
-;}
+	private:
+		// Collected benchmark data
+		BenchmarkData b;			
+		// n counter
+		int n, nmin, nmax, step;
+		std::string bmname;
+	};
+
+};
 
 #endif // __benchmark_H__

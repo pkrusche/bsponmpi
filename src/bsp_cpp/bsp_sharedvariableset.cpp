@@ -253,16 +253,16 @@ void bsp::SharedVariableSet::reduce_impl(std::set<std::string> const & _reduce_l
 		bsp_free(offsets);
 		bsp_free(sizes);
 		bsp_free(elems);
+	
+		for (std::set<std::string>::const_iterator it = _reduce_list.cbegin(); 
+			it != _reduce_list.cend(); ++it) {
+				bsp::Shared ** p = reduce_svl[*it];
+				p[0]->make_neutral();
+				p[0]->reduce();
+				p[0]->initialize();
+		}
+
 	}
 #endif
-
-	for (std::set<std::string>::const_iterator it = _reduce_list.begin(); 
-		it != _reduce_list.end(); ++it) {
-			bsp::Shared ** p = reduce_svl[*it];
-			p[0]->make_neutral();
-			p[0]->reduce();
-			p[0]->initialize();
-	}
-
 }
 

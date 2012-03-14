@@ -136,11 +136,11 @@ namespace bsp {
 
 		/** Shortcut to share reduction variables in a context constructor */
 #define CONTEXT_SHARED_REDUCE(red, neutral, var, ...)				\
-	SHARE_VARIABLE_R(context_sharing, bsp :: red, neutral, var, __VA_ARGS__);
+	SHARE_VARIABLE_R(context_sharing, red, neutral, var, __VA_ARGS__);
 
 		/** Shortcut to share variables in a context constructor */
 #define CONTEXT_SHARED_BOTH(red, neutral, var, ...)			\
-	SHARE_VARIABLE_IR(context_sharing, bsp :: red, neutral, var, __VA_ARGS__);
+	SHARE_VARIABLE_IR(context_sharing, red, neutral, var, __VA_ARGS__);
 
 		/** Shortcut for initializing variables between supersteps */
 #define BSP_BROADCAST(var, mn) do {				\
