@@ -196,8 +196,8 @@ void bsp::SharedVariableSet::reduce_all() {
 void bsp::SharedVariableSet::reduce_impl(std::set<std::string> const & _reduce_list) {
 	SerializedDataset sds ((int)_reduce_list.size());
 
-	for (std::set<std::string>::const_iterator it = _reduce_list.cbegin(); 
-		it != _reduce_list.cend(); ++it) {
+	for (std::set<std::string>::const_iterator it = _reduce_list.begin(); 
+		it != _reduce_list.end(); ++it) {
 			bsp::Shared * p = svl[*it];
 			p->reduce();
 			sds.add_elem(*it, p);
@@ -256,8 +256,8 @@ void bsp::SharedVariableSet::reduce_impl(std::set<std::string> const & _reduce_l
 	}
 #endif
 
-	for (std::set<std::string>::const_iterator it = _reduce_list.cbegin(); 
-		it != _reduce_list.cend(); ++it) {
+	for (std::set<std::string>::const_iterator it = _reduce_list.begin(); 
+		it != _reduce_list.end(); ++it) {
 			bsp::Shared ** p = reduce_svl[*it];
 			p[0]->make_neutral();
 			p[0]->reduce();
