@@ -35,6 +35,9 @@ extern "C" {
 };
 #endif
 
+extern "C" {
+#include "bspx_comm_seq.h"
+};
 
 #include <algorithm>
 #include <stdexcept>
