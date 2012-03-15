@@ -351,6 +351,12 @@ digraph G {
 
 #include "bspx_comm_seq.h"
 
+#ifdef _HAVE_MPI
+#include <mpi.h>
+#include "bspx_comm_mpi.h"
+#endif
+
+
 /** Packed global variables for a single BSP object. 
  ** To keep it private it is not included in bsp.h */
 BSPObject g_bsp;
