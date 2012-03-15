@@ -1,4 +1,5 @@
 # git ignore file
+doc/doxygen
 *.suo
 *.opensdf
 .sconf_temp
