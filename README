@@ -4,9 +4,14 @@
 | |_) |__) |  __/ (_) | | | | |  | |  __/| | 
 |____/____/|_|   \___/|_| |_|_|  |_|_|  |___|
 ==================================================
-BSPonMPI version 0.2,
+version 0.4,
+
+Original version of BSPonMPI
 Copyright (C) 2006  WJ Suijlen
-The license of BSPonMPI can be found in the file COPYING.LIB
+
+C++ Extensions, SCons scripts
+Copyright (C)
+			  2012  P Krusche
 
 Contents
 --------
@@ -48,15 +53,19 @@ library.
 
 Availability
 ------------
-Download the latest release from http://bsponmpi.sourceforge.net 
+Download the latest release from https://github.com/pkrusche/bsponmpi
 
 
 Prerequisites
 -------------
 To compile this library you need a
 + Compiler, linker, archiver, etc... (e.g. GNU Development tools)
-+ an MPI library (e.g. MPICH, LAM/MPI)
++ an MPI library (e.g. MPICH, LAM/MPI, OpenMPI, etc.)
++ The Boost C++ libraries (http://www.boost.org)
++ Intel (R) Threading Building Blocks Library (http://threadingbuildingblocks.org/)
 
+Optional:
++ BLAS for running benchmarks http://netlib.org/blas
 
 Usage
 ------
@@ -77,18 +86,21 @@ if it doesn't work, try reordering the linker/compiler arguments.
 After compilation you program is an MPI program. Run it using the command you
 always use to run MPI programs (or consult your system administrator)
 e.g.
-$ mpirun -np 4 example
+$ mpiexec -n 4 example
 Runs the 'example' program on 4 processors when you use the MPICH library.
+
+You may also have a look at the examples subdirectory.
 
 Documentation
 -------------
-Several documents are available on http://bsponmpi.sourceforge.net
+Several documents about the original BSPonMPI library (pre 0.3) are 
+available on http://bsponmpi.sourceforge.net
+
 * Architecture description, Code documentation
 * A report on implementing the library:
   - Pros and Cons of the library
   - Methods used to speed up the library
   - Comparison to the Oxford BSP Toolset using a benchmark
-
 
 Supported Platforms
 -------------------
@@ -126,6 +138,9 @@ machines:
       Intel Itanium 2, 64 bit, 416 processors (tested on up to 16 processors)
       Redhat Linux
       SGI MPI
+ * Intel Core i7, MacOS X 10.6
+ * Intel Core2 Duo/Quad, Ubuntu Linux 10.04, and Windows 7 64-bit
+
 Note on testing: Testing is performed by doing a 'make check'. The test suite
 doesn't catch all errors. Therefore it is possible that there are still a few
 bugs in this library
@@ -138,9 +153,13 @@ library, please contact me. On the other hand if you have written a BSP
 program which works perfectly with BSPonMPI, let me know! I am curious.
 
 Summarising: If you have any question, please also write to the mailing list
+
   bsponmpi-users@lists.sourceforge.net
-or to me
-  wjsuijle@users.sourceforge.net
+
+or to 
+
+	peter@dcs.warwick.ac.uk
+  	wjsuijle@users.sourceforge.net
 
 Feedback and participation are very welcome too. Please mail to the mail
 address above.  

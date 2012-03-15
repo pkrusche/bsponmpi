@@ -4,13 +4,19 @@
 | |_) |__) |  __/ (_) | | | | |  | |  __/| | 
 |____/____/|_|   \___/|_| |_|_|  |_|_|  |___|
 ==================================================
-version 0.3,
+version 0.4,
+
+Original version of BSPonMPI
 Copyright (C) 2006  WJ Suijlen
+
+C++ Extensions, SCons scripts
+Copyright (C)
+			  2012  P Krusche
 
 INSTALLATION INSTRUCTIONS
 *************************
 
-(May 2010, P Krusche)
+(March 2012, Peter Krusche)
 
 This version of BSPonMPI uses SCons (www.scons.org) to compile and 
 build. After downloading and installing SCons, you can compile the 
@@ -52,6 +58,9 @@ debuginfo           Include debug information also     0
 sequential          Compile sequential library         0            *
                     that does not use MPI              1
                     (fixes bsp_nprocs() == 1)
+threadsafe          Compile bsp primitives to use      0            
+                    posix mutex locking                1			*
+                    (fixes bsp_nprocs() == 1)
 win32_ccpdir        Path to Microsoft Compute 
                     Cluster Pack on Windows
                     Default is: 
@@ -65,6 +74,8 @@ additional_cflags   Additional compiler flags
 MPICC               MPI c compiler wrapper (Unix only)            mpicc
 MPICXX              MPI c++ compiler wrapper (Unix only)          mpicxx
 MPILINK             MPI linker wrapper (Unix only)                mpicxx
+
+scons -h shows any other options available through the script.
 
 Any more intricate issues can probably be fixed by editing SConstruct.
 The original BSPonMPI tests will be compiled and placed in the "bin" 

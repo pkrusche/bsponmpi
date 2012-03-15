@@ -7,5 +7,7 @@ BSPedupack which is used in the test suite is written by
   Rob H. Bisseling http://www.math.uu.nl/people/bisseling
 
 Thread safety, Windows/MacOSX port, C++ additions, global 
-memory extensions by
+memory extensions, TBB and Boost support by
+
   Peter Krusche <pkrusche@gmail.com>
+	http://www.dcs.warwick.ac.uk/~peter
