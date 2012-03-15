@@ -14,11 +14,7 @@ test:
 	scons -Q mode=${MODE} sequential=${SEQUENTIAL} threadsafe=${THREADSAFE} runtests=1
 
 all-libs:
-	scons -Q mode=debug sequential=1 threadsafe=0 runtests=${TESTS}
 	scons -Q mode=debug sequential=1 threadsafe=1 runtests=${TESTS}
-	scons -Q mode=release sequential=1 threadsafe=0 runtests=${TESTS}
 	scons -Q mode=release sequential=1 threadsafe=1 runtests=${TESTS}
-	scons -Q mode=debug sequential=0 threadsafe=0 runtests=${TESTS}
 	scons -Q mode=debug sequential=0 threadsafe=1 runtests=${TESTS}
-	scons -Q mode=release sequential=0 threadsafe=0 runtests=${TESTS}
 	scons -Q mode=release sequential=0 threadsafe=1 runtests=${TESTS}
