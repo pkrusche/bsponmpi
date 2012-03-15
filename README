@@ -10,8 +10,7 @@ Original version of BSPonMPI
 Copyright (C) 2006  WJ Suijlen
 
 C++ Extensions, SCons scripts
-Copyright (C)
-			  2012  P Krusche
+Copyright (C) 2012  P Krusche
 
 Contents
 --------
@@ -101,6 +100,15 @@ available on http://bsponmpi.sourceforge.net
   - Pros and Cons of the library
   - Methods used to speed up the library
   - Comparison to the Oxford BSP Toolset using a benchmark
+* The (outdated in some places) Doxygen documentation can be made
+  by running doxygen in the doc subdirectory.
+
+NOTICE: The interface for initializing BSPonMPI programs has changed
+        in this version. Documentation to follow soon. The new style
+        can be seen in the examples.
+
+        The version of BSPEdupack included here has been modified to 
+        work with these changes.
 
 Supported Platforms
 -------------------
