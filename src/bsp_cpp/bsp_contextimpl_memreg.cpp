@@ -30,6 +30,13 @@ Implementation of memory registers for Contexts
 
 #include "bsp_config.h" 
 
+#ifdef _HAVE_MPI
+#include <mpi.h>
+extern "C" {
+#include "bspx_comm_mpi.h"
+};
+#endif
+
 #include <algorithm>
 #include <stdexcept>
 
