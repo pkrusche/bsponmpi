@@ -467,6 +467,7 @@
     <None Include="opts_voland_Linux_x86_64.py" />
     <None Include="opts_wsbc.cov.warwick.ac.uk_Darwin_i386.py" />
     <None Include="opts_naphta.cov.warwick.ac.uk_Darwin_i386.py" />
+    <None Include="opts_faustus_Windows_AMD64.py" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="COPYING.LIB" />

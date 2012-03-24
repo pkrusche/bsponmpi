@@ -113,7 +113,7 @@
     <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">scons -Q mode=debug -c</NMakeCleanCommandLine>
     <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">examples\put.exe</NMakeOutput>
     <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">WIN32;_DEBUG;$(NMakePreprocessorDefinitions);_HAVE_MPI</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\peter\Documents\Code\tbb40_20120201oss\include;src;C:\Boost\include\boost-1_48;C:\Users\peter\workspace\bsponmpi\include;C:\Program Files\Microsoft Compute Cluster Pack\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">C:\Users\peter\Documents\Code\tbb40_20120201oss\include;src;C:\Boost\include\boost-1_48;C:\Users\peter\workspace\bsponmpi\include;C:\Program Files\Microsoft Compute Cluster Pack\Include;C:\Program Files %28x86%29\Intel\Parallel Studio 2011\Composer\tbb\include;Z:\Peter\workspace\bsponmpi\include;Z:\Boost\include\boost-1_49;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
     <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
     <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
     <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
@@ -135,7 +135,7 @@
     <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='Release|x64'">scons -Q mode=release -c</NMakeCleanCommandLine>
     <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='Release|x64'" />
     <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\peter\Documents\Code\tbb40_20120201oss\include;src;C:\Boost\include\boost-1_48;C:\Users\peter\workspace\bsponmpi\include;C:\Program Files\Microsoft Compute Cluster Pack\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\peter\Documents\Code\tbb40_20120201oss\include;src;C:\Boost\include\boost-1_48;C:\Users\peter\workspace\bsponmpi\include;C:\Program Files\Microsoft Compute Cluster Pack\Include;C:\Program Files %28x86%29\Intel\Parallel Studio 2011\Composer\tbb\include;Z:\Peter\workspace\bsponmpi\include;Z:\Boost\include\boost-1_49;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
     <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
     <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
     <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='Release|x64'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
@@ -157,7 +157,7 @@
     <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">scons -Q mode=debug sequential=1 -c</NMakeCleanCommandLine>
     <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">$(ProjectDir)\tests\bsp_test_exptable.exe</NMakeOutput>
     <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">WIN32;_DEBUG;_SEQUENTIAL;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">C:\Users\peter\Documents\Code\tbb40_20120201oss\include;src;C:\Boost\include\boost-1_48;C:\Users\peter\workspace\bsponmpi\include;C:\Program Files\Microsoft Compute Cluster Pack\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">C:\Users\peter\Documents\Code\tbb40_20120201oss\include;src;C:\Boost\include\boost-1_48;C:\Users\peter\workspace\bsponmpi\include;C:\Program Files\Microsoft Compute Cluster Pack\Include;C:\Program Files %28x86%29\Intel\Parallel Studio 2011\Composer\tbb\include;Z:\Peter\workspace\bsponmpi\include;Z:\Boost\include\boost-1_49;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
     <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
     <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
     <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='Debug Seq|x64'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
@@ -179,7 +179,7 @@
     <NMakeCleanCommandLine Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">scons -Q mode=release sequential=1 -c</NMakeCleanCommandLine>
     <NMakeOutput Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'" />
     <NMakePreprocessorDefinitions Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">WIN32;NDEBUG;_SEQUENTIAL;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
-    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">C:\Users\peter\Documents\Code\tbb40_20120201oss\include;src;C:\Boost\include\boost-1_48;C:\Users\peter\workspace\bsponmpi\include;C:\Program Files\Microsoft Compute Cluster Pack\Include;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <NMakeIncludeSearchPath Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">C:\Users\peter\Documents\Code\tbb40_20120201oss\include;src;C:\Boost\include\boost-1_48;C:\Users\peter\workspace\bsponmpi\include;C:\Program Files\Microsoft Compute Cluster Pack\Include;C:\Program Files %28x86%29\Intel\Parallel Studio 2011\Composer\tbb\include;Z:\Peter\workspace\bsponmpi\include;Z:\Boost\include\boost-1_49;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
     <NMakeForcedIncludes Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">$(NMakeForcedIncludes)</NMakeForcedIncludes>
     <NMakeAssemblySearchPath Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">$(NMakeAssemblySearchPath)</NMakeAssemblySearchPath>
     <NMakeForcedUsingAssemblies Condition="'$(Configuration)|$(Platform)'=='Release Seq|x64'">$(NMakeForcedUsingAssemblies)</NMakeForcedUsingAssemblies>
@@ -340,6 +340,7 @@
     <None Include="My Inspector Results\r008mi4\r008mi4.insp" />
     <None Include="NEWS" />
     <None Include="opts.py" />
+    <None Include="opts_faustus_Windows_AMD64.py" />
     <None Include="opts_naphta.cov.warwick.ac.uk_Darwin_i386.py" />
     <None Include="opts_settembrini_Windows_AMD64.py" />
     <None Include="opts_voland_Linux_x86_64.py" />
