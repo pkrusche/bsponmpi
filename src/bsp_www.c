@@ -253,9 +253,6 @@ digraph G {
   }  
 }  
 \enddot
- * A small UML legenda is shown below. 
- * \image html legenda.png "Legenda of UML class diagram and UML Sequence Diagram"
- * \image latex legenda.eps "Legenda of UML class diagram and UML Sequence Diagram" height=10cm,angle=90
  *
  * \subsection sequence A Sequence Diagram
  * Until now the explanation may seem to be still a bit abstract. Below the source
@@ -271,7 +268,6 @@ digraph G {
  void spmd_part()
  {
    int a=1, b=2, c=3;
-   bsp_begin(2);
    bsp_push_reg(&a, sizeof(int));
    bsp_sync();
 
