@@ -1,6 +1,6 @@
 /*
     BSPonMPI. This is an implementation of the BSPlib standard on top of MPI
-    Copyright (C) 2006  Wijnand J. Suijlen, 2012, Peter Krusche
+    Copyright (C) 2006  Wijnand J. Suijlen, and 2012, Peter Krusche
                                                                                 
     This library is free software; you can redistribute it and/or
     modify it under the terms of the GNU Lesser General Public
