@@ -20,7 +20,7 @@
     information.
 */
 
-/** @file bsp_comm_mpi.h
+/** @file bspx_comm_mpi.h
  
 	Declaration of communication routines on top of MPI.
 

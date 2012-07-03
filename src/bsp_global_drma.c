@@ -20,8 +20,8 @@
     information.
 */
 
-/** @file bspx_global_drma.c
-    Implementation of global array DRMA operations
+/** @file bsp_global_drma.c
+    @brief Implementation of global array DRMA operations
     @author Peter Krusche */
 
 #include "bsp.h"

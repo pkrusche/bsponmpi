@@ -19,6 +19,11 @@
     See the AUTHORS file distributed with this library for author contact
     information.
 */
+/**
+ * @file bsp_broadcast.h
+ * @brief Implementation of broadcast superstep functions.
+ * @author Peter Krusche
+ */
 
 #ifndef __BSP_BROADCAST_H__
 #define __BSP_BROADCAST_H__

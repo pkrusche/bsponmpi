@@ -357,8 +357,8 @@ digraph G {
  ** To keep it private it is not included in bsp.h */
 BSPObject g_bsp;
 
-/** @file bsp.c 
-    Implements the BSPlib primitives.
+/** @file bsp_www.c 
+    Implements the BSPlib primitives for the BSP WWW standard.
     @author Wijnand Suijlen
 */    
 

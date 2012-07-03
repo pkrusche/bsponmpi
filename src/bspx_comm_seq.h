@@ -20,7 +20,7 @@
     information.
 */
 
-/** @file bsp_comm_seq.h
+/** @file bspx_comm_seq.h
  
 	Declaration of data exchange routines on a single SMP node.
 

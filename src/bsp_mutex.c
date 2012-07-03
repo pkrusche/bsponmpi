@@ -19,6 +19,11 @@
     See the AUTHORS file distributed with this library for author contact
     information.
 */
+/**
+ * @file bsp_mutex.c
+ * @brief Platform-independent mutex implementation
+ * @author Peter Krusche
+ */
 
 #include "bsp_config.h"
 

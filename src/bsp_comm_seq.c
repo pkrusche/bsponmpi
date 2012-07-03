@@ -20,8 +20,8 @@
     information.
 */
 
-/** @file bsp_exptable.c
-    Implements MPI_Alltoall[v] on one processor if no MPI library is used.
+/** @file bsp_comm_seq.c
+    @brief Implements MPI_Alltoall[v] on one processor if no MPI library is used.
     @author Peter Krusche */
 
 

@@ -20,10 +20,8 @@
     information.
 */
 
-/** @file bsp_comm.h
- 
-	typedef of BSPX_CommFn, the core communication primitive used
-
+/** @file bspx_comm.h
+	@brief typedef of BSPX_CommFn, the core communication primitive used
 	@author Peter Krusche
   */  
 

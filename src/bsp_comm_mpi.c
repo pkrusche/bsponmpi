@@ -20,10 +20,8 @@
     information.
 */
 
-/** @file bsp_mpi_comm.c
- 
-	Implementation of communication routines on top of MPI.
-
+/** @file bsp_comm_mpi.c
+	@brief Implementation of communication routines on top of MPI.
 	@author Peter Krusche
   */  
 

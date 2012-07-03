@@ -20,6 +20,13 @@
     information.
 */
 
+/**
+ * @file bspx.c
+ * @brief BSP Object internal functions are implemented here.
+ * @author Wijnand Suijlen
+ * @author Peter Krusche
+ */
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>

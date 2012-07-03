@@ -23,6 +23,12 @@ def AutoConfig (root, crunner,customtests = {}):
 	# configure environment
 	print "Performing autoconfiguration for " + platform_name + "/" + subarch
 	autohdr.write("""
+/**
+ * @file bsp_config.h
+ * @brief Automatically generated configuration file.
+ * @author Peter Krusche
+ */
+
 /*
  * This file is generated automatically and will be overwritten whenever BSPonMPI is built.
  */ 

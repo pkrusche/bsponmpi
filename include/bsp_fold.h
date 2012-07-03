@@ -19,6 +19,12 @@
     See the AUTHORS file distributed with this library for author contact
     information.
 */
+/**
+ * @file bsp_fold.h
+ * @brief Implementation of reduce-type superstep functions.
+ * @author Peter Krusche
+ */
+
 #ifndef __BSP_Fold_h__
 #define __BSP_Fold_h__ 
 

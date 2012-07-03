@@ -21,7 +21,7 @@ information.
 */
 
 
-/** @file bsp.h
+/** @file bspx.h
 Defines the BSPx prototypes. 
 
 BSPx allows to use BSPonMPI's message buffering with bspwww-style 
