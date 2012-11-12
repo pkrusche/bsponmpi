@@ -82,6 +82,8 @@ namespace bsp {
 			message_send_queue = messages;
 			message_move_buffer = message_buffer + 1;
 			message_move_queue = messages + 1;
+			bytes_sent = 0;
+			bytes_to_move = 0;
 		}
 
 		/** execute all queued deliveries */
