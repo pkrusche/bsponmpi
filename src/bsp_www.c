@@ -346,6 +346,7 @@ digraph G {
 #include "bsp_threadsafe.h"
 
 #include "bspx_comm_seq.h"
+#include "bsp_cpp/bsp_context_ts.h"
 
 #ifdef _HAVE_MPI
 #include <mpi.h>
@@ -403,6 +404,9 @@ void BSP_CALLING
 	// init communication
 	_BSP_INIT(argc, argv, &g_bsp);
 
+  // init TBB
+  init_tbb();
+
 	// init thread safety
 	BSP_TS_INIT();
 
@@ -423,6 +427,8 @@ bsp_end ()
 
 	/* clean up datastructures */
 	bspx_destroy_bspobject(&g_bsp);
+
+  exit_tbb();
 
 	_BSP_EXIT();
 }

@@ -29,15 +29,30 @@ information.
 #ifndef __bsp_context_ts_H__
 #define __bsp_context_ts_H__
 
+#ifdef __cplusplus
+
+#include <tbb/task_scheduler_init.h>
 #include <tbb/spin_mutex.h>
 
 namespace bsp {
 	/** Mutex to make access to message buffers thread safe */
-	extern tbb::spin_mutex g_context_mutex;
+	extern tbb::spin_mutex * g_context_mutex;
+	extern tbb::task_scheduler_init * g_tsinit;
 };
 
 /** Thread safety helper */
-#define TSLOCK() tbb::spin_mutex::scoped_lock l (bsp::g_context_mutex)
+#define TSLOCK() tbb::spin_mutex::scoped_lock l (*bsp::g_context_mutex)
 
+extern "C" {
+
+#endif /* __cplusplus */
+
+void init_tbb();
+void exit_tbb();
+
+#ifdef __cplusplus
+};
+#endif
 
 #endif // __bsp_context_ts_H__
+

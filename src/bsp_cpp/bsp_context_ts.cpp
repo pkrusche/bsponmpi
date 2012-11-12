@@ -26,8 +26,21 @@ information.
 @author Peter Krusche
 */
 
-#include <tbb/spin_mutex.h>
+#include "bsp_context_ts.h"
 
 namespace bsp {
-	tbb::spin_mutex g_context_mutex;
+	tbb::spin_mutex * g_context_mutex;
+	tbb::task_scheduler_init * g_tsinit;
 };
+
+extern "C" void init_tbb() {
+	bsp::g_tsinit = new tbb::task_scheduler_init(
+		tbb::task_scheduler_init::default_num_threads()
+	);
+}
+
+extern "C" void exit_tbb() {
+	bsp::g_tsinit->terminate();
+	delete bsp::g_tsinit;
+}
+
