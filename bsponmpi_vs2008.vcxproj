@@ -329,7 +329,9 @@
     <None Include="My Amplifier Results\r007hs\r007hs.ampl" />
     <None Include="My Amplifier Results\r008hs\r008hs.ampl" />
     <None Include="My Amplifier Results\r009hs\r009hs.ampl" />
+    <None Include="My Inspector Results\r000mi2\r000mi2.insp" />
     <None Include="My Inspector Results\r000mi4\r000mi4.insp" />
+    <None Include="My Inspector Results\r001mi2\r001mi2.insp" />
     <None Include="My Inspector Results\r001mi4\r001mi4.insp" />
     <None Include="My Inspector Results\r002ti3\r002ti3.insp" />
     <None Include="My Inspector Results\r003ti3\r003ti3.insp" />

@@ -468,6 +468,12 @@
     <None Include="opts_wsbc.cov.warwick.ac.uk_Darwin_i386.py" />
     <None Include="opts_naphta.cov.warwick.ac.uk_Darwin_i386.py" />
     <None Include="opts_faustus_Windows_AMD64.py" />
+    <None Include="My Inspector Results\r000mi2\r000mi2.insp">
+      <Filter>My Inspector Results</Filter>
+    </None>
+    <None Include="My Inspector Results\r001mi2\r001mi2.insp">
+      <Filter>My Inspector Results</Filter>
+    </None>
   </ItemGroup>
   <ItemGroup>
     <Library Include="COPYING.LIB" />

@@ -15,9 +15,9 @@
     <MpiDebuggerAdditionalMpiExecArguments Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     </MpiDebuggerAdditionalMpiExecArguments>
     <MpiDebuggerSchedulerNode Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">localhost/1</MpiDebuggerSchedulerNode>
-    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='Release|x64'">examples\bspedupack++\bspbench.exe</LocalDebuggerCommand>
-    <DebuggerFlavor Condition="'$(Configuration)|$(Platform)'=='Release|x64'">MpiClusterDebugger</DebuggerFlavor>
-    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-p 2</LocalDebuggerCommandArguments>
+    <LocalDebuggerCommand Condition="'$(Configuration)|$(Platform)'=='Release|x64'">examples\hpget.exe</LocalDebuggerCommand>
+    <DebuggerFlavor Condition="'$(Configuration)|$(Platform)'=='Release|x64'">WindowsLocalDebugger</DebuggerFlavor>
+    <LocalDebuggerCommandArguments Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-p 4</LocalDebuggerCommandArguments>
     <MpiDebuggerSchedulerNode Condition="'$(Configuration)|$(Platform)'=='Release|x64'">localhost/1</MpiDebuggerSchedulerNode>
     <MpiDebuggerApplicationCommand Condition="'$(Configuration)|$(Platform)'=='Release|x64'">C:\Users\peter\workspace\bsponmpi\examples\simplebspcomputation.exe</MpiDebuggerApplicationCommand>
     <MpiDebuggerApplicationArguments Condition="'$(Configuration)|$(Platform)'=='Release|x64'">-p 2</MpiDebuggerApplicationArguments>
