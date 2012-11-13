@@ -37,7 +37,6 @@ information.
 namespace bsp {
 	/** Mutex to make access to message buffers thread safe */
 	extern tbb::spin_mutex * g_context_mutex;
-	extern tbb::task_scheduler_init * g_tsinit;
 };
 
 /** Thread safety helper */

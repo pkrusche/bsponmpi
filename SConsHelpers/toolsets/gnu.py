@@ -38,5 +38,6 @@ def PrepareEnv (root):
 			root.Append(
 			CCFLAGS=fast,
 			)
+		root.Replace(LINK = 'g++')
 
 Export( [ 'PrepareEnv'] )

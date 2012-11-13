@@ -71,7 +71,7 @@ toolset = readopts['toolset']
 if toolset == 'msvc':
 	ttools = ['msvc', 'mslib', 'mslink']
 elif toolset == 'gnu':
-	ttools = ['gnulink', 'gcc', 'g++','c++','ar']
+	ttools = ['gnulink', 'gcc', 'g++', 'ar']
 elif toolset == 'intel':
 	ttools = ['icc', 'ilink', 'intelc' ,'ar']
 elif toolset == 'intel_windows':

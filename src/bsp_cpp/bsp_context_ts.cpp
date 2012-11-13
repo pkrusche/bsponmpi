@@ -30,17 +30,31 @@ information.
 
 namespace bsp {
 	tbb::spin_mutex * g_context_mutex;
+// for reasons unknown, the windows version of TBB leaks memory if we don't do
+// this explicitly
+#ifdef _WIN32
 	tbb::task_scheduler_init * g_tsinit;
+#endif
 };
 
 extern "C" void init_tbb() {
+// for reasons unknown, the windows version of TBB leaks memory if we don't do
+// this explicitly
+#ifdef _WIN32
 	bsp::g_tsinit = new tbb::task_scheduler_init(
 		tbb::task_scheduler_init::default_num_threads()
 	);
+#endif
+	bsp::g_context_mutex = new tbb::spin_mutex();
 }
 
 extern "C" void exit_tbb() {
+	delete bsp::g_context_mutex;
+// for reasons unknown, the windows version of TBB leaks memory if we don't do
+// this explicitly
+#ifdef _WIN32
 	bsp::g_tsinit->terminate();
 	delete bsp::g_tsinit;
+#endif
 }
 
