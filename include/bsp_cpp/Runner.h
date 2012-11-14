@@ -137,10 +137,17 @@ namespace bsp {
 		void execute () {
 			ASSERT (bsp_is_node_level());
 
-			ComputationSpawnTask & root = *new( tbb::task::allocate_root() ) 
-				ComputationSpawnTask ( _context::mapper );
+			if (_context::mapper->procs_this_node() > 1) {
+				ComputationSpawnTask & root = *new( tbb::task::allocate_root() ) 
+					ComputationSpawnTask ( _context::mapper );
 
-			tbb::task::spawn_root_and_wait (root);
+				tbb::task::spawn_root_and_wait (root);
+			} else {
+				// only one process? don't bother with tbb!
+				for(int k = 0; k < _context::mapper->procs_this_node(); ++k) {
+					_context::mapper->get_context(k)->execute_step();
+				}
+			}
 		}
 
 	protected:
