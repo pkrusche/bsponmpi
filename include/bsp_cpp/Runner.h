@@ -35,6 +35,7 @@ information.
 #include "TaskMapper.h"
 
 #include <tbb/task.h>
+#include <tbb/task_scheduler_init.h>
 
 namespace bsp {
 
@@ -142,12 +143,12 @@ namespace bsp {
 					ComputationSpawnTask ( _context::mapper );
 
 				tbb::task::spawn_root_and_wait (root);
-			} else {
+			} else if (_context::mapper->procs_this_node() == 1) {
 				// only one process? don't bother with tbb!
 				for(int k = 0; k < _context::mapper->procs_this_node(); ++k) {
 					_context::mapper->get_context(k)->execute_step();
 				}
-			}
+			} 
 		}
 
 	protected:

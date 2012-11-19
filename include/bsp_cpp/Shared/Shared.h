@@ -79,6 +79,9 @@ namespace bsp {
 		 * value inside this shared element.
 		 */
 		virtual void make_neutral() = 0;
+
+		/* assign our value to another Shared object */
+		virtual void assign(Shared * ) = 0;
 		
 	protected:
 		std::vector<Shared*> vars;

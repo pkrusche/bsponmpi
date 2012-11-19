@@ -265,3 +265,6 @@ tests/bsp_test_sharedvars.o
 /x64/Release/bsponmpi_vs2008.log
 /My Inspector Results
 /config.insprc
+bsp_test_shared_array
+bsponmpi.sublime-workspace
+bsponmpi.sublime-project

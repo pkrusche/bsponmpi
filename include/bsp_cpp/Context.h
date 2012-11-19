@@ -12,6 +12,7 @@
 #include "TaskMapper.h"
 #include "Shared/SharedVariableSet.h"
 #include "Shared/SharedVariable.h"
+#include "Shared/SharedArray.h"
 
 namespace bsp {
 
@@ -131,16 +132,27 @@ namespace bsp {
 		/** @name Context Sharing */
 		/*@{*/
 		/** Shortcut to share variables in a context constructor */
-#define CONTEXT_SHARED_INIT(var, ...)			\
-	SHARE_VARIABLE_I(context_sharing, var, __VA_ARGS__);
+#define CONTEXT_SHARED_INIT(var, ...) do { 					\
+			SHARE_VARIABLE_I(context_sharing, var, __VA_ARGS__);	\
+	} while (0)
 
 		/** Shortcut to share reduction variables in a context constructor */
-#define CONTEXT_SHARED_REDUCE(red, neutral, var, ...)				\
-	SHARE_VARIABLE_R(context_sharing, red, neutral, var, __VA_ARGS__);
+#define CONTEXT_SHARED_REDUCE(red, var, ...) do {	\
+			SHARE_VARIABLE_R(context_sharing, 		\
+				red, var, __VA_ARGS__);				\
+	} while (0)
 
 		/** Shortcut to share variables in a context constructor */
-#define CONTEXT_SHARED_BOTH(red, neutral, var, ...)			\
-	SHARE_VARIABLE_IR(context_sharing, red, neutral, var, __VA_ARGS__);
+#define CONTEXT_SHARED_BOTH(red, var, ...)	do { 	\
+			SHARE_VARIABLE_IR(context_sharing, red, \
+				var, __VA_ARGS__);					\
+		} while(0)
+
+		/** Shortcut to share reduction variables in a context constructor */
+#define CONTEXT_SHARED_OBJECT(var, ...)	do {	\
+			SHARE_VARIABLE_IR(context_sharing, 	\
+				bsp::Reduce, var, __VA_ARGS__); \
+	} while (0)
 
 		/** Shortcut for initializing variables between supersteps */
 #define BSP_BROADCAST(var, mn) do {				\

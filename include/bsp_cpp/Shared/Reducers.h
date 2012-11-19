@@ -25,10 +25,7 @@
 #include <tbb/blocked_range.h>
 #include <algorithm>
 
-namespace bsp {
-
+#include "reduce_reduceable.inl"
 #include "reduce_numeric.inl"
-
-};
 
 #endif

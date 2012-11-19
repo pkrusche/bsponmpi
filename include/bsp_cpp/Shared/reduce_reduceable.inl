@@ -20,15 +20,45 @@
     information.
 */
 
-#ifndef __BSP_INIT_ASSIGN_INL__
-#define __BSP_INIT_ASSIGN_INL__
+#ifndef __REDUCE_REDUCEABLE_H__
+#define __REDUCE_REDUCEABLE_H__
 
-/** Initialisation by assignment */
-template <class _t>
-struct InitAssign {
-	void operator() (const _t & in, _t & out) const  {
-		out = in;
-	}
+#include <algorithm>
+
+#include "SharedSerialization.h"
+
+namespace bsp {
+
+	/** Reduceable interface */
+	class Reduceable : public ByteSerializable {
+		public:
+            /** reduction requires that we can assign a neutral element
+                w.r.t. the reduction operator
+             */
+            virtual void make_neutral() = 0;
+            /** Reduction operator implementation
+             */
+			virtual void reduce_with(Reduceable const * ) = 0;
+
+            virtual void serialize (void * target, size_t nbytes) = 0;
+
+            virtual void deserialize (void * source, size_t nbytes) = 0;
+
+            virtual size_t serialized_size () = 0;
+	};
+
+	template <class _var>
+	struct Reduce {
+        inline void make_neutral(_var & l) {
+            l.make_neutral();
+        }
+
+		inline void operator() (_var & l, _var const & r) const {
+			using namespace std;
+			l.reduce_with(&r);
+		}
+	};
+
 };
 
 #endif

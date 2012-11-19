@@ -75,11 +75,20 @@ void bsp::SharedVariableSet::init_reduce_slot (const char * id, bsp::Shared ** v
 		throw std::runtime_error( "Reduce slot initialized twice." );
 	}
 #endif
+	/** This is a little tricky: 
+		v[0] will get the reduced value from all processors.
+			 we add v[0] as a child to v[1] because it has
+			 the result from the current processor.
+		v[bsp_pid] is the value from svl, i.e. the partial result 
+		     on the current node
+	*/
 	std::string n(id);
+	
 	reduce_svl[ n ] = v;
-	v[0]->add_child ( svl[ n ] );
+	v[bsp_pid() + 1] = svl[ n ];
+	v[0]->add_child ( v[bsp_pid() + 1] );
 	for (int p = 1; p <= bsp_nprocs(); ++p) {
-		v[0] -> add_child ( v[p] );
+		v[1] -> add_child ( v[p] );
 	}
 }
 
@@ -226,10 +235,11 @@ void bsp::SharedVariableSet::reduce_impl(std::set<std::string> const & _reduce_l
 
 		MPI_Allgatherv(sds.get_data(), myelems[1], MPI_BYTE, target, sizes, offsets, MPI_BYTE, bsp_communicator);
 
-		int q = 1;
 		for (int p = 0; p < bsp_nprocs(); ++p) {
 			if (p == bsp_pid())
 				continue;
+
+			// get all elements from processor p
 			SerializedDataset other_ds(target + offsets[p], elems[2*p], sizes[p]);
 			other_ds.restart();
 
@@ -238,15 +248,15 @@ void bsp::SharedVariableSet::reduce_impl(std::set<std::string> const & _reduce_l
 				std::map<std::string, bsp::Shared*>::iterator it  = svl.find(name);
 				std::map<std::string, bsp::Shared**>::iterator itr = reduce_svl.find(name);
 
-				if (it != svl.end() && itr != reduce_svl.end() ) {
-					other_ds.get_elem(itr->second[q]);
-				}
 #ifdef _DEBUG
-				else 
-					std::cerr << "WARNING: inconsistent reduce lists, entry: " << name << std::endl;
+				if (it == svl.end() || itr == reduce_svl.end()) {
+					bsp_abort ("Inconsistent reduce lists, entry: %s", name.c_str() );
+				}
 #endif
+				if (itr != reduce_svl.end()) {
+					other_ds.get_elem(itr->second[p+1]);
+				}
 			}
-			q++;
 		}
 
 		bsp_free(target);
@@ -257,9 +267,10 @@ void bsp::SharedVariableSet::reduce_impl(std::set<std::string> const & _reduce_l
 		for (std::set<std::string>::const_iterator it = _reduce_list.begin(); 
 			it != _reduce_list.end(); ++it) {
 				bsp::Shared ** p = reduce_svl[*it];
-				p[0]->make_neutral();
+				// reduce the results from all processors in parallel
 				p[0]->reduce();
-				p[0]->initialize();
+				// assign to the local value in svl
+				p[0]->assign(p[bsp_pid()+1]);
 		}
 
 	}

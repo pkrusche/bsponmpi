@@ -29,6 +29,8 @@ information.
 #ifndef __SharedSerialization_H__
 #define __SharedSerialization_H__
 
+#include <algorithm>
+
 namespace bsp {
 
 	/** byte array serialization. This is necessary to 

@@ -33,6 +33,7 @@ information.
 #include <stdlib.h>
 
 #include <boost/static_assert.hpp>
+#include <boost/mpl/if.hpp>
 #include <boost/type_traits.hpp>
 
 #include <tbb/parallel_reduce.h>
@@ -41,7 +42,6 @@ information.
 #include "Shared.h"
 #include "SharedVariableSet.h"
 
-#include "Initializers.h"
 #include "Reducers.h"
 
 namespace bsp {
@@ -59,15 +59,15 @@ namespace bsp {
 	 * @end
 	 *
 	 */
-	template <class _var, typename _init>
+	template <class _var >
 	struct Initializer {
 		Initializer ( const _var * _input, 
 			std::vector<Shared*> const & _vars ) : input(_input), vars(_vars) {} 
 
 		void operator()( const tbb::blocked_range<size_t>& r ) const { 
-			static _init initer;
 			for( size_t i = r.begin(); i != r.end(); ++i ) {
-				initer ( (typename _var::value_type const & )(*input), (typename _var::value_type & ) (* ((_var*)vars[i])) );
+				(typename _var::value_type & ) (* ((_var*)vars[i])) = 
+					 (typename _var::value_type const & )(*input);
 			}
 		} 
 
@@ -90,13 +90,17 @@ namespace bsp {
 	 */
 	template <class _var, typename _op>
 	struct Reducer {
-		Reducer ( std::vector<Shared*> & _vars, typename _var::value_type const & _neutral ) : 
-			vars(_vars), neutral(_neutral), 
-			result ( neutral ) {}
+		Reducer ( std::vector<Shared*> & _vars ) : 
+			vars(_vars) {
+			static _op rr;
+			rr.make_neutral(result);
+		}
 
-		Reducer ( Reducer & r, tbb::split ) : 
-			vars (r.vars), neutral(r.neutral),
-			result ( r.neutral ) {}
+		Reducer ( Reducer & r, tbb::split ) : vars(r.vars)
+		{
+			static _op rr;
+			rr.make_neutral(result);
+		}
 
 		void join( const Reducer & y ) { 
 			static _op red;
@@ -106,13 +110,12 @@ namespace bsp {
 		void operator()( const tbb::blocked_range<size_t>& r ) { 
 			static _op red;
 
-			for( size_t i = r.begin(); i != r.end(); ++i ) {
+			for( size_t i = r.begin(); i < r.end(); ++i ) {
 				red ( result,  (typename _var::value_type const & ) (* ((_var*)vars[i])) );
 			}
 		}
 
 		std::vector< Shared* > & vars;
-		typename _var::value_type neutral;
 		typename _var::value_type result;
 	};
 	
@@ -120,10 +123,54 @@ namespace bsp {
 	 *
 	 * @see Serializers.inl
 	 */
+	
+	template <class _t>
+	struct scalar_serializer {		
+		void serialize(_t * valadr, void * target, size_t nbytes) {
+			BOOST_STATIC_ASSERT(boost::is_scalar<_t>::value);
+			memcpy(target, valadr, sizeof(_t));
+		}
+
+		/** default byte deserialization */
+		void deserialize(_t * valadr, void * source, size_t nbytes) {
+			BOOST_STATIC_ASSERT(boost::is_scalar<_t>::value);
+			memcpy(valadr, source, sizeof(_t));
+		}
+
+		/** default size */
+		size_t serialized_size(_t * valadr ) {
+			BOOST_STATIC_ASSERT(boost::is_scalar<_t>::value);
+			return sizeof(_t);
+		}
+	};
+
+	template <class _t>
+	struct byte_serializer {		
+		void serialize(_t * valadr, void * target, size_t nbytes) {
+			valadr->serialize(target, nbytes);
+		}
+
+		/** default byte deserialization */
+		void deserialize(_t * valadr, void * source, size_t nbytes) {
+			valadr->deserialize(source, nbytes);
+		}
+
+		/** default size */
+		size_t serialized_size(_t * valadr ) {
+			return valadr->serialized_size();
+		}
+	};
+
 	template <class _t> 
 	class SharedSerializable : public Shared {
 	public:
 		typedef _t value_type;
+
+		typedef typename boost::mpl::if_
+			< boost::is_scalar< _t >, 
+			  scalar_serializer<_t>, 
+			  byte_serializer<_t> > :: type 
+			  impl_t;
 
 		/** Byte Serialization. Provide specializations if necessary: 
 		 * 
@@ -137,42 +184,39 @@ namespace bsp {
 		 * 
 		 * we only allow the variants here to be used on scalar types.
 		 * 
+		 * alternatively, have your objects implement the ByteSerializable interface
+		 * 
 		 * @see Serializers.inl
 		 * 
 		 */
-
 		void serialize(void * target, size_t nbytes) {
-			BOOST_STATIC_ASSERT(boost::is_scalar<_t>::value);
-			memcpy(target, valadr, sizeof(_t));
+		 	impl.serialize(valadr, target, nbytes);
 		}
 
-		/** default byte deserialization */
 		void deserialize(void * source, size_t nbytes) {
-			BOOST_STATIC_ASSERT(boost::is_scalar<_t>::value);
-			memcpy(valadr, source, sizeof(_t));
+		 	impl.deserialize(valadr, source, nbytes);
 		}
 
-		/** default size */
 		size_t serialized_size() {
-			BOOST_STATIC_ASSERT(boost::is_scalar<_t>::value);
-			return sizeof(_t);
+			return impl.serialized_size(valadr);
 		}
 
 	protected:
 		_t * valadr;
+
+		impl_t impl;
 	};
 
 	/** Node-local shared variable implementation */
-	template <class _t, typename _init, typename _red>
+	template <class _t, typename _red>
 	class SharedVariable : public SharedSerializable<_t> {
 	public:
-		typedef SharedVariable <_t, _init, _red> my_type;
-		SharedVariable( _t const & _neutral ) : neutral(_neutral), deleteme(true) {
-			this->valadr = new _t (neutral);
+		typedef SharedVariable <_t, _red> my_type;
+		SharedVariable() : deleteme(true) {
+			this->valadr = new _t ;
 		}
 
-		SharedVariable(_t & mine, _t const & _neutral) : 
-			neutral(_neutral),
+		SharedVariable(_t & mine) : 
 			deleteme (false) {
 			this->valadr = &mine;
 		}
@@ -185,23 +229,22 @@ namespace bsp {
 
 		/** Run initializer in tbb parallel for */
 		bool initialize() {
-			Initializer<my_type, _init> i (this, this->vars);
+			Initializer< my_type > i (this, this->vars);
 			tbb::parallel_for( tbb::blocked_range<size_t> (0, this->vars.size()), i );
 			return true;
 		}
 		
 		/** Run reducer in tbb parallel reduce */
 		bool reduce() {
+			if (this->vars.size() == 0) {
+				return false;
+			}
 			static _red rr;
-			Reducer<my_type, _red> r ( this->vars, neutral );
+			Reducer<my_type, _red> r ( this->vars );
 			tbb::parallel_reduce( tbb::blocked_range<size_t> (0, this->vars.size()), r );
+			rr.make_neutral(*(this->valadr));
 			rr (*(this->valadr), r.result);
 			return true;
-		}
-
-		/** assign neutral value */
-		void make_neutral() {
-			*(this->valadr) = neutral;
 		}
 
 		/** convert to _t const & */
@@ -213,45 +256,64 @@ namespace bsp {
 		operator _t & () {
 			return *(this->valadr);
 		}
+
+		/** overwrite variable with neutral reduction element */
+		void make_neutral() {
+			static _red rr;
+			rr.make_neutral(*(this->valadr));
+		}
+
+		/** assign value to other variable */
+		void assign(Shared * other) {
+			SharedVariable * o = static_cast<SharedVariable*>(other);
+			*(o->valadr) = *(this->valadr);
+		}
+
 	private:
 		bool deleteme;
-		_t neutral;
 	};
 
 	#include "Serializers.inl"
 
 	template <class _t>
-	inline void __shr_init( bsp::SharedVariableSet & set, const char * id , _t & value ) {
+	inline void __shr_init( 
+		bsp::SharedVariableSet & set, const char * id , _t & value ) {
 		set.add_var(
 			id, 
 			new bsp::SharedVariable< 
 					_t, 
-					bsp::InitAssign<_t>,  
 					bsp::ReduceFirst<_t> 
 			> (value, value), 
 		true, false );
 	}
 
 	template <class _t, template<class> class _r >
-	inline void __shr_reduce( bsp::SharedVariableSet & set, const char * id , _t & value, _t neutral, bool also_init) {
+	inline void __shr_reduce( 
+		bsp::SharedVariableSet & set,
+		const char * id , 
+		_t & value, 
+		bool also_init) { 
 		set.add_var(
 			id, 
 			new bsp::SharedVariable< 
 					_t, 
-					bsp::InitAssign<_t>, 
 					_r <_t> 
-			> (value, neutral), 
+			> (value), 
 		also_init, true );
 
 		if ( ::bsp_nprocs() > 1 ) {
-			bsp::Shared ** psp = new bsp::Shared * [::bsp_nprocs() + 2 ];
+			bsp::Shared ** psp = new bsp::Shared * [::bsp_nprocs() + 1 ];
 	
-			for (int p = 0; p <= ::bsp_nprocs() + 1 ; ++p) {
-				psp[p] = new bsp::SharedVariable< 
-							_t, 
-							bsp::InitAssign<_t>, 
-							_r <_t> 
-						> ( neutral );
+			for (int p = 0; p <= ::bsp_nprocs() ; ++p) {
+				// this one is assigned in init_reduce_slot
+				if (p == bsp_pid()+1) {
+					psp[p] = NULL;	
+				} else {
+					psp[p] = new bsp::SharedVariable< 
+								_t, 
+								_r <_t> 
+							> ();					
+				}
 			}
 
 			set.init_reduce_slot( id, psp );
@@ -259,17 +321,16 @@ namespace bsp {
 	}
 };
 
-#define SHARE_VARIABLE_IR(set, reduce, neutral, var, ...) do { 							\
-	bsp::__shr_reduce<__VA_ARGS__, reduce > (set, #var, var, neutral, true);	\
+#define SHARE_VARIABLE_IR(set, reduce, var, ...) do { 							\
+	bsp::__shr_reduce<__VA_ARGS__, reduce > (set, #var, var, true);	\
 } while(0)
 
-#define SHARE_VARIABLE_R(set, reduce, neutral, var, ...) do { 							\
-	bsp::__shr_reduce<__VA_ARGS__, reduce > (set, #var, var, neutral, false);	\
+#define SHARE_VARIABLE_R(set, reduce, var, ...) do { 							\
+	bsp::__shr_reduce<__VA_ARGS__, reduce > (set, #var, var, false);	\
 } while(0)
 
 #define SHARE_VARIABLE_I(set, var, ...) do { 								\
 	bsp::__shr_init<__VA_ARGS__> (set, #var, var);											\
 } while(0)
-
 
 #endif // __SharedVariable_H__

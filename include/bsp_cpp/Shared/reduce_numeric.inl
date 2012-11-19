@@ -29,35 +29,120 @@ information.
 #ifndef __reduce_numeric_H__
 #define __reduce_numeric_H__
 
+#include <algorithm>
+
+#include <cmath>
+#include <climits>
+#include <iostream>
+
+namespace bsp {
+
+template <class _var>
+struct NoReduce
+{
+	/** neutral elements for minimum declared below */
+	inline void make_neutral (_var & v) {
+	}
+
+	inline void operator() (_var & l, _var const & r) const {
+	}
+};
+
 /** Minimum reducer */
 template <class _var>
 struct ReduceMin {
-	void operator() (_var & l, _var const & r) const {
+
+	/** neutral elements for minimum declared below */
+	inline void make_neutral (_var & v) {
+		std::cerr << 
+			"Neutral element unknown, please supply one by specializing"
+			<< typeid(*this).name() << 
+			" ::  make_neutral<" 
+			<< typeid( _var ).name() << ">"
+			<< std::endl;
+	}
+
+	inline void operator() (_var & l, _var const & r) const {
 		using namespace std;
 		l = min(l, r);
 	}
 };
 
+template <>
+inline void ReduceMin<int>::make_neutral(int & v) {
+	v = INT_MAX;
+}
+
+template <>
+inline void ReduceMin<long int>::make_neutral(long int & v) {
+	v = LONG_MAX;
+}
+
+template <>
+inline void ReduceMin<float>::make_neutral(float & v) {
+	v = HUGE_VALF;
+}
+
+template <>
+inline void ReduceMin<double>::make_neutral(double & v) {
+	v = HUGE_VAL;
+}
+
 /** Maximum reducer */
 template <class _var>
 struct ReduceMax {
-	void operator() (_var & l, _var const & r) const {
+	/** neutral elements for minimum declared below */
+	inline void make_neutral (_var & v) {
+		std::cerr << 
+			"Neutral element unknown, please supply one by specializing"
+			<< typeid(*this).name() << 
+			" ::  make_neutral<" 
+			<< typeid( _var ).name() << ">"
+			<< std::endl;
+	}
+
+	inline void operator() (_var & l, _var const & r) const {
 		using namespace std;
 		l = max(l, r);
 	}
 };
 
+template <>
+inline void ReduceMax<int>::make_neutral(int & v) {
+	v = INT_MIN;
+}
+
+template <>
+inline void ReduceMax<long int>::make_neutral(long int & v) {
+	v = LONG_MIN;
+}
+
+template <>
+inline void ReduceMax<float>::make_neutral(float & v) {
+	v = -HUGE_VALF;
+}
+
+template <>
+inline void ReduceMax<double>::make_neutral(double & v) {
+	v = -HUGE_VAL;
+}
+
 /** Keeps leftmost item reducer */
 template <class _var>
 struct ReduceFirst {
-	void operator() (_var & , _var const & ) const {
+	inline void make_neutral (_var & v) {
+	}
+	inline void operator() (_var & , _var const & ) const {
 	}
 };
 
 /** Keeps leftmost item reducer */
 template <class _var>
 struct ReduceLast {
-	void operator() (_var & l, _var const & r) const {
+	/** neutral elements for minimum declared below */
+	inline void make_neutral (_var & v) {
+	}
+	inline void operator() (_var & l, _var const & r) const {
 		using namespace std;
 		l = r;
 	}
@@ -66,7 +151,11 @@ struct ReduceLast {
 /** Return the sum */
 template <class _var>
 struct ReduceSum {
-	void operator() (_var & l, _var const & r) const {
+	/** neutral elements for minimum declared below */
+	inline void make_neutral (_var & v) {
+		v = 0;
+	}
+	inline void operator() (_var & l, _var const & r) const {
 		using namespace std;
 		l += r;
 	}
@@ -75,10 +164,15 @@ struct ReduceSum {
 /** Return the product */
 template <class _var>
 struct ReduceProduct {
-	void operator() (_var & l, _var const & r) const {
+	/** neutral elements for minimum declared below */
+	inline void make_neutral (_var & v) {
+		v = 1;
+	}
+	inline void operator() (_var & l, _var const & r) const {
 		using namespace std;
 		l += r;
 	}
+};
 };
 
 #endif // __reduce_numeric_H__

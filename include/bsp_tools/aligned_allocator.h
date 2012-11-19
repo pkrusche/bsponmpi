@@ -6,6 +6,7 @@
 #ifndef ALIGNED_ALLOCATOR_H_
 #define ALIGNED_ALLOCATOR_H_
 
+#include <new>
 #include "boost/cstdint.hpp"
 
 namespace utilities {
@@ -44,7 +45,7 @@ namespace utilities {
 		}
 
 		static bool is_aligned_memory(void * v) {
-			return ((boost::uint64_t)v) & ALIGN_MASK == 0;
+			return (((boost::uint64_t)v) & ALIGN_MASK) == 0;
 		}
 
 	public:
