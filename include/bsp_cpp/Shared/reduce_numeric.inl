@@ -80,7 +80,7 @@ inline void ReduceMin<long int>::make_neutral(long int & v) {
 
 template <>
 inline void ReduceMin<float>::make_neutral(float & v) {
-	v = HUGE_VALF;
+	v = (float)HUGE_VAL;
 }
 
 template <>
@@ -119,7 +119,7 @@ inline void ReduceMax<long int>::make_neutral(long int & v) {
 
 template <>
 inline void ReduceMax<float>::make_neutral(float & v) {
-	v = -HUGE_VALF;
+	v = -(float)HUGE_VAL;
 }
 
 template <>
