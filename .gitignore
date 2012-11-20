@@ -268,3 +268,7 @@ tests/bsp_test_sharedvars.o
 bsp_test_shared_array
 bsponmpi.sublime-workspace
 bsponmpi.sublime-project
+.settings
+.cproject
+tests/openmpi-valgrind.supp
+tests/bsp_test_shared_array.passed

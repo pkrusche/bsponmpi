@@ -132,14 +132,14 @@ namespace bsp {
 		 *  pointers to the Shared interface)
 		 */
 		template <class _t>
-		friend inline void sharedvariable_init ( 
-			bsp::SharedVariableSet & set, const char * id , _t & value ) {
-			set.add_var(
+		inline void sharedvariable_init ( 
+			const char * id , _t & value ) {
+			add_var(
 				id, 
 				new bsp::SharedVariable< 
 						_t, 
 						bsp::ReduceFirst<_t> 
-				> (value, value), 
+				> (value), 
 			true, false );
 		}
 
@@ -150,8 +150,7 @@ namespace bsp {
 		 *  pointers to the Shared interface)
 		 */
 		template <class _t, template<class> class _r >
-		friend inline void sharedvariable_init_reduce( 
-			bsp::SharedVariableSet & set,
+		inline void sharedvariable_init_reduce( 
 			const char * id , 
 			_t & value, 
 			bool also_init) { 
@@ -164,7 +163,7 @@ namespace bsp {
 						_r <_t> 
 				> (value);
 
-			set.add_var(
+			add_var(
 				id, 
 				my_var, 
 			also_init, true );
@@ -184,7 +183,7 @@ namespace bsp {
 					}
 				}
 
-				set.init_reduce_slot( id, psp );
+				init_reduce_slot( id, psp );
 			}
 		}
 
@@ -215,15 +214,15 @@ namespace bsp {
 	};
 
 #define SHARE_VARIABLE_IR(set, reduce, var, ...) do { 							\
-	bsp::sharedvariable_init_reduce<__VA_ARGS__, reduce > (set, #var, var, true);	\
+	set.sharedvariable_init_reduce<__VA_ARGS__, reduce > (#var, var, true);	\
 } while(0)
 
 #define SHARE_VARIABLE_R(set, reduce, var, ...) do { 							\
-	bsp::sharedvariable_init_reduce<__VA_ARGS__, reduce > (set, #var, var, false);	\
+	set.sharedvariable_init_reduce<__VA_ARGS__, reduce > (#var, var, false);	\
 } while(0)
 
 #define SHARE_VARIABLE_I(set, var, ...) do { 								\
-	bsp::sharedvariable_init<__VA_ARGS__> (set, #var, var);											\
+	set.sharedvariable_init<__VA_ARGS__> (#var, var);											\
 } while(0)
 
 

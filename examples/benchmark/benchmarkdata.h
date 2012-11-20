@@ -178,6 +178,11 @@ namespace benchmark {
 	/** Combine two sets of results */
 	template <class _c>
 	struct BenchmarkCombine {
+		
+		void make_neutral(BenchmarkData & b) {
+			b.reset_samples();
+		}
+
 		void operator () (BenchmarkData & b, BenchmarkData const & b_add) {
 			b.add_samples(b_add);
 		}

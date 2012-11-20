@@ -49,9 +49,8 @@ int main (int argc, char ** argv) {
 	memset (j, -1, sizeof(int) * K);
 
 	/** 1. create variable maps */
-
-	SHARE_VARIABLE_IR (s_top, bsp::ReduceSum,       0, i_in, int);
-	SHARE_VARIABLE_R (s_top,  bsp::ReduceMax, INT_MIN, j_in, int);
+	SHARE_VARIABLE_IR (s_top, bsp::ReduceSum, i_in, int);
+	SHARE_VARIABLE_R (s_top,  bsp::ReduceMax, j_in, int);
 	SHARE_VARIABLE_I (s_top, k_in, std::string);
 
 	for (int p = 0; p < K; ++p) {
@@ -60,8 +59,8 @@ int main (int argc, char ** argv) {
 		int & j_in (j[p]);
 		std::string & k_in(k[p]);
 
-		SHARE_VARIABLE_IR (s_locals[p], bsp::ReduceSum, 0, i_in, int);
-		SHARE_VARIABLE_R (s_locals[p],  bsp::ReduceMax, INT_MIN, j_in,  int);
+		SHARE_VARIABLE_IR (s_locals[p], bsp::ReduceSum, i_in, int);
+		SHARE_VARIABLE_R (s_locals[p],  bsp::ReduceMax, j_in,  int);
 		SHARE_VARIABLE_I (s_locals[p], k_in, std::string);
 	}
 
@@ -71,7 +70,7 @@ int main (int argc, char ** argv) {
 		s_top.add_as_children(s_locals[p]);
 	}
 
-	s_top.initialize_all( 0 );
+	s_top.initialize_all( 0, NULL );
 
 	for (int p = 0; p < K; ++p) {
 		assert (i[p] == 0);
@@ -96,7 +95,7 @@ int main (int argc, char ** argv) {
 	
 	std::cout << bsp_pid() << ": " << i_in << " " << j_in << " " << isum << " " << jmax << std::endl;
 	
-	s_top.reduce_all();
+	s_top.reduce_all(NULL);
 
 	std::cout << bsp_pid() << ": "  << i_in << " " << j_in << " " << isum << " " << jmax << std::endl;
 

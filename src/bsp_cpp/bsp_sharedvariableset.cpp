@@ -210,7 +210,8 @@ void bsp::SharedVariableSet::reduce_impl(
 	for (std::set<std::string>::const_iterator it = _reduce_list.begin(); 
 		it != _reduce_list.end(); ++it) {
 			bsp::Shared * p = svl[*it];
-			if(_mapper->procs_this_node() > 0) {
+			if(_mapper == NULL 
+			|| _mapper->procs_this_node() > 0) {
 				p->reduce();
 			} else {
 				p->make_neutral();

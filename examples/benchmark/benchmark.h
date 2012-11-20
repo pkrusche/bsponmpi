@@ -48,7 +48,7 @@ namespace benchmark {
 			CONTEXT_SHARED_INIT(nmax, int);
 			CONTEXT_SHARED_INIT(bmname, std::string);
 			CONTEXT_SHARED_INIT(step, int);
-			CONTEXT_SHARED_REDUCE(BenchmarkCombine, BenchmarkData(), b, BenchmarkData);
+			CONTEXT_SHARED_REDUCE(BenchmarkCombine, b, BenchmarkData);
 		}
 
 		/** Set up parameters */

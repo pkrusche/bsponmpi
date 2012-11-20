@@ -1,8 +1,8 @@
 
-MODE?=release
-SEQUENTIAL?=1
+MODE?=debug
+SEQUENTIAL?=0
 THREADSAFE?=1
-TESTS?=0
+TESTS?=1
 
 all: 
 	scons -Q mode=${MODE} sequential=${SEQUENTIAL} threadsafe=${THREADSAFE} runtests=${TESTS}

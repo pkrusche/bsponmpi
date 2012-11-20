@@ -41,15 +41,19 @@ Test to verify shared array variables work
 
 #include <tbb/mutex.h>
 
+/** mutex to make sure output doesn't get garbled */
 tbb::mutex countMutex;
 
+/** Test for sharing variables and arrays
+ *
+ **/
 class TestArraySharing : public bsp::Context {
 public:
 	TestArraySharing() :
 		var1(100), var2(TEST_LEN)
 	{
 		CONTEXT_SHARED_BOTH(bsp::ReduceSum, var1, int);
-		// CONTEXT_SHARED_OBJECT(var2, bsp::SharedArray<int>)
+		CONTEXT_SHARED_OBJECT(var2, bsp::SharedArray<int>);
 	}
 
 	void setup () {
@@ -65,13 +69,13 @@ public:
 		var1 = 1+bsp_pid();
 
 		{
- 	  	tbb::mutex::scoped_lock lock(countMutex);
- 	 	std::cerr << var1 << " (" << ::bsp_pid() << ")" <<  std::endl;
+			tbb::mutex::scoped_lock lock(countMutex);
+			std::cerr << var1 << " (" << ::bsp_pid() << ")" <<  std::endl;
 		}
-		// for (int i = 0; i < TEST_LEN; ++i) {
-		// 	assert(var2[i] == 1);
-		// }
- 	 	// std::cerr << var1 << std::endl;
+		for (int i = 0; i < TEST_LEN; ++i) {
+			assert(var2[i] == 1);
+		}
+		std::cerr << var1 << std::endl;
 
 		BSP_END()
 	}
