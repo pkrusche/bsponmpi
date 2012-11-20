@@ -52,19 +52,18 @@ public:
 	TestArraySharing() :
 		var1(100), var2(TEST_LEN)
 	{
-		CONTEXT_SHARED_BOTH(bsp::ReduceSum, var1, int);
-		CONTEXT_SHARED_OBJECT(var2, bsp::SharedArray<int>);
-	}
-
-	void setup () {
 		var2.init(1);
+		CONTEXT_SHARED_BOTH(bsp::ReduceSum, var1, int);
+		CONTEXT_SHARED_OBJECT(var2, bsp::SharedArray<int, bsp::ReduceSum > );
 	}
 
 	void run() {
 		BSP_SCOPE(TestArraySharing);
 		BSP_BEGIN()
 
-		assert(var1 == 100);
+		if(var1 != 100) {
+			bsp_abort("Initialisiation of var1 to 100 failed, value is %i.", var1);
+		}
 
 		var1 = 1+bsp_pid();
 
@@ -72,20 +71,39 @@ public:
 			tbb::mutex::scoped_lock lock(countMutex);
 			std::cerr << var1 << " (" << ::bsp_pid() << ")" <<  std::endl;
 		}
+		
 		for (int i = 0; i < TEST_LEN; ++i) {
-			assert(var2[i] == 1);
+			if(var2[i] != 1) {
+				bsp_abort("Initialisiation of var2 to 1 failed, value is %i.", var2[i]);
+			}
+			var2[i] = var1;
 		}
+
 		std::cerr << var1 << std::endl;
 
 		BSP_END()
 	}
 
-	int get() {
-		return var1;
+	void test_var1_result(int processors) {
+		if (var1 != processors*(processors+1)/2) {
+			bsp_abort("Error: incorrect result %i (expt: %i)", 
+				var1, processors*(processors+1)/2);
+		}
 	}
+
+	void test_array_result( int processors ) {
+		test_var1_result(processors);
+		for (int i = 0; i < TEST_LEN; ++i) {
+			if (var1 != var2[i]) {
+				bsp_abort("Error: incorrect result at %i %i (expt: %i)", 
+					i, var2[i], var1);
+			}
+		}
+	}
+
 protected:
 	int var1;
-	bsp::SharedArray<int> var2;
+	bsp::SharedArray<int, bsp::ReduceSum > var2;
 };
 
 
@@ -102,17 +120,8 @@ int main(int argc, char * argv[]) {
 
 	bsp::Runner<TestArraySharing> runner(processors);
 
-	runner.setup();
-
 	runner.run();
-
-	std::cerr << bsp_pid() << " : " << runner.get() << std::endl;
-
-	if (runner.get() != processors*(processors+1)/2) {
-		bsp_abort("Error: incorrect result %i (expt: %i)", 
-			runner.get(), processors*(processors+1)/2);
-	}
-
+	runner.test_array_result(processors);
 
 	bsp_end();
 	return 0;

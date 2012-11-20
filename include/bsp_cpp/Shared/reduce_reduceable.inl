@@ -39,12 +39,6 @@ namespace bsp {
             /** Reduction operator implementation
              */
 			virtual void reduce_with(Reduceable const * ) = 0;
-
-            virtual void serialize (void * target, size_t nbytes) = 0;
-
-            virtual void deserialize (void * source, size_t nbytes) = 0;
-
-            virtual size_t serialized_size () = 0;
 	};
 
 	template <class _var>
