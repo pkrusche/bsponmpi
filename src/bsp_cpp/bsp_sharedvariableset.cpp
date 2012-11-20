@@ -46,7 +46,8 @@ bsp::SharedVariableSet::~SharedVariableSet() {
 	for (std::map<std::string, Shared**>::iterator it = reduce_svl.begin(); 
 		it != reduce_svl.end(); ++it) {
 		for (int p = 0; p < ::bsp_nprocs() + 1; ++p) {
-			delete it->second[p];
+			if (p != ::bsp_pid() + 1)
+				delete it->second[p];
 		}
 		delete [] it->second;
 	}
@@ -86,9 +87,8 @@ void bsp::SharedVariableSet::init_reduce_slot (const char * id, bsp::Shared ** v
 	
 	reduce_svl[ n ] = v;
 	v[bsp_pid() + 1] = svl[ n ];
-	v[0]->add_child ( v[bsp_pid() + 1] );
 	for (int p = 1; p <= bsp_nprocs(); ++p) {
-		v[1] -> add_child ( v[p] );
+		v[0] -> add_child ( v[p] );
 	}
 }
 
@@ -127,7 +127,7 @@ void bsp::SharedVariableSet::clear_all_children () {
 }
 
 /** initialize a single slot */
-void bsp::SharedVariableSet::initialize(const char * slot, int master_node) {
+void bsp::SharedVariableSet::initialize(const char * slot, int master_node, bsp::TaskMapper * ) {
 	std::map<std::string, Shared*>::iterator it = svl.find(slot);
 	ASSERT(it != svl.end());
 	
@@ -141,11 +141,11 @@ void bsp::SharedVariableSet::initialize(const char * slot, int master_node) {
 }
 
 /** reduce a single slot */
-void bsp::SharedVariableSet::reduce(const char * slot, bool global) {
+void bsp::SharedVariableSet::reduce(const char * slot, bool global, bsp::TaskMapper * _mapper) {
 	if ( ::bsp_nprocs() > 1 && global ) {
 		std::set<std::string> s;
 		s.insert(slot);
-		reduce_impl(s);
+		reduce_impl(s, _mapper);
 	} else {
 		std::map<std::string, Shared*>::iterator it = svl.find(slot);
 		ASSERT(it != svl.end());
@@ -155,7 +155,7 @@ void bsp::SharedVariableSet::reduce(const char * slot, bool global) {
 }
 
 /** run all initializers */
-void bsp::SharedVariableSet::initialize_all( int master_node ) {
+void bsp::SharedVariableSet::initialize_all( int master_node, bsp::TaskMapper *  ) {
 	/** if we initialize from a node, we need to broadcast 
 	 *  all data first */
 	if (bsp_nprocs() > 1 && master_node >= 0) {
@@ -197,18 +197,24 @@ void bsp::SharedVariableSet::initialize_all( int master_node ) {
 }
 
 /** run all reducers */
-void bsp::SharedVariableSet::reduce_all() {
-	reduce_impl(reduce_list);
+void bsp::SharedVariableSet::reduce_all(bsp::TaskMapper * _mapper) {
+	reduce_impl(reduce_list, _mapper);
 }
 
 /** Reduction implementation */
-void bsp::SharedVariableSet::reduce_impl(std::set<std::string> const & _reduce_list) {
+void bsp::SharedVariableSet::reduce_impl(
+	std::set<std::string> const & _reduce_list, 
+	bsp::TaskMapper * _mapper) {
 	SerializedDataset sds ((int)_reduce_list.size());
 
 	for (std::set<std::string>::const_iterator it = _reduce_list.begin(); 
 		it != _reduce_list.end(); ++it) {
 			bsp::Shared * p = svl[*it];
-			p->reduce();
+			if(_mapper->procs_this_node() > 0) {
+				p->reduce();
+			} else {
+				p->make_neutral();
+			}
 			sds.add_elem(*it, p);
 	}
 

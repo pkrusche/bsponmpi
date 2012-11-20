@@ -33,7 +33,9 @@ information.
 #include <map>
 #include <string>
 
+#include "../TaskMapper.h"
 #include "Shared.h"
+#include "SharedVariable.h"
 
 namespace bsp {
 
@@ -50,20 +52,6 @@ namespace bsp {
 	class SharedVariableSet {
 	public:
 		~SharedVariableSet();
-
-		/** 
-		 * To be able to reduce on a node-level, we need an additional 
-		 * slot for reducing values from all other nodes. 
-		 * 
-		 * This function is used to initialize that slot.
-		 * 
-		 * @param id the slot id
-		 * @param v the values (pointer to an array of bsp_nprocs() - 1 values)
-		 * 
-		 * @see __shr_init_reduce_slot
-		 * 
-		 */
-		void init_reduce_slot (const char * id, Shared ** v);
 
 		/** 
 		 * Get the reduce slot for a slot id.
@@ -107,41 +95,137 @@ namespace bsp {
 		 * 
 		 * @param slot the slot
 		 * @param master_node the node to initialize from
+		 * @param _mapper the task mapper
 		 */
-		void initialize(const char * slot, int master_node);
+		void initialize(const char * slot, int master_node, TaskMapper * _mapper);
 
 		/**
 		 * Reduce a single slot variable
 		 * 
 		 * @param slot the slot
 		 * @param global true when reducing between all nodes
+		 * @param _mapper the task mapper
 		 */
-		void reduce(const char * slot, bool global);
+		void reduce(const char * slot, bool global, TaskMapper * _mapper);
 
 		/** run all initializers
 		 *  (node-level collective)
 		 *  
 		 *  @param master_node the node from which to broadcast values. -1 to use node-local values
+		 * @param _mapper the task mapper
 		 *  
 		 */
-		void initialize_all(int master_node);
+		void initialize_all(int master_node, TaskMapper * _mapper);
 
 		/** run all reducers 
 		 *  (node-level collective)
+		 * 
+		 * @param _mapper the task mapper
 		 *  
 		 */
-		void reduce_all();
+		void reduce_all(TaskMapper * _mapper);
+
+		/** Function to add a shared variable to a SharedVariableSet
+		 *  for initialisation only.
+		 *  This is a friend function so we can keep SharedVariableSet 
+		 *  independant of the SharedVariable templates (we only store
+		 *  pointers to the Shared interface)
+		 */
+		template <class _t>
+		friend inline void sharedvariable_init ( 
+			bsp::SharedVariableSet & set, const char * id , _t & value ) {
+			set.add_var(
+				id, 
+				new bsp::SharedVariable< 
+						_t, 
+						bsp::ReduceFirst<_t> 
+				> (value, value), 
+			true, false );
+		}
+
+		/** Function to add a shared variable to a SharedVariableSet
+		 *  for initialisation and reduction.
+		 *  This is a friend function so we can keep SharedVariableSet 
+		 *  independant of the SharedVariable templates (we only store
+		 *  pointers to the Shared interface)
+		 */
+		template <class _t, template<class> class _r >
+		friend inline void sharedvariable_init_reduce( 
+			bsp::SharedVariableSet & set,
+			const char * id , 
+			_t & value, 
+			bool also_init) { 
+
+			bsp::SharedVariable< 
+						_t, 
+						_r <_t> 
+				> * my_var = new bsp::SharedVariable< 
+						_t, 
+						_r <_t> 
+				> (value);
+
+			set.add_var(
+				id, 
+				my_var, 
+			also_init, true );
+
+			if ( ::bsp_nprocs() > 1 ) {
+				bsp::Shared ** psp = new bsp::Shared * [::bsp_nprocs() + 1 ];
+		
+				for (int p = 0; p <= ::bsp_nprocs() ; ++p) {
+					// this one is assigned in init_reduce_slot
+					if (p == ::bsp_pid()+1) {
+						psp[p] = my_var;
+					} else {
+						psp[p] = new bsp::SharedVariable< 
+									_t, 
+									_r <_t> 
+								> ();					
+					}
+				}
+
+				set.init_reduce_slot( id, psp );
+			}
+		}
 
 	private:
 
+		/** 
+		 * To be able to reduce on a node-level, we need an additional 
+		 * slot for reducing values from all other nodes. 
+		 * 
+		 * This function is used to initialize that slot.
+		 * 
+		 * @param id the slot id
+		 * @param v the values (pointer to an array of bsp_nprocs() - 1 values)
+		 * 
+		 * @see sharedvariable_init
+		 * @see sharedvariable_init_reduce
+		 * 
+		 */
+		void init_reduce_slot (const char * id, Shared ** v);
+
 		/** Reduction implementation */
-		void reduce_impl(std::set<std::string> const & );
+		void reduce_impl(std::set<std::string> const &, TaskMapper *);
 
 		std::map<std::string, Shared*> svl; ///< slot to variable mapping
 		std::map<std::string, Shared**> reduce_svl; ///< in each slot, we also have one additional variable for node-level reducing
 		std::set<std::string> initialize_list; ///< list of all slots that will be initialized
 		std::set<std::string> reduce_list; ///< list of all slots that will be reduced
 	};
+
+#define SHARE_VARIABLE_IR(set, reduce, var, ...) do { 							\
+	bsp::sharedvariable_init_reduce<__VA_ARGS__, reduce > (set, #var, var, true);	\
+} while(0)
+
+#define SHARE_VARIABLE_R(set, reduce, var, ...) do { 							\
+	bsp::sharedvariable_init_reduce<__VA_ARGS__, reduce > (set, #var, var, false);	\
+} while(0)
+
+#define SHARE_VARIABLE_I(set, var, ...) do { 								\
+	bsp::sharedvariable_init<__VA_ARGS__> (set, #var, var);											\
+} while(0)
+
 
 };
 

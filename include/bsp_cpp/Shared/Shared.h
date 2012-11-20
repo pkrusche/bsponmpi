@@ -87,19 +87,27 @@ namespace bsp {
 		std::vector<Shared*> vars;
 	};
 
-	/** Specialize broadcast for pointers to shared values */
+	/** Specialize broadcast for ByteSerializable objects */
 	template <> 
-	inline void bsp_broadcast<Shared*>(int source, Shared* & data) {
-		size_t size = data->serialized_size();
+	inline void bsp_broadcast<ByteSerializable>(int source, ByteSerializable & data) {
+		size_t size = data.serialized_size();
 		bsp_broadcast(source, size);
 		char * sdata = new char [size];
 		if (bsp_pid() == source) {
-			data->serialize(sdata, size);
+			data.serialize(sdata, size);
 		}
 		::bsp_broadcast(source, sdata, size);
 		if (bsp_pid() != source) {
-			data->deserialize(sdata, size);
+			data.deserialize(sdata, size);
 		}
+		delete [] sdata;
+	}
+
+
+	/** Specialize broadcast for pointers to shared values */
+	template <> 
+	inline void bsp_broadcast<Shared*>(int source, Shared* & data) {
+		bsp_broadcast(source, (ByteSerializable&)(*data));
 	}
 
 };

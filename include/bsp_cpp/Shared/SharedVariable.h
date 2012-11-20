@@ -40,7 +40,6 @@ information.
 #include <tbb/parallel_for.h>
 
 #include "Shared.h"
-#include "SharedVariableSet.h"
 
 #include "Reducers.h"
 
@@ -161,6 +160,13 @@ namespace bsp {
 		}
 	};
 
+	/** this is a class template which allows us to 
+	 *  add serialisation to existing types which are 
+	 *  not of class ByteSerializable. You can specialize
+	 *  bsp::SharedSerializable< your type > :: ... 
+	 *  to do this.
+	 *  Just below, we show an example for string objects.
+	 */ 
 	template <class _t> 
 	class SharedSerializable : public Shared {
 	public:
@@ -273,64 +279,29 @@ namespace bsp {
 		bool deleteme;
 	};
 
-	#include "Serializers.inl"
+/************************************************************************/
+/* std::string serializer                                               */
+/************************************************************************/
 
-	template <class _t>
-	inline void __shr_init( 
-		bsp::SharedVariableSet & set, const char * id , _t & value ) {
-		set.add_var(
-			id, 
-			new bsp::SharedVariable< 
-					_t, 
-					bsp::ReduceFirst<_t> 
-			> (value, value), 
-		true, false );
+	template <> 
+	inline void SharedSerializable<std::string>::serialize (void * target, size_t nbytes) {
+		ASSERT (nbytes >= sizeof(size_t) + valadr->size());
+		*((size_t *) target) = valadr->size();
+		memcpy ( ((size_t *) target) + 1, valadr->c_str(), valadr->size() );
 	}
 
-	template <class _t, template<class> class _r >
-	inline void __shr_reduce( 
-		bsp::SharedVariableSet & set,
-		const char * id , 
-		_t & value, 
-		bool also_init) { 
-		set.add_var(
-			id, 
-			new bsp::SharedVariable< 
-					_t, 
-					_r <_t> 
-			> (value), 
-		also_init, true );
+	template <> 
+	inline void SharedSerializable<std::string>::deserialize(void * source, size_t nbytes) {
+		ASSERT (nbytes >= sizeof(size_t) );
+		size_t len = *((size_t*)source);
+		ASSERT (nbytes >= sizeof(size_t) + len );
+		*valadr = std::string ( (char*) ( ((size_t*)source) + 1), len);
+	}
 
-		if ( ::bsp_nprocs() > 1 ) {
-			bsp::Shared ** psp = new bsp::Shared * [::bsp_nprocs() + 1 ];
-	
-			for (int p = 0; p <= ::bsp_nprocs() ; ++p) {
-				// this one is assigned in init_reduce_slot
-				if (p == bsp_pid()+1) {
-					psp[p] = NULL;	
-				} else {
-					psp[p] = new bsp::SharedVariable< 
-								_t, 
-								_r <_t> 
-							> ();					
-				}
-			}
-
-			set.init_reduce_slot( id, psp );
-		}
+	template <> 
+	inline size_t SharedSerializable<std::string>::serialized_size() {
+		return sizeof(size_t) + valadr->size();
 	}
 };
-
-#define SHARE_VARIABLE_IR(set, reduce, var, ...) do { 							\
-	bsp::__shr_reduce<__VA_ARGS__, reduce > (set, #var, var, true);	\
-} while(0)
-
-#define SHARE_VARIABLE_R(set, reduce, var, ...) do { 							\
-	bsp::__shr_reduce<__VA_ARGS__, reduce > (set, #var, var, false);	\
-} while(0)
-
-#define SHARE_VARIABLE_I(set, var, ...) do { 								\
-	bsp::__shr_init<__VA_ARGS__> (set, #var, var);											\
-} while(0)
 
 #endif // __SharedVariable_H__

@@ -10,8 +10,8 @@
 #include <list>
 
 #include "TaskMapper.h"
-#include "Shared/SharedVariableSet.h"
 #include "Shared/SharedVariable.h"
+#include "Shared/SharedVariableSet.h"
 #include "Shared/SharedArray.h"
 
 namespace bsp {
@@ -132,7 +132,7 @@ namespace bsp {
 		/** @name Context Sharing */
 		/*@{*/
 		/** Shortcut to share variables in a context constructor */
-#define CONTEXT_SHARED_INIT(var, ...) do { 					\
+#define CONTEXT_SHARED_INIT(var, ...) do { 							\
 			SHARE_VARIABLE_I(context_sharing, var, __VA_ARGS__);	\
 	} while (0)
 
@@ -157,25 +157,29 @@ namespace bsp {
 		/** Shortcut for initializing variables between supersteps */
 #define BSP_BROADCAST(var, mn) do {				\
 		ASSERT (bsp_is_node_level());			\
-		context_sharing.initialize(#var, mn);	\
+		ASSERT(get_mapper() != NULL);			\
+		context_sharing.initialize(#var, mn, get_mapper());	\
 	} while (0);
 
 		/** Shortcut to fold variables between supersteps */
 #define BSP_FOLD(var) do {					\
 	ASSERT (bsp_is_node_level());			\
-	context_sharing.reduce(#var, true);		\
+	ASSERT(get_mapper() != NULL);			\
+	context_sharing.reduce(#var, true, get_mapper());		\
 		} while (0);
 
 		/** Shortcut to initialize single variables node-locally */
 #define BSP_BROADCAST_LOCAL(var) do {		\
 	ASSERT (bsp_is_node_level());			\
-	context_sharing.initialize(#var, -1);	\
+	ASSERT(get_mapper() != NULL);			\
+	context_sharing.initialize(#var, -1, get_mapper());	\
 		} while (0);
 
 		/** Shortcut to fold variables between supersteps node-locally */
 #define BSP_FOLD_LOCAL(var) do {			\
 	ASSERT (bsp_is_node_level());			\
-	context_sharing.reduce(#var, false);	\
+	ASSERT(get_mapper() != NULL);			\
+	context_sharing.reduce(#var, false, get_mapper());	\
 		} while (0);
 
 
@@ -183,14 +187,16 @@ namespace bsp {
 		 *  CONTEXT_SHARED_BOTH */
 		inline void initialize_shared (int master_node) {
 			ASSERT (bsp_is_node_level());
-			context_sharing.initialize_all(master_node);
+			ASSERT(get_mapper() != NULL);
+			context_sharing.initialize_all(master_node, get_mapper());
 		}
 
 		/** Reduce all context variables which were shared with CONTEXT_SHARED_REDUCE
 		 *  or CONTEXT_SHARED_BOTH */
 		inline void reduce_shared () {
 			ASSERT (bsp_is_node_level());
-			context_sharing.reduce_all();			
+			ASSERT(get_mapper() != NULL);
+			context_sharing.reduce_all(get_mapper());			
 		}
 		/*@}*/
 
@@ -226,7 +232,8 @@ namespace bsp {
 		int pid;		///< The global pid of this computation
 		int local_pid;	///< The local pid of this computation
 
-		SharedVariableSet context_sharing; ///< Context variable sharing set
+		/** Context variable sharing set (only valid on node level) */
+		SharedVariableSet context_sharing;
 	private:
 
 		void * impl;    ///< Implementation specific stuff
