@@ -47,6 +47,13 @@ Shared Array class template
 
 namespace bsp {
 
+/** Shared array class 
+ * 
+ *  Implements element-wise reduction + initialisation.
+ *
+ *  Has template specialisations for scalar and ByteSerializable elements.
+ */
+
 template <class _el, template <class> class _red = bsp::NoReduce  > 
 class SharedArray : public bsp::Reduceable
 {
@@ -118,9 +125,11 @@ public:
 	}
 
 	SharedArray & operator=(SharedArray const & rhs) {
-		ASSERT(size <= rhs.size);
 		if(&rhs != this) {
-			memcpy(data.get(), rhs.data.get(), sizeof(_el)*rhs.size);
+			if(size != rhs.size) {
+				impl.resize(rhs.size);
+			}
+			impl.copy_array( data.get(), rhs.data.get(), rhs.size );
 		}
 		return *this;
 	}
@@ -172,6 +181,10 @@ private:
 			a.size = new_size;			
 		}
 
+		void copy_array(__el * target, __el const * source, size_t n) {
+			memcpy(target, source, n*sizeof(__el));
+		}
+
 	};
 
 	template <class __el, template <class> class __red>
@@ -200,6 +213,7 @@ private:
 			if(*ss != a.size) {
 				resize(*ss);
 			}
+			++ss;
 			char * css = (char *) ss;
 			for (int i = 0; i < a.size; ++i) {
 				size_t sz = *((size_t*)css);
@@ -235,6 +249,12 @@ private:
 
 			a.data = new_array;
 			a.size = new_size;			
+		}
+
+		void copy_array(__el * target, __el const * source, size_t n) {
+			for (int i = 0; i < n; ++i)	{
+				target[i] = source[i];
+			}
 		}
 	};
 
