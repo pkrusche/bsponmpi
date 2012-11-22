@@ -112,6 +112,16 @@ public:
 		return impl.serialized_size();
 	}
 
+	/** number of elements stored in array */
+	size_t capacity() {
+		return size;
+	}
+
+	/** resize array */
+	void resize(size_t new_size) {
+		impl.resize(new_size);
+	}
+
 	operator _el * () {
 		return data.get();
 	}
@@ -164,6 +174,9 @@ private:
 		}
 
 		void resize(size_t new_size) {
+			if (new_size == a.size) {
+				return;
+			}
 			using namespace std;
 			static reducer reduce;
 			int i;
@@ -232,6 +245,9 @@ private:
 		}
 
 		void resize(size_t new_size) {
+			if (new_size == a.size) {
+				return;
+			}
 			using namespace std;
 			static reducer reduce;
 			int i;
