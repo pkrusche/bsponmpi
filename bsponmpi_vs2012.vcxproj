@@ -1,0 +1,224 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{57C7A740-BE03-41F9-BD10-05F9C37C4528}</ProjectGuid>
+    <Keyword>MakeFileProj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>Makefile</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <NMakeBuildCommandLine>make MODE=debug</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>make MODE=debug clean</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>make MODE=debug</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>include; src;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <IncludePath>c:\code\tbb41\include;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <NMakeBuildCommandLine>scons -Q mode=debug sequential=1</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>scons -Q mode=debug sequential=1 -c</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>scons -Q mode=debug sequential=1 -c &amp;&amp; scons -Q mode=debug sequential=1</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>WIN32;_DEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>c:\code\tbb41\include;c:\boost\include\boost-1_48;include;src;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+    <IncludePath>c:\code\tbb41;c:\Boost\include\boost-1_48;$(IncludePath)</IncludePath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <NMakeBuildCommandLine>make MODE=release</NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>make MODE=release clean</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>make MODE=release</NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>include; src;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <NMakeBuildCommandLine>scons -Q mode=release sequential=1 </NMakeBuildCommandLine>
+    <NMakeCleanCommandLine>scons -Q mode=release sequential=1 -c</NMakeCleanCommandLine>
+    <NMakeReBuildCommandLine>scons -Q mode=release sequential=1 -c &amp;&amp; scons -Q mode=release sequential=1 </NMakeReBuildCommandLine>
+    <NMakePreprocessorDefinitions>WIN32;NDEBUG;$(NMakePreprocessorDefinitions)</NMakePreprocessorDefinitions>
+    <NMakeIncludeSearchPath>c:\code\tbb41\include;c:\boost\include\boost-1_48;include;src;$(NMakeIncludeSearchPath)</NMakeIncludeSearchPath>
+  </PropertyGroup>
+  <ItemDefinitionGroup>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include=".sconf_temp\conftest_0.cpp" />
+    <ClCompile Include=".sconf_temp\conftest_1.cpp" />
+    <ClCompile Include=".sconf_temp\conftest_2.c" />
+    <ClCompile Include="examples\benchmark\bench.cpp" />
+    <ClCompile Include="examples\benchmark\benchmark.cpp" />
+    <ClCompile Include="examples\benchmark\bench_g.cpp" />
+    <ClCompile Include="examples\benchmark\bench_l.cpp" />
+    <ClCompile Include="examples\benchmark\bench_r.cpp" />
+    <ClCompile Include="examples\bspedupack++\bspbench.cpp" />
+    <ClCompile Include="examples\bspedupack\bspbench.c" />
+    <ClCompile Include="examples\bspedupack\bspedupack.c" />
+    <ClCompile Include="examples\bspedupack\bspfft.c" />
+    <ClCompile Include="examples\bspedupack\bspfft_test.c" />
+    <ClCompile Include="examples\bspedupack\bspinprod.c" />
+    <ClCompile Include="examples\bspedupack\bsplu.c" />
+    <ClCompile Include="examples\bspedupack\bsplu_test.c" />
+    <ClCompile Include="examples\bspedupack\bspmv.c" />
+    <ClCompile Include="examples\bspedupack\bspmv_test.c" />
+    <ClCompile Include="examples\get.cpp" />
+    <ClCompile Include="examples\hpget.cpp" />
+    <ClCompile Include="examples\hpput.cpp" />
+    <ClCompile Include="examples\mpiedupack\mpibench.c" />
+    <ClCompile Include="examples\mpiedupack\mpiedupack.c" />
+    <ClCompile Include="examples\mpiedupack\mpifft.c" />
+    <ClCompile Include="examples\mpiedupack\mpifft_test.c" />
+    <ClCompile Include="examples\mpiedupack\mpiinprod.c" />
+    <ClCompile Include="examples\mpiedupack\mpilu.c" />
+    <ClCompile Include="examples\mpiedupack\mpilu_test.c" />
+    <ClCompile Include="examples\mpiedupack\mpimv.c" />
+    <ClCompile Include="examples\mpiedupack\mpimv_test.c" />
+    <ClCompile Include="examples\put.cpp" />
+    <ClCompile Include="examples\simplebspcomputation.cpp" />
+    <ClCompile Include="src\bspx.c" />
+    <ClCompile Include="src\bsp_abort.c" />
+    <ClCompile Include="src\bsp_comm_mpi.c" />
+    <ClCompile Include="src\bsp_comm_seq.c" />
+    <ClCompile Include="src\bsp_cpp\bsp_commandline.cpp" />
+    <ClCompile Include="src\bsp_cpp\bsp_context.cpp" />
+    <ClCompile Include="src\bsp_cpp\bsp_contextimpl.cpp" />
+    <ClCompile Include="src\bsp_cpp\bsp_contextimpl_memreg.cpp" />
+    <ClCompile Include="src\bsp_cpp\bsp_context_ts.cpp" />
+    <ClCompile Include="src\bsp_cpp\bsp_sharedvariableset.cpp" />
+    <ClCompile Include="src\bsp_delivtable.c" />
+    <ClCompile Include="src\bsp_exptable.c" />
+    <ClCompile Include="src\bsp_global_drma.c" />
+    <ClCompile Include="src\bsp_memreg.c" />
+    <ClCompile Include="src\bsp_mutex.c" />
+    <ClCompile Include="src\bsp_reqtable.c" />
+    <ClCompile Include="src\bsp_time.c" />
+    <ClCompile Include="src\bsp_www.c" />
+    <ClCompile Include="tests\bsp_test.c" />
+    <ClCompile Include="tests\bsp_test_collectives.c" />
+    <ClCompile Include="tests\bsp_test_cpp_collectives.cpp" />
+    <ClCompile Include="tests\bsp_test_delivtable.c" />
+    <ClCompile Include="tests\bsp_test_exptable.c" />
+    <ClCompile Include="tests\bsp_test_fixtable.c" />
+    <ClCompile Include="tests\bsp_test_get.c" />
+    <ClCompile Include="tests\bsp_test_global_drma.c" />
+    <ClCompile Include="tests\bsp_test_memreg.c" />
+    <ClCompile Include="tests\bsp_test_ops.cpp" />
+    <ClCompile Include="tests\bsp_test_put.c" />
+    <ClCompile Include="tests\bsp_test_reqtable.c" />
+    <ClCompile Include="tests\bsp_test_send.c" />
+    <ClCompile Include="tests\bsp_test_sharedvars.cpp" />
+    <ClCompile Include="tests\bsp_test_shared_array.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="examples\benchmark\benchmark.h" />
+    <ClInclude Include="examples\benchmark\benchmarkdata.h" />
+    <ClInclude Include="examples\benchmark\benchmarkfactory.h" />
+    <ClInclude Include="examples\benchmark\bench_r.h" />
+    <ClInclude Include="examples\bspedupack\bspedupack.h" />
+    <ClInclude Include="examples\mpiedupack\mpiedupack.h" />
+    <ClInclude Include="include\bsp.h" />
+    <ClInclude Include="include\bsp_abort.h" />
+    <ClInclude Include="include\bsp_alloc.h" />
+    <ClInclude Include="include\bsp_broadcast.h" />
+    <ClInclude Include="include\bsp_config.h" />
+    <ClInclude Include="include\bsp_cpp\bsp_commandline.h" />
+    <ClInclude Include="include\bsp_cpp\bsp_cpp.h" />
+    <ClInclude Include="include\bsp_cpp\Context.h" />
+    <ClInclude Include="include\bsp_cpp\Runner.h" />
+    <ClInclude Include="include\bsp_cpp\shared\Reducers.h" />
+    <ClInclude Include="include\bsp_cpp\shared\Shared.h" />
+    <ClInclude Include="include\bsp_cpp\shared\SharedArray.h" />
+    <ClInclude Include="include\bsp_cpp\shared\SharedSerialization.h" />
+    <ClInclude Include="include\bsp_cpp\shared\SharedVariable.h" />
+    <ClInclude Include="include\bsp_cpp\shared\SharedVariableSet.h" />
+    <ClInclude Include="include\bsp_cpp\TaskMapper.h" />
+    <ClInclude Include="include\bsp_fold.h" />
+    <ClInclude Include="include\bsp_level1.h" />
+    <ClInclude Include="include\bsp_tools\aligned_allocator.h" />
+    <ClInclude Include="include\bsp_tools\aligned_malloc.h" />
+    <ClInclude Include="include\bsp_tools\Avector.h" />
+    <ClInclude Include="include\bsp_tools\MessageBuffer.h" />
+    <ClInclude Include="include\bsp_tools\spawn.h" />
+    <ClInclude Include="include\bsp_tools\utilities.h" />
+    <ClInclude Include="include\helpers\cblas.h" />
+    <ClInclude Include="src\bspx.h" />
+    <ClInclude Include="src\bspx_comm.h" />
+    <ClInclude Include="src\bspx_comm_mpi.h" />
+    <ClInclude Include="src\bspx_comm_seq.h" />
+    <ClInclude Include="src\bsp_cpp\bsp_contextimpl.h" />
+    <ClInclude Include="src\bsp_cpp\bsp_context_ts.h" />
+    <ClInclude Include="src\bsp_cpp\bsp_localdelivery.h" />
+    <ClInclude Include="src\bsp_cpp\HeaderQueue.h" />
+    <ClInclude Include="src\bsp_cpp\SerializedDataset.h" />
+    <ClInclude Include="src\bsp_delivtable.h" />
+    <ClInclude Include="src\bsp_exptable.h" />
+    <ClInclude Include="src\bsp_memreg.h" />
+    <ClInclude Include="src\bsp_mesgqueue.h" />
+    <ClInclude Include="src\bsp_private.h" />
+    <ClInclude Include="src\bsp_reqtable.h" />
+    <ClInclude Include="src\bsp_threadsafe.h" />
+    <ClInclude Include="tests\bsp_test.h" />
+    <ClInclude Include="tests\ops\test_get.h" />
+    <ClInclude Include="tests\ops\test_hpget.h" />
+    <ClInclude Include="tests\ops\test_hpput.h" />
+    <ClInclude Include="tests\ops\test_put.h" />
+    <ClInclude Include="tests\ops\test_send.h" />
+    <ClInclude Include="tests\unittest.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="include\bsp_cpp\shared\reduce_numeric.inl" />
+    <None Include="include\bsp_cpp\shared\reduce_reduceable.inl" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

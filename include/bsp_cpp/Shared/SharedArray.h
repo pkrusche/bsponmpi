@@ -103,7 +103,6 @@ public:
 
 	/** default byte deserialization */
 	void deserialize(void * source, size_t nbytes) {
-		ASSERT(nbytes <= serialized_size());
 		impl.deserialize(source, nbytes);
 	}
 
@@ -179,7 +178,7 @@ private:
 			}
 			using namespace std;
 			static reducer reduce;
-			int i;
+			size_t i;
 			size_t min_size = min(new_size, a.size);
 			
 			boost::shared_array<__el> new_array(new __el[new_size]);
