@@ -6,6 +6,8 @@
 #ifndef __AVector_H__
 #define __AVector_H__
 
+#include "autoconfig.h"
+
 #include <string.h>
 #include <algorithm>
 

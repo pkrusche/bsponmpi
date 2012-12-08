@@ -118,7 +118,7 @@ namespace bsp {
 		/** Run a computation, preceded by variable initialisation,
 		 *  followed by variable reducing */
 		void run( int master_node = 0 ) {
-			ASSERT (bsp_is_node_level());
+			ASSERT (this->bsp_is_node_level());
 
 			try {
 				_context::parentcontext = this;
@@ -136,7 +136,7 @@ namespace bsp {
 		 * Run a computation's superstep
 		 */ 
 		void execute () {
-			ASSERT (bsp_is_node_level());
+			ASSERT (this->bsp_is_node_level());
 
 			if (_context::mapper->procs_this_node() > 1) {
 				ComputationSpawnTask & root = *new( tbb::task::allocate_root() ) 
