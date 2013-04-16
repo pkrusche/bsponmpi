@@ -71,8 +71,11 @@ def MakeEnv ( env ):
 			LIBPATH = [ boost_lib ],
 		)
     else:
-		env.Append(
-			CPPFLAGS = ' -I'+boost_include ,
-			LIBPATH = [ boost_lib ],
-			LIBS = 'boost_program_options',
-		)
+    	if boost_include:
+			env.Append(
+				CPPFLAGS = ' -I'+boost_include )
+
+    	if boost_lib:
+			env.Append(
+				LIBPATH = [ boost_lib ] )
+    	env.Append(	LIBS = 'boost_program_options'  )

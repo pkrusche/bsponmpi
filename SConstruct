@@ -175,6 +175,12 @@ def ConfRunner(conf, autohdr):
 #define _HAVE_MPI 1
 """)
 
+	if threadsafe:
+		autohdr.write("""
+
+#define BSP_THREADSAFE 1
+
+""")
 	if not root['sequential']:
 		if not conf.CheckMPI(2):
 			print "You have enabled MPI, but I could not find an installation. Have a look at SConsHelpers/mpi.py"
