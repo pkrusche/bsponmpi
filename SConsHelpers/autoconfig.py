@@ -44,11 +44,13 @@ def AutoConfig (root, crunner,customtests = {}):
 #endif 
 #endif 
 
+#ifndef ASSERT
 #ifdef _DEBUG
 #include <assert.h>
 #define ASSERT assert
 #else
 #define ASSERT(x)
+#endif
 #endif
 
 """)

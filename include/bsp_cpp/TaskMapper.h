@@ -63,8 +63,8 @@ namespace bsp {
 	public:
 		TaskMapper (int _processors, 
 			ContextFactoryPtr factory
-		) : contextfactory(factory),
-			processors (_processors), step(NULL) {
+		) : contextfactory(factory), step(NULL),
+			processors (_processors) {
 			using namespace std;
 
 			where_is_node = new int [processors];
