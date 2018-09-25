@@ -21,7 +21,7 @@ def PrepareEnv (root):
 		CCFLAGS=' -g -O0',
 		)
 	elif mode == 'release':
-		fast = '-Ofast'
+		fast = '-O3'
 		if platform_name == 'Darwin':
 			fast= '-fast'
 		if debuginfo:
