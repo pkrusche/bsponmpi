@@ -272,3 +272,4 @@ bsponmpi.sublime-project
 .cproject
 tests/openmpi-valgrind.supp
 tests/bsp_test_shared_array.passed
+*.swp
